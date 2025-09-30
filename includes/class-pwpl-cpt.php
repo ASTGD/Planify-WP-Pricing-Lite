@@ -7,14 +7,15 @@ class PWPL_CPT {
         add_action( 'init', [ $this, 'register_plans_cpt' ] );
     }
 
-    private function labels( $singular, $plural ) {
+    private function labels( $singular, $plural, $add_new_text = null ) {
+        $add_new_text = $add_new_text ?: sprintf( __( 'Add New %s', 'planify-wp-pricing-lite' ), $singular );
         return [
             'name'               => $plural,
             'singular_name'      => $singular,
             'menu_name'          => $plural,
             'name_admin_bar'     => $singular,
-            'add_new'            => __( 'Add New', 'planify-wp-pricing-lite' ),
-            'add_new_item'       => sprintf( __( 'Add New %s', 'planify-wp-pricing-lite' ), $singular ),
+            'add_new'            => $add_new_text,
+            'add_new_item'       => $add_new_text,
             'new_item'           => sprintf( __( 'New %s', 'planify-wp-pricing-lite' ), $singular ),
             'edit_item'          => sprintf( __( 'Edit %s', 'planify-wp-pricing-lite' ), $singular ),
             'view_item'          => sprintf( __( 'View %s', 'planify-wp-pricing-lite' ), $singular ),
@@ -27,7 +28,7 @@ class PWPL_CPT {
 
     public function register_tables_cpt() {
         register_post_type( 'pwpl_table', [
-            'labels' => $this->labels( __( 'Pricing Table', 'planify-wp-pricing-lite' ), __( 'Pricing Tables', 'planify-wp-pricing-lite' ) ),
+            'labels' => $this->labels( __( 'Pricing Table', 'planify-wp-pricing-lite' ), __( 'Pricing Tables', 'planify-wp-pricing-lite' ), __( 'Add New Pricing Table', 'planify-wp-pricing-lite' ) ),
             'public' => false,
             'show_ui' => true,
             'menu_position' => 25,
@@ -35,17 +36,19 @@ class PWPL_CPT {
             'supports' => [ 'title' ],
             'capability_type' => 'page',
             'map_meta_cap' => true,
+            'has_archive' => false,
         ] );
     }
 
     public function register_plans_cpt() {
         register_post_type( 'pwpl_plan', [
-            'labels' => $this->labels( __( 'Plan', 'planify-wp-pricing-lite' ), __( 'Plans', 'planify-wp-pricing-lite' ) ),
+            'labels' => $this->labels( __( 'Plan', 'planify-wp-pricing-lite' ), __( 'Plans', 'planify-wp-pricing-lite' ), __( 'Add New Plan', 'planify-wp-pricing-lite' ) ),
             'public' => false,
             'show_ui' => true,
             'show_in_menu' => 'edit.php?post_type=pwpl_table',
             'supports' => [ 'title' ],
-            'hierarchical' => true,
+            'hierarchical' => false,
+            'has_archive' => false,
         ] );
     }
 }
