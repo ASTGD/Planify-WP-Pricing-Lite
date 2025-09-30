@@ -16,10 +16,11 @@ define( 'PWPL_FILE', __FILE__ );
 define( 'PWPL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PWPL_URL', plugin_dir_url( __FILE__ ) );
 
-// Simple PSR-0-like autoloader for PWPL_ classes.
+// Simple class autoloader for PWPL_ classes following includes/class-pwpl-*.php
 spl_autoload_register( function( $class ){
     if ( strpos( $class, 'PWPL_' ) !== 0 ) return;
-    $path = strtolower( str_replace( [ 'PWPL_', '_' ], [ '', '-' ], $class ) );
+    // Keep the `pwpl-` prefix in the filename (e.g., PWPL_Plugin -> class-pwpl-plugin.php)
+    $path = str_replace( [ 'PWPL_', '_' ], [ '', '-' ], strtolower( $class ) );
     $file = PWPL_DIR . 'includes/class-' . $path . '.php';
     if ( file_exists( $file ) ) require_once $file;
 } );
