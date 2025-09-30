@@ -62,6 +62,19 @@ class PWPL_CPT {
             return;
         }
 
+        // Ensure the Add New Plan entry exists before we re-order.
+        $slugs = wp_list_pluck( (array) $submenu[ $parent ], 2 );
+        if ( ! in_array( 'post-new.php?post_type=pwpl_plan', $slugs, true ) ) {
+            add_submenu_page(
+                $parent,
+                __( 'Add New Plan', 'planify-wp-pricing-lite' ),
+                __( 'Add New Plan', 'planify-wp-pricing-lite' ),
+                'edit_posts',
+                'post-new.php?post_type=pwpl_plan',
+                ''
+            );
+        }
+
         // Collapse duplicates by slug (WP may add entries automatically; we avoid duplicates).
         $seen = [];
         $filtered = [];
