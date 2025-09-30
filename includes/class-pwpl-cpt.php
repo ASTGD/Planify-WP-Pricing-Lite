@@ -56,15 +56,28 @@ class PWPL_CPT {
 
     public function ensure_submenus() {
         $parent = 'edit.php?post_type=pwpl_table';
-        // Add explicit "Add New Plan" entry if WP doesn't add it automatically
+
+        // Ensure "All Plans" entry exists and points to the plans list.
+        add_submenu_page(
+            $parent,
+            __( 'All Plans', 'planify-wp-pricing-lite' ),
+            __( 'All Plans', 'planify-wp-pricing-lite' ),
+            'edit_posts',
+            'edit.php?post_type=pwpl_plan',
+            '',
+            11
+        );
+
+        // Ensure "Add New Plan" entry opens the add-new screen.
+        // Use an empty callback so WordPress loads the core screen instead of a blank page.
         add_submenu_page(
             $parent,
             __( 'Add New Plan', 'planify-wp-pricing-lite' ),
             __( 'Add New Plan', 'planify-wp-pricing-lite' ),
             'edit_posts',
             'post-new.php?post_type=pwpl_plan',
-            '__return_null',
-            15
+            '',
+            12
         );
     }
 }
