@@ -55,29 +55,50 @@ class PWPL_CPT {
     }
 
     public function ensure_submenus() {
+        // Reorder and de-duplicate the auto-generated submenus under Pricing Tables.
         $parent = 'edit.php?post_type=pwpl_table';
+        global $submenu;
+        if ( ! isset( $submenu[ $parent ] ) ) {
+            return;
+        }
 
-        // Ensure "All Plans" entry exists and points to the plans list.
-        add_submenu_page(
-            $parent,
-            __( 'All Plans', 'planify-wp-pricing-lite' ),
-            __( 'All Plans', 'planify-wp-pricing-lite' ),
-            'edit_posts',
-            'edit.php?post_type=pwpl_plan',
-            '',
-            11
-        );
+        // Collapse duplicates by slug (WP may add entries automatically; we avoid duplicates).
+        $seen = [];
+        $filtered = [];
+        foreach ( $submenu[ $parent ] as $item ) {
+            $slug = isset( $item[2] ) ? $item[2] : '';
+            if ( $slug && ! isset( $seen[ $slug ] ) ) {
+                $seen[ $slug ] = true;
+                $filtered[] = $item;
+            }
+        }
 
-        // Ensure "Add New Plan" entry opens the add-new screen.
-        // Use an empty callback so WordPress loads the core screen instead of a blank page.
-        add_submenu_page(
-            $parent,
-            __( 'Add New Plan', 'planify-wp-pricing-lite' ),
-            __( 'Add New Plan', 'planify-wp-pricing-lite' ),
-            'edit_posts',
-            'post-new.php?post_type=pwpl_plan',
-            '',
-            12
-        );
+        // Map by slug to rebuild order.
+        $by_slug = [];
+        foreach ( $filtered as $item ) {
+            $by_slug[ $item[2] ] = $item;
+        }
+
+        $desired = [
+            'edit.php?post_type=pwpl_table',      // All Pricing Tables
+            'post-new.php?post_type=pwpl_table',  // Add New Pricing Table
+            'edit.php?post_type=pwpl_plan',       // All Plans
+            'post-new.php?post_type=pwpl_plan',   // Add New Plan
+            'pwpl-settings',                      // Settings
+        ];
+
+        $ordered = [];
+        foreach ( $desired as $slug ) {
+            if ( isset( $by_slug[ $slug ] ) ) {
+                $ordered[] = $by_slug[ $slug ];
+                unset( $by_slug[ $slug ] );
+            }
+        }
+        // Append anything else that may exist.
+        foreach ( $by_slug as $item ) {
+            $ordered[] = $item;
+        }
+
+        $submenu[ $parent ] = $ordered;
     }
 }
