@@ -9,8 +9,10 @@ class PWPL_Admin {
     public function enqueue( $hook ) {
         $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
         $post_type = $screen && isset( $screen->post_type ) ? $screen->post_type : '';
-        if ( ! in_array( $post_type, [ 'pwpl_table', 'pwpl_plan' ], true ) ) {
-            return; // Only load on our CPT screens
+        $screen_id = $screen && isset( $screen->id ) ? $screen->id : '';
+        $is_plugin_screen = in_array( $post_type, [ 'pwpl_table', 'pwpl_plan' ], true ) || ( $screen_id && false !== strpos( $screen_id, 'pwpl' ) );
+        if ( ! $is_plugin_screen ) {
+            return; // Only load on our plugin screens
         }
 
         $css = PWPL_DIR . 'assets/admin/css/admin.css';
@@ -24,4 +26,3 @@ class PWPL_Admin {
         }
     }
 }
-

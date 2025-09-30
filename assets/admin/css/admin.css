@@ -6,3 +6,40 @@
   padding: 12px;
 }
 
+.pwpl-meta .pwpl-field {
+  margin-bottom: 24px;
+}
+
+.pwpl-meta .pwpl-field label strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.pwpl-dimension {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #f9fafb;
+}
+
+.pwpl-dimension-options {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.pwpl-dimension-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pwpl-repeatable tbody tr td {
+  vertical-align: middle;
+}
+
+.pwpl-repeatable .pwpl-remove-row {
+  min-width: 32px;
+}

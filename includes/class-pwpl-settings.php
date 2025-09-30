@@ -17,7 +17,21 @@ class PWPL_Settings {
             'decimal_sep'       => '.',
             'price_decimals'    => 2,
             'primary_color'     => '#2563eb',
+            'platforms'         => $this->seed_list( [ 'linux', 'windows', 'cyberpanel', 'cpanel' ] ),
+            'periods'           => $this->seed_list( [ 'monthly', 'annually' ] ),
+            'locations'         => $this->seed_list( [ 'us', 'uk', 'de', 'sg' ] ),
         ];
+    }
+
+    private function seed_list( array $slugs ) {
+        $list = [];
+        foreach ( $slugs as $slug ) {
+            $list[] = [
+                'slug'  => sanitize_title( $slug ),
+                'label' => ucwords( str_replace( '-', ' ', $slug ) ),
+            ];
+        }
+        return $list;
     }
 
     public function add_menu() {
@@ -46,6 +60,14 @@ class PWPL_Settings {
         add_settings_field( 'decimal_sep', __( 'Decimal separator', 'planify-wp-pricing-lite' ), [ $this, 'field_decimal_sep' ], 'pwpl-settings', 'pwpl_general' );
         add_settings_field( 'price_decimals', __( 'Price decimals', 'planify-wp-pricing-lite' ), [ $this, 'field_price_decimals' ], 'pwpl-settings', 'pwpl_general' );
         add_settings_field( 'primary_color', __( 'Primary color', 'planify-wp-pricing-lite' ), [ $this, 'field_primary_color' ], 'pwpl-settings', 'pwpl_general' );
+
+        add_settings_section( 'pwpl_dimensions', __( 'Dimensions & Variants', 'planify-wp-pricing-lite' ), function(){
+            echo '<p>' . esc_html__( 'Define the dimension values available across all pricing tables. Enter one value per line (label only).', 'planify-wp-pricing-lite' ) . '</p>';
+        }, 'pwpl-settings' );
+
+        add_settings_field( 'platforms', __( 'Platforms / OS', 'planify-wp-pricing-lite' ), [ $this, 'field_platforms' ], 'pwpl-settings', 'pwpl_dimensions' );
+        add_settings_field( 'periods', __( 'Service Periods', 'planify-wp-pricing-lite' ), [ $this, 'field_periods' ], 'pwpl-settings', 'pwpl_dimensions' );
+        add_settings_field( 'locations', __( 'Locations', 'planify-wp-pricing-lite' ), [ $this, 'field_locations' ], 'pwpl-settings', 'pwpl_dimensions' );
     }
 
     public function get( $key = null ) {
@@ -72,7 +94,48 @@ class PWPL_Settings {
         $color = isset( $input['primary_color'] ) ? trim( (string) $input['primary_color'] ) : $defaults['primary_color'];
         $out['primary_color'] = preg_match( '/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $color ) ? $color : $defaults['primary_color'];
 
+        $out['platforms'] = $this->sanitize_list( $input['platforms'] ?? $defaults['platforms'] );
+        $out['periods']   = $this->sanitize_list( $input['periods'] ?? $defaults['periods'] );
+        $out['locations'] = $this->sanitize_list( $input['locations'] ?? $defaults['locations'] );
+
         return $out;
+    }
+
+    private function sanitize_list( $raw ) {
+        $items = [];
+
+        if ( is_string( $raw ) ) {
+            $lines = preg_split( '/\r?\n/', $raw );
+        } elseif ( is_array( $raw ) ) {
+            $lines = $raw;
+        } else {
+            $lines = [];
+        }
+
+        foreach ( $lines as $line ) {
+            if ( is_array( $line ) ) {
+                $label = isset( $line['label'] ) ? $line['label'] : ( $line['slug'] ?? '' );
+                $slug  = isset( $line['slug'] ) ? $line['slug'] : sanitize_title( $label );
+            } else {
+                $label = trim( (string) $line );
+                $slug  = sanitize_title( $label );
+            }
+
+            if ( $label === '' ) {
+                continue;
+            }
+
+            if ( $slug === '' ) {
+                $slug = sanitize_title( $label );
+            }
+
+            $items[ $slug ] = [
+                'slug'  => $slug,
+                'label' => sanitize_text_field( $label ),
+            ];
+        }
+
+        return array_values( $items );
     }
 
     // Fields
@@ -116,6 +179,34 @@ class PWPL_Settings {
         echo '<input type="color" name="' . esc_attr( self::OPTION ) . '[primary_color]" value="' . $v . '" />';
     }
 
+    public function field_platforms() {
+        $this->render_list_textarea( 'platforms' );
+    }
+
+    public function field_periods() {
+        $this->render_list_textarea( 'periods' );
+    }
+
+    public function field_locations() {
+        $this->render_list_textarea( 'locations' );
+    }
+
+    private function render_list_textarea( $key ) {
+        $items = $this->get( $key );
+        $value = '';
+        if ( is_array( $items ) ) {
+            $labels = array_map( function( $item ){ return $item['label'] ?? ''; }, $items );
+            $value  = implode( "\n", array_filter( $labels ) );
+        }
+        printf(
+            '<textarea name="%1$s[%2$s]" rows="4" class="large-text">%3$s</textarea><p class="description">%4$s</p>',
+            esc_attr( self::OPTION ),
+            esc_attr( $key ),
+            esc_textarea( $value ),
+            esc_html__( 'One value per line. The label will be used for display; a slug is generated automatically.', 'planify-wp-pricing-lite' )
+        );
+    }
+
     public function render_page() {
         echo '<div class="wrap">';
         echo '<h1>' . esc_html__( 'Planify Settings', 'planify-wp-pricing-lite' ) . '</h1>';
@@ -127,4 +218,3 @@ class PWPL_Settings {
         echo '</div>';
     }
 }
-
