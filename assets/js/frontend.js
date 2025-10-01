@@ -193,6 +193,7 @@
 
         const isRTL = getComputedStyle(rail).direction === 'rtl';
         const rtlBehavior = getRtlScrollBehavior();
+        const EPS = 2;
 
         function normalizedScrollLeft() {
             const max = Math.max(rail.scrollWidth - rail.clientWidth, 0);
@@ -232,7 +233,7 @@
 
         function updateNavVisibility() {
             const max = Math.max(rail.scrollWidth - rail.clientWidth, 0);
-            const hasOverflow = max > 1;
+            const hasOverflow = max > EPS;
             prev.hidden = next.hidden = !hasOverflow;
             if (!hasOverflow) {
                 setDisabled(prev, true);
@@ -240,16 +241,19 @@
                 return;
             }
             const current = Math.max(Math.min(normalizedScrollLeft(), max), 0);
-            setDisabled(prev, current <= 1);
-            setDisabled(next, current >= max - 1);
+            setDisabled(prev, current <= EPS);
+            setDisabled(next, current >= max - EPS);
         }
 
         function scrollRail(direction) {
-            if (direction === 'prev' && prev.getAttribute('aria-disabled') === 'true') { return; }
-            if (direction === 'next' && next.getAttribute('aria-disabled') === 'true') { return; }
+            const isPrev = direction === 'prev';
+            const targetButton = isPrev ? prev : next;
+            if (targetButton.getAttribute('aria-disabled') === 'true') {
+                return;
+            }
             const viewport = rail.clientWidth * 0.9;
             const max = Math.max(rail.scrollWidth - rail.clientWidth, 0);
-            let logicalTarget = normalizedScrollLeft() + (direction === 'next' ? viewport : -viewport);
+            let logicalTarget = normalizedScrollLeft() + (isPrev ? -viewport : viewport);
             logicalTarget = Math.max(0, Math.min(logicalTarget, max));
             rail.scrollTo({ left: toPhysicalScroll(logicalTarget), behavior: 'smooth' });
         }
@@ -257,15 +261,16 @@
         prev.addEventListener('click', function(){ scrollRail(isRTL ? 'next' : 'prev'); });
         next.addEventListener('click', function(){ scrollRail(isRTL ? 'prev' : 'next'); });
 
-        const onScroll = () => updateNavVisibility();
-        rail.addEventListener('scroll', onScroll, { passive: true });
+        rail.addEventListener('scroll', updateNavVisibility, { passive: true });
 
-        let resizeObserver;
         if (window.ResizeObserver) {
-            resizeObserver = new ResizeObserver(updateNavVisibility);
-            resizeObserver.observe(rail);
+            const ro = new ResizeObserver(updateNavVisibility);
+            ro.observe(rail);
+            table._pwplResizeObserver = ro;
         } else {
-            window.addEventListener('resize', updateNavVisibility);
+            const onResize = () => updateNavVisibility();
+            window.addEventListener('resize', onResize);
+            table._pwplResizeFallback = onResize;
         }
 
         rail.addEventListener('keydown', function(event){

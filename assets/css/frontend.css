@@ -42,7 +42,6 @@
 .pwpl-plan-rail {
   position: relative;
   margin-top: 8px;
-  padding-inline: 0;
 }
 
 .pwpl-plan-grid {
@@ -178,6 +177,7 @@
   transition: background 0.2s ease, opacity 0.2s ease;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.2);
   z-index: 10;
+  pointer-events: auto;
 }
 
 .pwpl-plan-nav:hover,
@@ -197,21 +197,21 @@
 }
 
 .pwpl-plan-nav--prev {
-  left: -64px;
+  left: -56px;
 }
 
 .pwpl-plan-nav--next {
-  right: -64px;
+  right: -56px;
 }
 
 body.rtl .pwpl-plan-nav--prev {
   left: auto;
-  right: -64px;
+  right: -56px;
 }
 
 body.rtl .pwpl-plan-nav--next {
   right: auto;
-  left: -64px;
+  left: -56px;
 }
 
 @media (max-width: 640px) {
@@ -225,20 +225,20 @@ body.rtl .pwpl-plan-nav--next {
   }
 
   .pwpl-plan-nav--prev {
-    left: -52px;
+    left: -44px;
   }
 
   .pwpl-plan-nav--next {
-    right: -52px;
+    right: -44px;
   }
 
   body.rtl .pwpl-plan-nav--prev {
     left: auto;
-    right: -52px;
+    right: -44px;
   }
 
   body.rtl .pwpl-plan-nav--next {
     right: auto;
-    left: -52px;
+    left: -44px;
   }
 }
