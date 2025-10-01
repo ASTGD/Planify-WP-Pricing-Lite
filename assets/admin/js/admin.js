@@ -40,6 +40,70 @@
         }
       }
     });
+
+    function showCopyFeedback($feedback, success) {
+      if (!$feedback || !$feedback.length) {
+        return;
+      }
+      var messages = window.PWPL_Admin || {};
+      var message = success ? (messages.copySuccess || 'Copied!') : (messages.copyError || 'Copy failed. Copy manually.');
+      $feedback
+        .text(message)
+        .removeClass('is-error')
+        .toggleClass('is-error', !success)
+        .addClass('is-visible');
+
+      clearTimeout($feedback.data('pwplTimeout'));
+      var timeout = setTimeout(function(){
+        $feedback.removeClass('is-visible is-error').text('');
+      }, 2000);
+      $feedback.data('pwplTimeout', timeout);
+    }
+
+    $(document).on('click', '.pwpl-copy-shortcode', function(e){
+      e.preventDefault();
+      var target = $(this).data('target');
+      var $input = $('#' + target);
+      if ( !$input.length ) {
+        return;
+      }
+      var text = $input.val();
+      var $feedback = $(this).closest('.pwpl-shortcode-field').siblings('[data-pwpl-feedback]').first();
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){
+          showCopyFeedback($feedback, true);
+        }).catch(function(){
+          fallback();
+        });
+      } else {
+        fallback();
+      }
+
+      function fallback(){
+        var inputEl = $input.get(0);
+        var selection = document.getSelection();
+        var originalRange = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+
+        inputEl.focus();
+        inputEl.select();
+
+        var successful = false;
+        try {
+          successful = document.execCommand('copy');
+        } catch (err) {
+          successful = false;
+        }
+
+        if (originalRange && selection) {
+          selection.removeAllRanges();
+          selection.addRange(originalRange);
+        } else {
+          inputEl.blur();
+        }
+
+        showCopyFeedback($feedback, successful);
+      }
+    });
   });
 })(jQuery);
-

@@ -23,6 +23,10 @@ class PWPL_Admin {
         }
         if ( file_exists( $js ) ) {
             wp_enqueue_script( 'pwpl-admin', PWPL_URL . 'assets/admin/js/admin.js', [ 'jquery', 'wp-util' ], filemtime( $js ), true );
+            wp_localize_script( 'pwpl-admin', 'PWPL_Admin', [
+                'copySuccess' => __( 'Shortcode copied to clipboard.', 'planify-wp-pricing-lite' ),
+                'copyError'   => __( 'Unable to copy. Please copy manually.', 'planify-wp-pricing-lite' ),
+            ] );
         }
     }
 }

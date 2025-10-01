@@ -43,3 +43,28 @@
 .pwpl-repeatable .pwpl-remove-row {
   min-width: 32px;
 }
+
+.pwpl-shortcode-field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pwpl-shortcode-field input {
+  flex: 1 1 auto;
+}
+
+.pwpl-copy-feedback {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #16a34a;
+  display: none;
+}
+
+.pwpl-copy-feedback.is-error {
+  color: #dc2626;
+}
+
+.pwpl-copy-feedback.is-visible {
+  display: block;
+}

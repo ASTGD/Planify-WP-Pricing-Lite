@@ -39,10 +39,15 @@ class PWPL_Admin_Meta {
 
     public function render_table_shortcode_meta( $post ) {
         $shortcode = sprintf( '[pwpl_table id="%d"]', $post->ID );
+        $input_id  = 'pwpl-shortcode-' . $post->ID;
         ?>
-        <p><?php esc_html_e( 'Paste this shortcode into any page, post, or Divi module to render the pricing table.', 'planify-wp-pricing-lite' ); ?></p>
-        <input type="text" class="widefat" readonly value="<?php echo esc_attr( $shortcode ); ?>" onclick="this.select();" />
-        <p class="description"><?php esc_html_e( 'Click to select the shortcode.', 'planify-wp-pricing-lite' ); ?></p>
+        <p><?php esc_html_e( 'Paste this shortcode into any page, post, or builder module to render the pricing table.', 'planify-wp-pricing-lite' ); ?></p>
+        <div class="pwpl-shortcode-field">
+            <input type="text" id="<?php echo esc_attr( $input_id ); ?>" class="widefat" readonly value="<?php echo esc_attr( $shortcode ); ?>" />
+            <button type="button" class="button pwpl-copy-shortcode" data-target="<?php echo esc_attr( $input_id ); ?>"><?php esc_html_e( 'Copy', 'planify-wp-pricing-lite' ); ?></button>
+        </div>
+        <p class="pwpl-copy-feedback" data-pwpl-feedback aria-live="polite"></p>
+        <p class="description"><?php esc_html_e( 'Click the field or copy button to use the shortcode.', 'planify-wp-pricing-lite' ); ?></p>
         <?php
     }
 
