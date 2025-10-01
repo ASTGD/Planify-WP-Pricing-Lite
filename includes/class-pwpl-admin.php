@@ -22,7 +22,7 @@ class PWPL_Admin {
             wp_enqueue_style( 'pwpl-admin', PWPL_URL . 'assets/admin/css/admin.css', [], filemtime( $css ) );
         }
         if ( file_exists( $js ) ) {
-            wp_enqueue_script( 'pwpl-admin', PWPL_URL . 'assets/admin/js/admin.js', [ 'jquery' ], filemtime( $js ), true );
+            wp_enqueue_script( 'pwpl-admin', PWPL_URL . 'assets/admin/js/admin.js', [ 'jquery', 'wp-util' ], filemtime( $js ), true );
         }
     }
 }
