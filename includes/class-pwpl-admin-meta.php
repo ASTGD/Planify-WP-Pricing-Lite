@@ -19,6 +19,15 @@ class PWPL_Admin_Meta {
         );
 
         add_meta_box(
+            'pwpl_table_shortcode',
+            __( 'Shortcode', 'planify-wp-pricing-lite' ),
+            [ $this, 'render_table_shortcode_meta' ],
+            'pwpl_table',
+            'side',
+            'default'
+        );
+
+        add_meta_box(
             'pwpl_plan_details',
             __( 'Plan Details', 'planify-wp-pricing-lite' ),
             [ $this, 'render_plan_meta' ],
@@ -26,6 +35,15 @@ class PWPL_Admin_Meta {
             'normal',
             'default'
         );
+    }
+
+    public function render_table_shortcode_meta( $post ) {
+        $shortcode = sprintf( '[pwpl_table id="%d"]', $post->ID );
+        ?>
+        <p><?php esc_html_e( 'Paste this shortcode into any page, post, or Divi module to render the pricing table.', 'planify-wp-pricing-lite' ); ?></p>
+        <input type="text" class="widefat" readonly value="<?php echo esc_attr( $shortcode ); ?>" onclick="this.select();" />
+        <p class="description"><?php esc_html_e( 'Click to select the shortcode.', 'planify-wp-pricing-lite' ); ?></p>
+        <?php
     }
 
     private function settings() {
