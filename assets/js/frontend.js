@@ -148,6 +148,9 @@
             button.setAttribute('aria-pressed', 'true');
         }
         updateTable(table);
+        if (typeof table._pwplUpdateNav === 'function') {
+            table._pwplUpdateNav();
+        }
     }
 
     document.addEventListener('click', function(event){
@@ -182,6 +185,11 @@
         if (!rail || !prev || !next) {
             return;
         }
+
+        if (rail.dataset.pwplRailInit === '1') {
+            return;
+        }
+        rail.dataset.pwplRailInit = '1';
 
         const isRTL = getComputedStyle(rail).direction === 'rtl';
         const rtlBehavior = getRtlScrollBehavior();
@@ -239,18 +247,26 @@
         function scrollRail(direction) {
             if (direction === 'prev' && prev.getAttribute('aria-disabled') === 'true') { return; }
             if (direction === 'next' && next.getAttribute('aria-disabled') === 'true') { return; }
-            const amount = rail.clientWidth * 0.85;
+            const viewport = rail.clientWidth * 0.9;
             const max = Math.max(rail.scrollWidth - rail.clientWidth, 0);
-            let logicalTarget = normalizedScrollLeft() + (direction === 'next' ? amount : -amount);
+            let logicalTarget = normalizedScrollLeft() + (direction === 'next' ? viewport : -viewport);
             logicalTarget = Math.max(0, Math.min(logicalTarget, max));
             rail.scrollTo({ left: toPhysicalScroll(logicalTarget), behavior: 'smooth' });
         }
 
-        prev.addEventListener('click', function(){ scrollRail('prev'); });
-        next.addEventListener('click', function(){ scrollRail('next'); });
+        prev.addEventListener('click', function(){ scrollRail(isRTL ? 'next' : 'prev'); });
+        next.addEventListener('click', function(){ scrollRail(isRTL ? 'prev' : 'next'); });
 
-        rail.addEventListener('scroll', updateNavVisibility, { passive: true });
-        window.addEventListener('resize', updateNavVisibility);
+        const onScroll = () => updateNavVisibility();
+        rail.addEventListener('scroll', onScroll, { passive: true });
+
+        let resizeObserver;
+        if (window.ResizeObserver) {
+            resizeObserver = new ResizeObserver(updateNavVisibility);
+            resizeObserver.observe(rail);
+        } else {
+            window.addEventListener('resize', updateNavVisibility);
+        }
 
         rail.addEventListener('keydown', function(event){
             if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
@@ -263,6 +279,7 @@
             scrollRail(direction);
         });
 
+        table._pwplUpdateNav = updateNavVisibility;
         updateNavVisibility();
     }
 
