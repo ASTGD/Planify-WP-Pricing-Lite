@@ -48,7 +48,7 @@ class PWPL_CPT {
             'public' => false,
             'show_ui' => true,
             'show_in_menu' => 'edit.php?post_type=pwpl_table',
-            'supports' => [ 'title' ],
+            'supports' => [ 'title', 'page-attributes' ],
             'hierarchical' => false,
             'has_archive' => false,
         ] );

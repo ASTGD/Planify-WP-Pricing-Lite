@@ -18,6 +18,8 @@
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 16px;
+  justify-content: center;
+  text-align: center;
 }
 
 .pwpl-tab {
@@ -37,13 +39,23 @@
   color: #fff;
 }
 
+.pwpl-plan-rail-wrapper {
+  overflow: hidden;
+}
+
 .pwpl-plan-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
   gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-start;
 }
 
 .pwpl-plan {
+  scroll-snap-align: start;
+  flex: 0 0 260px;
   border-radius: 12px;
   padding: 20px;
   background: #f8fafc;
@@ -149,7 +161,7 @@
 }
 
 @media (max-width: 640px) {
-  .pwpl-plan-grid {
-    grid-template-columns: 1fr;
+  .pwpl-plan {
+    flex-basis: 80%;
   }
 }

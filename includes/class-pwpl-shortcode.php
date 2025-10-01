@@ -124,7 +124,8 @@ class PWPL_Shortcode {
                 </div>
             <?php endforeach; ?>
 
-            <div class="pwpl-plan-grid">
+            <div class="pwpl-plan-rail-wrapper">
+                <div class="pwpl-plan-grid">
                 <?php foreach ( $plans as $plan ) :
                     $plan_title = $plan->post_title ? esc_html( $plan->post_title ) : sprintf( esc_html__( 'Plan #%d', 'planify-wp-pricing-lite' ), $plan->ID );
                     $theme = get_post_meta( $plan->ID, PWPL_Meta::PLAN_THEME, true ) ?: 'classic';
@@ -163,6 +164,7 @@ class PWPL_Shortcode {
                         <?php endif; ?>
                     </article>
                 <?php endforeach; ?>
+                </div>
             </div>
         </div>
         <?php
