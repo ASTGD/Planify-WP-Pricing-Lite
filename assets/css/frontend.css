@@ -18,6 +18,8 @@
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 16px;
+  justify-content: center;
+  text-align: center;
 }
 
 .pwpl-tab {
@@ -37,13 +39,24 @@
   color: #fff;
 }
 
+.pwpl-plan-rail-wrapper {
+  overflow: hidden;
+  position: relative;
+}
+
 .pwpl-plan-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
   gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-start;
 }
 
 .pwpl-plan {
+  scroll-snap-align: start;
+  flex: 0 0 260px;
   border-radius: 12px;
   padding: 20px;
   background: #f8fafc;
@@ -69,6 +82,48 @@
   display: flex;
   gap: 8px;
   align-items: baseline;
+}
+
+.pwpl-plan-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.pwpl-plan-nav button {
+  pointer-events: auto;
+  background: rgba(15, 23, 42, 0.65);
+  color: #fff;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.pwpl-plan-nav button:hover,
+.pwpl-plan-nav button:focus {
+  background: rgba(37, 99, 235, 0.85);
+  outline: none;
+}
+
+.pwpl-plan-nav--prev {
+  left: 12px;
+}
+
+.pwpl-plan-nav--next {
+  right: 12px;
+}
+
+.pwpl-plan-nav[hidden] {
+  display: none;
 }
 
 .pwpl-plan__price-original {
@@ -149,7 +204,7 @@
 }
 
 @media (max-width: 640px) {
-  .pwpl-plan-grid {
-    grid-template-columns: 1fr;
+  .pwpl-plan {
+    flex-basis: 80%;
   }
 }

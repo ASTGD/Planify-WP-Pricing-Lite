@@ -170,6 +170,51 @@
     });
 
     document.querySelectorAll('.pwpl-table').forEach(function(table){
+        enhanceRail(table);
         updateTable(table);
     });
+
+    function enhanceRail(table) {
+        const rail = table.querySelector('.pwpl-plan-grid');
+        if (!rail) {
+            return;
+        }
+
+        const prevNav = table.querySelector('.pwpl-plan-nav--prev');
+        const nextNav = table.querySelector('.pwpl-plan-nav--next');
+
+        function updateNavVisibility() {
+            const scrollLeft = rail.scrollLeft;
+            const maxScroll = rail.scrollWidth - rail.clientWidth - 1;
+            if (prevNav) {
+                prevNav.hidden = scrollLeft <= 0;
+            }
+            if (nextNav) {
+                nextNav.hidden = scrollLeft >= maxScroll;
+            }
+        }
+
+        function scrollByDirection(direction) {
+            const amount = rail.clientWidth * 0.8;
+            const target = direction === 'next' ? rail.scrollLeft + amount : rail.scrollLeft - amount;
+            rail.scrollTo({ left: target, behavior: 'smooth' });
+        }
+
+        if (prevNav) {
+            prevNav.querySelector('button').addEventListener('click', function(){
+                scrollByDirection('prev');
+            });
+        }
+        if (nextNav) {
+            nextNav.querySelector('button').addEventListener('click', function(){
+                scrollByDirection('next');
+            });
+        }
+
+        rail.addEventListener('scroll', updateNavVisibility, { passive: true });
+        window.addEventListener('resize', updateNavVisibility);
+
+        // Initial visibility
+        setTimeout(updateNavVisibility, 0);
+    }
 })();
