@@ -42,7 +42,7 @@
 .pwpl-plan-rail {
   position: relative;
   margin-top: 8px;
-  padding-inline: 72px;
+  padding-inline: 56px;
 }
 
 .pwpl-plan-grid {
@@ -164,7 +164,7 @@
 
 .pwpl-plan-nav {
   position: absolute;
-  inset-block-start: 50%;
+  top: 50%;
   transform: translateY(-50%);
   width: 48px;
   height: 48px;
@@ -189,11 +189,13 @@
 }
 
 .pwpl-plan-nav--prev {
-  inset-inline-start: 16px;
+  left: 0;
+  transform: translate(-70%, -50%);
 }
 
 .pwpl-plan-nav--next {
-  inset-inline-end: 16px;
+  right: 0;
+  transform: translate(70%, -50%);
 }
 
 .pwpl-plan-nav[aria-disabled="true"],
@@ -208,10 +210,6 @@ body.rtl .pwpl-plan-grid {
 }
 
 @media (max-width: 640px) {
-  .pwpl-plan-rail {
-    padding-inline: 56px;
-  }
-
   .pwpl-plan {
     flex-basis: 78%;
   }
@@ -222,10 +220,10 @@ body.rtl .pwpl-plan-grid {
   }
 
   .pwpl-plan-nav--prev {
-    inset-inline-start: 12px;
+    transform: translate(-80%, -50%);
   }
 
   .pwpl-plan-nav--next {
-    inset-inline-end: 12px;
+    transform: translate(80%, -50%);
   }
 }
