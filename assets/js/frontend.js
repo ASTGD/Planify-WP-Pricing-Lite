@@ -170,6 +170,40 @@
     });
 
     document.querySelectorAll('.pwpl-table').forEach(function(table){
+        initPlanRail(table);
         updateTable(table);
     });
+
+    function initPlanRail(table) {
+        const rail = table.querySelector('.pwpl-plan-grid');
+        const prev = table.querySelector('.pwpl-plan-nav--prev');
+        const next = table.querySelector('.pwpl-plan-nav--next');
+
+        if (!rail || !prev || !next) {
+            return;
+        }
+
+        function updateNavVisibility() {
+            const maxScroll = Math.max(rail.scrollWidth - rail.clientWidth, 0);
+            prev.hidden = rail.scrollLeft <= 0;
+            next.hidden = rail.scrollLeft >= maxScroll - 1;
+        }
+
+        function scrollRail(direction) {
+            const amount = rail.clientWidth * 0.85;
+            const delta = direction === 'next' ? amount : -amount;
+            rail.scrollBy({ left: delta, behavior: 'smooth' });
+        }
+
+        prev.addEventListener('click', function(){ scrollRail('prev'); });
+        next.addEventListener('click', function(){ scrollRail('next'); });
+
+        rail.addEventListener('scroll', updateNavVisibility, { passive: true });
+        window.addEventListener('resize', function(){
+            updateNavVisibility();
+        });
+
+        // Ensure the initial state reflects content width
+        updateNavVisibility();
+    }
 })();

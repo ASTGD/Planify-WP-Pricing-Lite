@@ -37,10 +37,22 @@
   color: #fff;
 }
 
+.pwpl-plan-rail {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  margin-top: 8px;
+}
+
 .pwpl-plan-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
   gap: 16px;
+  overflow-x: auto;
+  padding: 8px 0;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-start;
+  flex: 1 1 auto;
 }
 
 .pwpl-plan {
@@ -51,6 +63,8 @@
   flex-direction: column;
   gap: 12px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  scroll-snap-align: start;
+  flex: 0 0 260px;
 }
 
 .pwpl-plan:hover {
@@ -148,8 +162,57 @@
   color: #475569;
 }
 
+.pwpl-plan-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15, 23, 42, 0.8);
+  color: #fff;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.2);
+  z-index: 5;
+}
+
+.pwpl-plan-nav:hover,
+.pwpl-plan-nav:focus {
+  background: rgba(37, 99, 235, 0.9);
+  outline: none;
+}
+
+.pwpl-plan-nav[hidden] {
+  display: none;
+}
+
+.pwpl-plan-nav--prev {
+  left: -26px;
+}
+
+.pwpl-plan-nav--next {
+  right: -26px;
+}
+
 @media (max-width: 640px) {
-  .pwpl-plan-grid {
-    grid-template-columns: 1fr;
+  .pwpl-plan {
+    flex-basis: 78%;
+  }
+
+  .pwpl-plan-nav--prev {
+    left: -16px;
+  }
+
+  .pwpl-plan-nav--next {
+    right: -16px;
+  }
+
+  .pwpl-plan-nav {
+    width: 34px;
+    height: 34px;
   }
 }
