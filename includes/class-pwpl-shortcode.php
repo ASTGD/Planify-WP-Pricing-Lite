@@ -125,7 +125,13 @@ class PWPL_Shortcode {
             <?php endforeach; ?>
 
             <div class="pwpl-plan-rail-wrapper">
-                <div class="pwpl-plan-grid">
+                <div class="pwpl-plan-nav pwpl-plan-nav--prev" hidden>
+                    <button type="button" class="pwpl-plan-nav__btn" data-direction="prev" aria-label="<?php esc_attr_e( 'Scroll previous plans', 'planify-wp-pricing-lite' ); ?>">&#10094;</button>
+                </div>
+                <div class="pwpl-plan-nav pwpl-plan-nav--next" hidden>
+                    <button type="button" class="pwpl-plan-nav__btn" data-direction="next" aria-label="<?php esc_attr_e( 'Scroll next plans', 'planify-wp-pricing-lite' ); ?>">&#10095;</button>
+                </div>
+                <div class="pwpl-plan-grid" tabindex="0">
                 <?php foreach ( $plans as $plan ) :
                     $plan_title = $plan->post_title ? esc_html( $plan->post_title ) : sprintf( esc_html__( 'Plan #%d', 'planify-wp-pricing-lite' ), $plan->ID );
                     $theme = get_post_meta( $plan->ID, PWPL_Meta::PLAN_THEME, true ) ?: 'classic';
