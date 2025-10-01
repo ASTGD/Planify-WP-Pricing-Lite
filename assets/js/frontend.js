@@ -201,6 +201,22 @@
             }
         }
 
+        function toPhysicalScroll(logical) {
+            const max = Math.max(rail.scrollWidth - rail.clientWidth, 0);
+            logical = Math.max(0, Math.min(logical, max));
+            if (!isRTL) {
+                return logical;
+            }
+            switch (rtlBehavior) {
+                case 'negative':
+                    return logical - max;
+                case 'reverse':
+                    return max - logical;
+                default:
+                    return logical;
+            }
+        }
+
         function setDisabled(button, disabled) {
             button.disabled = disabled;
             button.setAttribute('aria-disabled', disabled ? 'true' : 'false');
@@ -224,12 +240,10 @@
             if (direction === 'prev' && prev.disabled) { return; }
             if (direction === 'next' && next.disabled) { return; }
             const amount = rail.clientWidth * 0.85;
-            const logical = direction === 'next' ? 1 : -1;
-            let factor = 1;
-            if (isRTL) {
-                factor = rtlBehavior === 'negative' ? -1 : 1;
-            }
-            rail.scrollBy({ left: amount * logical * factor, behavior: 'smooth' });
+            const max = Math.max(rail.scrollWidth - rail.clientWidth, 0);
+            let logicalTarget = normalizedScrollLeft() + (direction === 'next' ? amount : -amount);
+            logicalTarget = Math.max(0, Math.min(logicalTarget, max));
+            rail.scrollTo({ left: toPhysicalScroll(logicalTarget), behavior: 'smooth' });
         }
 
         prev.addEventListener('click', function(){ scrollRail('prev'); });
