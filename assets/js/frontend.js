@@ -183,15 +183,53 @@
             return;
         }
 
+        const isRTL = getComputedStyle(rail).direction === 'rtl';
+        const rtlBehavior = getRtlScrollBehavior();
+
+        function normalizedScrollLeft() {
+            const max = Math.max(rail.scrollWidth - rail.clientWidth, 0);
+            if (!isRTL) {
+                return rail.scrollLeft;
+            }
+            switch (rtlBehavior) {
+                case 'negative':
+                    return max + rail.scrollLeft;
+                case 'reverse':
+                    return max - rail.scrollLeft;
+                default:
+                    return rail.scrollLeft;
+            }
+        }
+
+        function setDisabled(button, disabled) {
+            button.disabled = disabled;
+            button.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+        }
+
         function updateNavVisibility() {
-            const maxScroll = Math.max(rail.scrollWidth - rail.clientWidth, 0);
-            prev.hidden = rail.scrollLeft <= 0;
-            next.hidden = rail.scrollLeft >= maxScroll - 1;
+            const max = Math.max(rail.scrollWidth - rail.clientWidth, 0);
+            const hasOverflow = max > 1;
+            prev.hidden = next.hidden = !hasOverflow;
+            if (!hasOverflow) {
+                setDisabled(prev, true);
+                setDisabled(next, true);
+                return;
+            }
+            const current = Math.max(Math.min(normalizedScrollLeft(), max), 0);
+            setDisabled(prev, current <= 1);
+            setDisabled(next, current >= max - 1);
         }
 
         function scrollRail(direction) {
-            const delta = rail.clientWidth * 0.85 * (direction === 'next' ? 1 : -1);
-            rail.scrollBy({ left: delta, behavior: 'smooth' });
+            if (direction === 'prev' && prev.disabled) { return; }
+            if (direction === 'next' && next.disabled) { return; }
+            const amount = rail.clientWidth * 0.85;
+            const logical = direction === 'next' ? 1 : -1;
+            let factor = 1;
+            if (isRTL) {
+                factor = rtlBehavior === 'negative' ? -1 : 1;
+            }
+            rail.scrollBy({ left: amount * logical * factor, behavior: 'smooth' });
         }
 
         prev.addEventListener('click', function(){ scrollRail('prev'); });
@@ -200,6 +238,50 @@
         rail.addEventListener('scroll', updateNavVisibility, { passive: true });
         window.addEventListener('resize', updateNavVisibility);
 
+        rail.addEventListener('keydown', function(event){
+            if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+                return;
+            }
+            event.preventDefault();
+            const direction = event.key === 'ArrowRight'
+                ? (isRTL ? 'prev' : 'next')
+                : (isRTL ? 'next' : 'prev');
+            scrollRail(direction);
+        });
+
         updateNavVisibility();
+    }
+
+    let rtlScrollBehavior;
+    function getRtlScrollBehavior() {
+        if (rtlScrollBehavior) {
+            return rtlScrollBehavior;
+        }
+        if (typeof document === 'undefined') {
+            rtlScrollBehavior = 'default';
+            return rtlScrollBehavior;
+        }
+        const outer = document.createElement('div');
+        const inner = document.createElement('div');
+        outer.style.width = '4px';
+        outer.style.height = '1px';
+        outer.style.overflow = 'auto';
+        outer.style.direction = 'rtl';
+        outer.style.position = 'absolute';
+        outer.style.visibility = 'hidden';
+        inner.style.width = '8px';
+        inner.style.height = '1px';
+        outer.appendChild(inner);
+        document.body.appendChild(outer);
+        outer.scrollLeft = 1;
+        if (outer.scrollLeft === 0) {
+            rtlScrollBehavior = 'negative';
+        } else if (outer.scrollLeft === 1) {
+            rtlScrollBehavior = 'default';
+        } else {
+            rtlScrollBehavior = 'reverse';
+        }
+        document.body.removeChild(outer);
+        return rtlScrollBehavior;
     }
 })();

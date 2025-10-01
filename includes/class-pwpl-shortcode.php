@@ -105,6 +105,13 @@ class PWPL_Shortcode {
         $table_title = get_the_title( $table_id );
         $table_title = $table_title ? esc_html( $table_title ) : esc_html__( 'Pricing Table', 'planify-wp-pricing-lite' );
 
+        static $track_instance = 0;
+        $track_instance++;
+        $track_id = 'pwpl-plan-track-' . $table_id . '-' . $track_instance;
+        $is_rtl = is_rtl();
+        $prev_icon = $is_rtl ? '&#10095;' : '&#10094;';
+        $next_icon = $is_rtl ? '&#10094;' : '&#10095;';
+
         ob_start();
         ?>
         <div class="pwpl-table" data-table-id="<?php echo esc_attr( $table_id ); ?>"<?php foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } ?>>
@@ -125,10 +132,10 @@ class PWPL_Shortcode {
             <?php endforeach; ?>
 
             <div class="pwpl-plan-rail">
-                <button type="button" class="pwpl-plan-nav pwpl-plan-nav--prev" data-direction="prev" aria-label="<?php esc_attr_e( 'Scroll previous plans', 'planify-wp-pricing-lite' ); ?>">
-                    <span aria-hidden="true">&#10094;</span>
+                <button type="button" class="pwpl-plan-nav pwpl-plan-nav--prev" data-direction="prev" aria-controls="<?php echo esc_attr( $track_id ); ?>" aria-disabled="true" disabled>
+                    <span aria-hidden="true"><?php echo $prev_icon; ?></span>
                 </button>
-                <div class="pwpl-plan-grid" tabindex="0">
+                <div id="<?php echo esc_attr( $track_id ); ?>" class="pwpl-plan-grid" tabindex="0" role="region" aria-label="<?php esc_attr_e( 'Pricing plans', 'planify-wp-pricing-lite' ); ?>">
                 <?php foreach ( $plans as $plan ) :
                     $plan_title = $plan->post_title ? esc_html( $plan->post_title ) : sprintf( esc_html__( 'Plan #%d', 'planify-wp-pricing-lite' ), $plan->ID );
                     $theme = get_post_meta( $plan->ID, PWPL_Meta::PLAN_THEME, true ) ?: 'classic';
@@ -168,8 +175,8 @@ class PWPL_Shortcode {
                     </article>
                 <?php endforeach; ?>
                 </div>
-                <button type="button" class="pwpl-plan-nav pwpl-plan-nav--next" data-direction="next" aria-label="<?php esc_attr_e( 'Scroll next plans', 'planify-wp-pricing-lite' ); ?>">
-                    <span aria-hidden="true">&#10095;</span>
+                <button type="button" class="pwpl-plan-nav pwpl-plan-nav--next" data-direction="next" aria-controls="<?php echo esc_attr( $track_id ); ?>" aria-disabled="true" disabled>
+                    <span aria-hidden="true"><?php echo $next_icon; ?></span>
                 </button>
             </div>
         </div>

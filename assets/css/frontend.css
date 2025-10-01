@@ -40,7 +40,9 @@
 }
 
 .pwpl-plan-rail {
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
   margin-top: 8px;
 }
 
@@ -52,6 +54,7 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   justify-content: flex-start;
+  flex: 1 1 auto;
 }
 
 .pwpl-plan {
@@ -162,21 +165,18 @@
 }
 
 .pwpl-plan-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(15, 23, 42, 0.8);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.82);
   color: #fff;
   border: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
   display: grid;
   place-items: center;
   cursor: pointer;
   transition: background 0.2s ease, opacity 0.2s ease;
+  flex: 0 0 auto;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.2);
-  z-index: 5;
 }
 
 .pwpl-plan-nav:hover,
@@ -185,16 +185,17 @@
   outline: none;
 }
 
+.pwpl-plan-nav[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .pwpl-plan-nav[hidden] {
   display: none;
 }
 
-.pwpl-plan-nav--prev {
-  left: -26px;
-}
-
-.pwpl-plan-nav--next {
-  right: -26px;
+body.rtl .pwpl-plan-rail {
+  flex-direction: row-reverse;
 }
 
 @media (max-width: 640px) {
@@ -203,15 +204,7 @@
   }
 
   .pwpl-plan-nav {
-    width: 34px;
-    height: 34px;
-  }
-
-  .pwpl-plan-nav--prev {
-    left: -16px;
-  }
-
-  .pwpl-plan-nav--next {
-    right: -16px;
+    width: 40px;
+    height: 40px;
   }
 }
