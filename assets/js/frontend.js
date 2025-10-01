@@ -190,8 +190,7 @@
         }
 
         function scrollRail(direction) {
-            const amount = rail.clientWidth * 0.85;
-            const delta = direction === 'next' ? amount : -amount;
+            const delta = rail.clientWidth * 0.85 * (direction === 'next' ? 1 : -1);
             rail.scrollBy({ left: delta, behavior: 'smooth' });
         }
 
@@ -199,11 +198,8 @@
         next.addEventListener('click', function(){ scrollRail('next'); });
 
         rail.addEventListener('scroll', updateNavVisibility, { passive: true });
-        window.addEventListener('resize', function(){
-            updateNavVisibility();
-        });
+        window.addEventListener('resize', updateNavVisibility);
 
-        // Ensure the initial state reflects content width
         updateNavVisibility();
     }
 })();

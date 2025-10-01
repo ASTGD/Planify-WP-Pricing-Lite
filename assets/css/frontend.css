@@ -18,6 +18,8 @@
   gap: 8px;
   flex-wrap: wrap;
   margin-bottom: 16px;
+  justify-content: center;
+  text-align: center;
 }
 
 .pwpl-tab {
@@ -39,8 +41,6 @@
 
 .pwpl-plan-rail {
   position: relative;
-  display: flex;
-  align-items: stretch;
   margin-top: 8px;
 }
 
@@ -52,7 +52,6 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   justify-content: flex-start;
-  flex: 1 1 auto;
 }
 
 .pwpl-plan {
@@ -203,16 +202,16 @@
     flex-basis: 78%;
   }
 
+  .pwpl-plan-nav {
+    width: 34px;
+    height: 34px;
+  }
+
   .pwpl-plan-nav--prev {
     left: -16px;
   }
 
   .pwpl-plan-nav--next {
     right: -16px;
-  }
-
-  .pwpl-plan-nav {
-    width: 34px;
-    height: 34px;
   }
 }
