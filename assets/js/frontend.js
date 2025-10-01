@@ -218,7 +218,7 @@
         }
 
         function setDisabled(button, disabled) {
-            button.disabled = disabled;
+            button.classList.toggle('is-disabled', disabled);
             button.setAttribute('aria-disabled', disabled ? 'true' : 'false');
         }
 
@@ -237,8 +237,8 @@
         }
 
         function scrollRail(direction) {
-            if (direction === 'prev' && prev.disabled) { return; }
-            if (direction === 'next' && next.disabled) { return; }
+            if (direction === 'prev' && prev.getAttribute('aria-disabled') === 'true') { return; }
+            if (direction === 'next' && next.getAttribute('aria-disabled') === 'true') { return; }
             const amount = rail.clientWidth * 0.85;
             const max = Math.max(rail.scrollWidth - rail.clientWidth, 0);
             let logicalTarget = normalizedScrollLeft() + (direction === 'next' ? amount : -amount);

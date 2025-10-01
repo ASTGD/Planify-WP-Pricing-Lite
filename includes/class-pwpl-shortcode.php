@@ -132,7 +132,7 @@ class PWPL_Shortcode {
             <?php endforeach; ?>
 
             <div class="pwpl-plan-rail">
-                <button type="button" class="pwpl-plan-nav pwpl-plan-nav--prev" data-direction="prev" aria-controls="<?php echo esc_attr( $track_id ); ?>" aria-disabled="true" disabled>
+                <button type="button" class="pwpl-plan-nav pwpl-plan-nav--prev" data-direction="prev" aria-controls="<?php echo esc_attr( $track_id ); ?>" aria-disabled="true">
                     <span aria-hidden="true"><?php echo $prev_icon; ?></span>
                 </button>
                 <div id="<?php echo esc_attr( $track_id ); ?>" class="pwpl-plan-grid" tabindex="0" role="region" aria-label="<?php esc_attr_e( 'Pricing plans', 'planify-wp-pricing-lite' ); ?>">
@@ -175,7 +175,7 @@ class PWPL_Shortcode {
                     </article>
                 <?php endforeach; ?>
                 </div>
-                <button type="button" class="pwpl-plan-nav pwpl-plan-nav--next" data-direction="next" aria-controls="<?php echo esc_attr( $track_id ); ?>" aria-disabled="true" disabled>
+                <button type="button" class="pwpl-plan-nav pwpl-plan-nav--next" data-direction="next" aria-controls="<?php echo esc_attr( $track_id ); ?>" aria-disabled="true">
                     <span aria-hidden="true"><?php echo $next_icon; ?></span>
                 </button>
             </div>

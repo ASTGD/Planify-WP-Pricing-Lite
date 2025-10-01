@@ -184,13 +184,6 @@
 .pwpl-plan-nav:focus {
   background: rgba(37, 99, 235, 0.9);
   outline: none;
-}
-
-.pwpl-plan-nav[disabled] {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 .pwpl-plan-nav[hidden] {
   display: none;
 }
@@ -201,6 +194,12 @@
 
 .pwpl-plan-nav--next {
   inset-inline-end: 16px;
+}
+
+.pwpl-plan-nav[aria-disabled="true"],
+.pwpl-plan-nav.is-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 body.rtl .pwpl-plan-rail,
