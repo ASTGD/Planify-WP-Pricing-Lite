@@ -13,6 +13,8 @@ class PWPL_Meta {
     const PLAN_VARIANTS           = '_pwpl_variants';
     const PLAN_FEATURED           = '_pwpl_featured';
     const PLAN_BADGE_SHADOW       = '_pwpl_badge_shadow';
+    const TABLE_SIZE              = '_pwpl_table_size';
+    const TABLE_BREAKPOINTS       = '_pwpl_table_breakpoints';
     const PLAN_BADGES_OVERRIDE    = '_pwpl_badges_override';
     const TABLE_BADGES            = '_pwpl_badges';
     const TABLE_THEME             = '_pwpl_table_theme';
@@ -65,6 +67,22 @@ class PWPL_Meta {
             'type'              => 'array',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => [ $this, 'sanitize_badges' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::TABLE_SIZE, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_table_size' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::TABLE_BREAKPOINTS, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_table_breakpoints' ],
             'show_in_rest'      => false,
         ] );
 
@@ -130,6 +148,18 @@ class PWPL_Meta {
             'single'            => true,
             'type'              => 'integer',
             'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) {
+                $value = (int) $value;
+                $value = max( 0, min( $value, 60 ) );
+                return $value;
+            },
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_plan', self::PLAN_BADGE_SHADOW, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => function( $v ) {
                 $v = (int) $v; return max( 0, min( $v, 60 ) );
             },
@@ -174,6 +204,72 @@ class PWPL_Meta {
 
     public function sanitize_feature_flag( $value ) {
         return (bool) $value;
+    }
+
+    public function sanitize_table_size( $value ) {
+        $defaults = [
+            'min' => 320,
+            'max' => 1140,
+        ];
+
+        if ( ! is_array( $value ) ) {
+            return $defaults;
+        }
+
+        $min = isset( $value['min'] ) ? (int) $value['min'] : $defaults['min'];
+        $max = isset( $value['max'] ) ? (int) $value['max'] : $defaults['max'];
+
+        $min = max( 0, min( $min, 4000 ) );
+        $max = max( 0, min( $max, 4000 ) );
+
+        if ( $min <= 0 ) {
+            $min = $defaults['min'];
+        }
+        if ( $max <= 0 ) {
+            $max = $defaults['max'];
+        }
+        if ( $min > $max ) {
+            $min = $max;
+        }
+
+        return [
+            'min' => $min,
+            'max' => $max,
+        ];
+    }
+
+    public function sanitize_table_breakpoints( $value ) {
+        if ( ! is_array( $value ) ) {
+            return [];
+        }
+
+        $devices = [ 'big', 'desktop', 'laptop', 'tablet', 'mobile' ];
+        $keys    = [ 'table_max', 'card_min', 'card_min_h' ];
+        $clean   = [];
+
+        foreach ( $devices as $device ) {
+            if ( empty( $value[ $device ] ) || ! is_array( $value[ $device ] ) ) {
+                continue;
+            }
+
+            $device_values = [];
+            foreach ( $keys as $key ) {
+                if ( ! isset( $value[ $device ][ $key ] ) ) {
+                    continue;
+                }
+                $raw = (int) $value[ $device ][ $key ];
+                if ( $raw <= 0 ) {
+                    continue;
+                }
+                $device_values[ $key ] = max( 0, min( $raw, 4000 ) );
+            }
+
+            if ( ! empty( $device_values ) ) {
+                $clean[ $device ] = $device_values;
+            }
+        }
+
+        return $clean;
     }
 
     public function sanitize_badges( $value ) {
