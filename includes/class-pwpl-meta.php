@@ -6,6 +6,7 @@ class PWPL_Meta {
     const ALLOWED_PLATFORMS   = '_pwpl_allowed_platforms';
     const ALLOWED_PERIODS     = '_pwpl_allowed_periods';
     const ALLOWED_LOCATIONS   = '_pwpl_allowed_locations';
+    const TABLE_THEME         = '_pwpl_table_theme';
 
     const PLAN_TABLE_ID       = '_pwpl_table_id';
     const PLAN_THEME          = '_pwpl_theme';
@@ -52,6 +53,14 @@ class PWPL_Meta {
             'sanitize_callback' => function( $values ) {
                 return $this->sanitize_allowed_list( $values, 'locations' );
             },
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::TABLE_THEME, [
+            'single'            => true,
+            'type'              => 'string',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_theme' ],
             'show_in_rest'      => false,
         ] );
 

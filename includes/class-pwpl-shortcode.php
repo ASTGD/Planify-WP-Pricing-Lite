@@ -105,9 +105,13 @@ class PWPL_Shortcode {
         $table_title = get_the_title( $table_id );
         $table_title = $table_title ? esc_html( $table_title ) : esc_html__( 'Pricing Table', 'planify-wp-pricing-lite' );
 
+        $meta_helper = new PWPL_Meta();
+        $table_theme = get_post_meta( $table_id, PWPL_Meta::TABLE_THEME, true );
+        $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
+
         ob_start();
         ?>
-        <div class="pwpl-table" data-table-id="<?php echo esc_attr( $table_id ); ?>"<?php foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } ?>>
+        <div class="pwpl-table pwpl-table--theme-<?php echo esc_attr( $table_theme ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>"<?php foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } ?>>
             <div class="pwpl-table__header">
                 <h3 class="pwpl-table__title"><?php echo $table_title; ?></h3>
             </div>
@@ -134,7 +138,9 @@ class PWPL_Shortcode {
                 <div class="pwpl-plan-grid" tabindex="0">
                 <?php foreach ( $plans as $plan ) :
                     $plan_title = $plan->post_title ? esc_html( $plan->post_title ) : sprintf( esc_html__( 'Plan #%d', 'planify-wp-pricing-lite' ), $plan->ID );
-                    $theme = get_post_meta( $plan->ID, PWPL_Meta::PLAN_THEME, true ) ?: 'classic';
+                    $plan_theme_meta = get_post_meta( $plan->ID, PWPL_Meta::PLAN_THEME, true );
+                    $plan_theme = $plan_theme_meta ? $meta_helper->sanitize_theme( $plan_theme_meta ) : 'classic';
+                    $theme = ( $table_theme === 'classic' && $plan_theme !== 'classic' ) ? $plan_theme : $table_theme;
                     $specs = get_post_meta( $plan->ID, PWPL_Meta::PLAN_SPECS, true );
                     if ( ! is_array( $specs ) ) {
                         $specs = [];

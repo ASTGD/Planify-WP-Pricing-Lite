@@ -72,6 +72,15 @@ class PWPL_Admin_Meta {
         $periods   = (array) $settings->get( 'periods' );
         $locations = (array) $settings->get( 'locations' );
 
+        $meta_helper = new PWPL_Meta();
+        $theme = get_post_meta( $post->ID, PWPL_Meta::TABLE_THEME, true );
+        $theme = $meta_helper->sanitize_theme( $theme ?: 'classic' );
+        $themes = [
+            'classic' => __( 'Classic', 'planify-wp-pricing-lite' ),
+            'warm'    => __( 'Warm', 'planify-wp-pricing-lite' ),
+            'blue'    => __( 'Blue', 'planify-wp-pricing-lite' ),
+        ];
+
         $dimension_map = [
             'platform' => [
                 'label'   => __( 'Platform / OS', 'planify-wp-pricing-lite' ),
@@ -91,6 +100,15 @@ class PWPL_Admin_Meta {
         ];
         ?>
         <div class="pwpl-meta pwpl-meta--table" data-pwpl-dimensions>
+            <div class="pwpl-field">
+                <label for="pwpl_table_theme"><strong><?php esc_html_e( 'Theme / Style', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <select id="pwpl_table_theme" name="pwpl_table[theme]" class="widefat">
+                    <?php foreach ( $themes as $key => $label ) : ?>
+                        <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $theme, $key ); ?>><?php echo esc_html( $label ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="description"><?php esc_html_e( 'Applies to all plans in this table. Customize styles via CSS using the theme class.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
             <?php foreach ( $dimension_map as $key => $config ) :
                 $enabled = in_array( $key, $dimensions, true );
                 ?>
@@ -125,7 +143,6 @@ class PWPL_Admin_Meta {
         wp_nonce_field( 'pwpl_save_plan_' . $post->ID, 'pwpl_plan_nonce' );
 
         $table_id = (int) get_post_meta( $post->ID, PWPL_Meta::PLAN_TABLE_ID, true );
-        $theme    = get_post_meta( $post->ID, PWPL_Meta::PLAN_THEME, true );
         $specs    = get_post_meta( $post->ID, PWPL_Meta::PLAN_SPECS, true );
         $variants = get_post_meta( $post->ID, PWPL_Meta::PLAN_VARIANTS, true );
 
@@ -153,12 +170,6 @@ class PWPL_Admin_Meta {
             'order'          => 'ASC',
         ] );
 
-        $themes = [
-            'classic' => __( 'Classic', 'planify-wp-pricing-lite' ),
-            'warm'    => __( 'Warm', 'planify-wp-pricing-lite' ),
-            'blue'    => __( 'Blue', 'planify-wp-pricing-lite' ),
-        ];
-
         $settings = $this->settings();
         $platforms = (array) $settings->get( 'platforms' );
         $periods   = (array) $settings->get( 'periods' );
@@ -176,15 +187,6 @@ class PWPL_Admin_Meta {
                 <?php if ( empty( $tables ) ) : ?>
                     <p class="description"><?php esc_html_e( 'No pricing tables found yet. Create a table first, then assign plans to it.', 'planify-wp-pricing-lite' ); ?></p>
                 <?php endif; ?>
-            </div>
-
-            <div class="pwpl-field">
-                <label for="pwpl_plan_theme"><strong><?php esc_html_e( 'Theme / Style', 'planify-wp-pricing-lite' ); ?></strong></label>
-                <select id="pwpl_plan_theme" name="pwpl_plan[theme]" class="widefat">
-                    <?php foreach ( $themes as $key => $label ) : ?>
-                        <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $theme ?: 'classic', $key ); ?>><?php echo esc_html( $label ); ?></option>
-                    <?php endforeach; ?>
-                </select>
             </div>
 
             <div class="pwpl-field">
@@ -299,6 +301,10 @@ class PWPL_Admin_Meta {
         $meta  = new PWPL_Meta();
         $settings = $this->settings();
 
+        $theme_input = $input['theme'] ?? '';
+        $theme = $meta->sanitize_theme( $theme_input );
+        update_post_meta( $post_id, PWPL_Meta::TABLE_THEME, $theme );
+
         $dimensions = isset( $input['dimensions'] ) ? (array) $input['dimensions'] : [];
         $dimensions = $meta->sanitize_dimensions( $dimensions );
         update_post_meta( $post_id, PWPL_Meta::DIMENSION_META, $dimensions );
@@ -337,9 +343,6 @@ class PWPL_Admin_Meta {
 
         $table_id = isset( $input['table_id'] ) ? (int) $input['table_id'] : 0;
         update_post_meta( $post_id, PWPL_Meta::PLAN_TABLE_ID, $table_id );
-
-        $theme = isset( $input['theme'] ) ? sanitize_key( $input['theme'] ) : 'classic';
-        update_post_meta( $post_id, PWPL_Meta::PLAN_THEME, $theme );
 
         $specs = $input['specs'] ?? [];
         if ( is_array( $specs ) ) {
