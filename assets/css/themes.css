@@ -188,6 +188,7 @@
   inset: 0;
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(14, 116, 144, 0.2) 50%, transparent 100%);
   pointer-events: none;
+  z-index: 0;
 }
 
 .pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__header-meta {

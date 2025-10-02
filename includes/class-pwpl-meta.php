@@ -12,6 +12,7 @@ class PWPL_Meta {
     const PLAN_SPECS              = '_pwpl_specs';
     const PLAN_VARIANTS           = '_pwpl_variants';
     const PLAN_FEATURED           = '_pwpl_featured';
+    const PLAN_BADGE_SHADOW       = '_pwpl_badge_shadow';
     const PLAN_BADGES_OVERRIDE    = '_pwpl_badges_override';
     const TABLE_BADGES            = '_pwpl_badges';
     const TABLE_THEME             = '_pwpl_table_theme';
@@ -122,6 +123,16 @@ class PWPL_Meta {
             'type'              => 'boolean',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => [ $this, 'sanitize_feature_flag' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_plan', self::PLAN_BADGE_SHADOW, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $v ) {
+                $v = (int) $v; return max( 0, min( $v, 60 ) );
+            },
             'show_in_rest'      => false,
         ] );
     }

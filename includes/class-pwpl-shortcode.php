@@ -211,7 +211,9 @@ class PWPL_Shortcode {
                     $variant = $this->resolve_variant( $variants, $active_values );
                     $price_html = $this->build_price_html( $variant, $settings );
                     $badge        = $this->resolve_badge( $active_values, $override_badges, $table_badges );
-                    $badge_view   = $this->format_badge_for_output( $badge, $badge_shadow );
+                    $plan_badge_shadow = (int) get_post_meta( $plan->ID, PWPL_Meta::PLAN_BADGE_SHADOW, true );
+                    $effective_shadow  = $plan_badge_shadow > 0 ? $plan_badge_shadow : $badge_shadow;
+                    $badge_view   = $this->format_badge_for_output( $badge, $effective_shadow );
                     $cta          = $this->prepare_cta( $variant );
                     $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );
 

@@ -451,6 +451,16 @@ class PWPL_Admin_Meta {
             </div>
 
             <div class="pwpl-field">
+                <label for="pwpl_plan_badge_shadow"><strong><?php esc_html_e( 'Badge glow (override)', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <?php $badge_shadow = (int) get_post_meta( $post->ID, PWPL_Meta::PLAN_BADGE_SHADOW, true ); ?>
+                <div>
+                    <input type="range" id="pwpl_plan_badge_shadow" name="pwpl_plan[badge_shadow]" min="0" max="60" step="1" value="<?php echo esc_attr( $badge_shadow ); ?>" />
+                    <output for="pwpl_plan_badge_shadow"><?php echo esc_html( $badge_shadow ); ?></output>
+                </div>
+                <p class="description"><?php esc_html_e( 'Leave 0 to inherit from table. Increase to intensify the badge glow for this plan only.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
+
+            <div class="pwpl-field">
                 <label><strong><?php esc_html_e( 'Specifications', 'planify-wp-pricing-lite' ); ?></strong></label>
                 <p class="description"><?php esc_html_e( 'Add spec rows like CPU, RAM, Bandwidth. Leave blank rows to remove.', 'planify-wp-pricing-lite' ); ?></p>
                 <table class="widefat pwpl-repeatable" data-pwpl-repeatable="specs" data-template="pwpl-row-specs" data-next-index="<?php echo esc_attr( max( $spec_count, count( $specs ) ) ); ?>">
@@ -675,6 +685,10 @@ class PWPL_Admin_Meta {
 
         $featured = ! empty( $input['featured'] );
         update_post_meta( $post_id, PWPL_Meta::PLAN_FEATURED, $featured ? 1 : 0 );
+
+        $badge_shadow = isset( $input['badge_shadow'] ) ? (int) $input['badge_shadow'] : 0;
+        $badge_shadow = max( 0, min( $badge_shadow, 60 ) );
+        update_post_meta( $post_id, PWPL_Meta::PLAN_BADGE_SHADOW, $badge_shadow );
 
         $override_input    = $_POST['pwpl_plan_badges_override'] ?? [];
         $override_enabled  = ! empty( $override_input['enabled'] );
