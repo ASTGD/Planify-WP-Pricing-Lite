@@ -8,20 +8,40 @@
       $wrapper.find('.pwpl-dimension-options')[ this.checked ? 'slideDown' : 'slideUp' ](150);
     });
 
-    var templates = {
-      specs: typeof wp !== 'undefined' && wp.template ? wp.template('pwpl-row-specs') : null,
-      variants: typeof wp !== 'undefined' && wp.template ? wp.template('pwpl-row-variants') : null
-    };
+    var templateCache = {};
+
+    function getTemplate(name) {
+      if (!name) {
+        return null;
+      }
+      if (templateCache[name]) {
+        return templateCache[name];
+      }
+      if (typeof wp !== 'undefined' && wp.template) {
+        try {
+          templateCache[name] = wp.template(name);
+          return templateCache[name];
+        } catch (err) {
+          templateCache[name] = null;
+        }
+      }
+      return templateCache[name] || null;
+    }
 
     $(document).on('click', '.pwpl-add-row', function(){
       var target = $(this).data('target');
       var $table = $('.pwpl-repeatable[data-pwpl-repeatable="' + target + '"]');
-      if (!$table.length || !templates[target]) {
+      if (!$table.length) {
+        return;
+      }
+      var templateName = $table.data('template') || target;
+      var template = getTemplate(templateName);
+      if (!template) {
         return;
       }
       var nextIndex = parseInt($table.data('next-index'), 10) || 0;
       $table.data('next-index', nextIndex + 1);
-      var html = templates[target]({ index: nextIndex });
+      var html = template({ index: nextIndex });
       $table.find('tbody').append(html);
     });
 
@@ -32,10 +52,12 @@
       if ( !$table.find('tbody tr').length ) {
         // Ensure at least one blank row remains
         var target = $table.data('pwpl-repeatable');
-        if ( templates[target] ) {
+        var templateName = $table.data('template') || target;
+        var template = getTemplate(templateName);
+        if ( template ) {
           var nextIndex = parseInt($table.data('next-index'), 10) || 0;
           $table.data('next-index', nextIndex + 1);
-          var html = templates[target]({ index: nextIndex });
+          var html = template({ index: nextIndex });
           $table.find('tbody').append(html);
         }
       }
@@ -104,6 +126,30 @@
 
         showCopyFeedback($feedback, successful);
       }
+    });
+
+    function togglePlanBadgeFields() {
+      var $toggle = $('#pwpl_plan_badges_override_enabled');
+      if (!$toggle.length) {
+        return;
+      }
+      var $fields = $('[data-pwpl-plan-badge-fields]');
+      if (!$fields.length) {
+        return;
+      }
+      if ($toggle.is(':checked')) {
+        $fields.slideDown(150);
+      } else {
+        $fields.slideUp(150);
+      }
+    }
+
+    togglePlanBadgeFields();
+    $(document).on('change', '#pwpl_plan_badges_override_enabled', togglePlanBadgeFields);
+
+    $(document).on('input change', '[data-pwpl-shadow-range]', function(){
+      var value = $(this).val();
+      $(this).closest('.pwpl-badge-shadow').find('[data-pwpl-shadow-value]').text(value);
     });
   });
 })(jQuery);

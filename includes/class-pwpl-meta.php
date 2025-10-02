@@ -7,10 +7,15 @@ class PWPL_Meta {
     const ALLOWED_PERIODS     = '_pwpl_allowed_periods';
     const ALLOWED_LOCATIONS   = '_pwpl_allowed_locations';
 
-    const PLAN_TABLE_ID       = '_pwpl_table_id';
-    const PLAN_THEME          = '_pwpl_theme';
-    const PLAN_SPECS          = '_pwpl_specs';
-    const PLAN_VARIANTS       = '_pwpl_variants';
+    const PLAN_TABLE_ID           = '_pwpl_table_id';
+    const PLAN_THEME              = '_pwpl_theme';
+    const PLAN_SPECS              = '_pwpl_specs';
+    const PLAN_VARIANTS           = '_pwpl_variants';
+    const PLAN_FEATURED           = '_pwpl_featured';
+    const PLAN_BADGE_SHADOW       = '_pwpl_badge_shadow';
+    const PLAN_BADGES_OVERRIDE    = '_pwpl_badges_override';
+    const TABLE_BADGES            = '_pwpl_badges';
+    const TABLE_THEME             = '_pwpl_table_theme';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -55,6 +60,22 @@ class PWPL_Meta {
             'show_in_rest'      => false,
         ] );
 
+        register_post_meta( 'pwpl_table', self::TABLE_BADGES, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_badges' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::TABLE_THEME, [
+            'single'            => true,
+            'type'              => 'string',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_theme' ],
+            'show_in_rest'      => false,
+        ] );
+
         register_post_meta( 'pwpl_plan', self::PLAN_TABLE_ID, [
             'single'            => true,
             'type'              => 'integer',
@@ -86,6 +107,32 @@ class PWPL_Meta {
             'type'              => 'array',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => [ $this, 'sanitize_variants' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_plan', self::PLAN_BADGES_OVERRIDE, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_badges' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_plan', self::PLAN_FEATURED, [
+            'single'            => true,
+            'type'              => 'boolean',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_feature_flag' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_plan', self::PLAN_BADGE_SHADOW, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $v ) {
+                $v = (int) $v; return max( 0, min( $v, 60 ) );
+            },
             'show_in_rest'      => false,
         ] );
     }
@@ -121,8 +168,75 @@ class PWPL_Meta {
 
     public function sanitize_theme( $value ) {
         $value = sanitize_key( $value );
-        $allowed = [ 'warm', 'blue', 'classic' ];
+        $allowed = [ 'warm', 'blue', 'classic', 'modern-discount' ];
         return in_array( $value, $allowed, true ) ? $value : 'classic';
+    }
+
+    public function sanitize_feature_flag( $value ) {
+        return (bool) $value;
+    }
+
+    public function sanitize_badges( $value ) {
+        $dimensions = [ 'period', 'location', 'platform' ];
+        $clean      = [];
+
+        if ( ! is_array( $value ) ) {
+            $value = [];
+        }
+
+        foreach ( $dimensions as $dimension ) {
+            $items = isset( $value[ $dimension ] ) && is_array( $value[ $dimension ] ) ? $value[ $dimension ] : [];
+            $clean[ $dimension ] = [];
+
+            foreach ( $items as $item ) {
+                if ( ! is_array( $item ) ) {
+                    continue;
+                }
+
+                $slug  = sanitize_title( $item['slug'] ?? '' );
+                $label = sanitize_text_field( $item['label'] ?? '' );
+                $color = $this->sanitize_hex( $item['color'] ?? '' );
+                $text  = $this->sanitize_hex( $item['text_color'] ?? '' );
+                $icon  = sanitize_text_field( $item['icon'] ?? '' );
+                $tone  = sanitize_key( $item['tone'] ?? '' );
+                $start = $this->sanitize_date( $item['start'] ?? '' );
+                $end   = $this->sanitize_date( $item['end'] ?? '' );
+
+                if ( $slug === '' || $label === '' ) {
+                    continue;
+                }
+
+                $clean[ $dimension ][] = [
+                    'slug'       => $slug,
+                    'label'      => $label,
+                    'color'      => $color,
+                    'text_color' => $text,
+                    'icon'       => $icon,
+                    'tone'       => in_array( $tone, [ 'success', 'info', 'warning', 'danger', 'neutral' ], true ) ? $tone : '',
+                    'start'      => $start,
+                    'end'        => $end,
+                ];
+            }
+        }
+
+        $shadow = isset( $value['shadow'] ) ? (int) $value['shadow'] : 0;
+        $shadow = max( 0, min( $shadow, 60 ) );
+
+        $priority = isset( $value['priority'] ) && is_array( $value['priority'] )
+            ? array_values( array_intersect( array_map( 'sanitize_key', $value['priority'] ), $dimensions ) )
+            : [];
+
+        if ( empty( $priority ) ) {
+            $priority = [ 'period', 'location', 'platform' ];
+        }
+
+        // Ensure we always include every dimension in deterministic order.
+        $priority = array_values( array_unique( array_merge( $priority, $dimensions ) ) );
+
+        $clean['priority'] = $priority;
+        $clean['shadow']   = $shadow;
+
+        return $clean;
     }
 
     public function sanitize_specs( $value ) {
@@ -159,8 +273,12 @@ class PWPL_Meta {
                 'location'   => sanitize_title( $item['location'] ?? '' ),
                 'price'      => $this->sanitize_price( $item['price'] ?? '' ),
                 'sale_price' => $this->sanitize_price( $item['sale_price'] ?? '' ),
+                'cta_label'  => sanitize_text_field( $item['cta_label'] ?? '' ),
+                'cta_url'    => esc_url_raw( $item['cta_url'] ?? '' ),
+                'target'     => in_array( $item['target'] ?? '', [ '_blank', '_self' ], true ) ? $item['target'] : '',
+                'rel'        => sanitize_text_field( $item['rel'] ?? '' ),
             ];
-            if ( $variant['price'] === '' && $variant['sale_price'] === '' ) {
+            if ( $variant['price'] === '' && $variant['sale_price'] === '' && $variant['cta_url'] === '' ) {
                 continue;
             }
             $clean[] = $variant;
@@ -188,5 +306,23 @@ class PWPL_Meta {
         }
 
         return $value;
+    }
+
+    private function sanitize_hex( $value ) {
+        $value = sanitize_text_field( $value );
+        $hex   = sanitize_hex_color( $value );
+        return $hex ? $hex : '';
+    }
+
+    private function sanitize_date( $value ) {
+        $value = sanitize_text_field( $value );
+        if ( $value === '' ) {
+            return '';
+        }
+        $timestamp = strtotime( $value );
+        if ( ! $timestamp ) {
+            return '';
+        }
+        return gmdate( 'Y-m-d', $timestamp );
     }
 }

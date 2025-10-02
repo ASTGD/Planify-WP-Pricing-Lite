@@ -1,0 +1,253 @@
+/* Planify WP Pricing Lite - theme tokens
+ * Customize this file to tweak colors, typography, and accents per theme.
+ */
+
+.pwpl-table {
+  --pwpl-bg: #ffffff;
+  --pwpl-border: rgba(226, 232, 240, 0.9);
+  --pwpl-text: #0f172a;
+  --pwpl-muted: #475569;
+  --pwpl-card-bg: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  --pwpl-card-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  --pwpl-card-shadow-hover: 0 24px 52px rgba(15, 23, 42, 0.12);
+  --pwpl-accent: #2563eb;
+  --pwpl-accent-strong: #1d4ed8;
+  --pwpl-accent-contrast: #ffffff;
+  --pwpl-sale: #dc2626;
+  --pwpl-tab-bg: #f8fafc;
+  --pwpl-tab-border: #d0d7e2;
+  --pwpl-tab-active-bg: var(--pwpl-accent);
+  --pwpl-tab-active-text: var(--pwpl-accent-contrast);
+  --pwpl-tab-badge-bg: rgba(59, 130, 246, 0.16);
+  --pwpl-tab-badge-color: #1d4ed8;
+  --pwpl-location-bg: rgba(37, 99, 235, 0.14);
+  --pwpl-location-text: var(--pwpl-accent);
+  --pwpl-badge-bg: rgba(14, 165, 233, 0.14);
+  --pwpl-badge-color: #075985;
+  --pwpl-badge-shadow-strength: 0;
+  --pwpl-badge-shadow-color: rgba(37, 99, 235, 0.28);
+  --pwpl-cta-bg: var(--pwpl-accent);
+  --pwpl-cta-hover-bg: var(--pwpl-accent-strong);
+  --pwpl-cta-color: var(--pwpl-accent-contrast);
+  --pwpl-cta-shadow: 0 18px 36px rgba(37, 99, 235, 0.25);
+  --pwpl-featured-border: var(--pwpl-accent);
+  --pwpl-featured-bg: var(--pwpl-accent);
+  --pwpl-featured-text: var(--pwpl-accent-contrast);
+}
+
+.pwpl-table--theme-warm {
+  --pwpl-bg: linear-gradient(180deg, #fff7ed 0%, #fde68a 100%);
+  --pwpl-border: rgba(253, 186, 116, 0.4);
+  --pwpl-text: #7c2d12;
+  --pwpl-muted: rgba(124, 45, 18, 0.7);
+  --pwpl-accent: #fb923c;
+  --pwpl-accent-strong: #f97316;
+  --pwpl-tab-bg: rgba(255, 244, 199, 0.65);
+  --pwpl-tab-border: rgba(245, 158, 11, 0.45);
+  --pwpl-tab-active-bg: #facc15;
+  --pwpl-tab-active-text: #7c2d12;
+  --pwpl-tab-badge-bg: rgba(249, 115, 22, 0.22);
+  --pwpl-tab-badge-color: #7c2d12;
+  --pwpl-location-bg: rgba(234, 179, 8, 0.3);
+  --pwpl-location-text: #92400e;
+  --pwpl-badge-bg: rgba(249, 115, 22, 0.2);
+  --pwpl-badge-color: #7c2d12;
+  --pwpl-badge-shadow-color: rgba(249, 115, 22, 0.32);
+  --pwpl-cta-bg: #facc15;
+  --pwpl-cta-hover-bg: #f59e0b;
+  --pwpl-cta-color: #7c2d12;
+  --pwpl-cta-shadow: 0 18px 36px rgba(234, 179, 8, 0.3);
+  --pwpl-featured-border: #f97316;
+  --pwpl-featured-bg: #facc15;
+  --pwpl-featured-text: #7c2d12;
+}
+
+.pwpl-plan.pwpl-theme--warm {
+  --pwpl-card-bg: linear-gradient(180deg, #fff7ed 0%, #fde68a 100%);
+  --pwpl-border: rgba(253, 186, 116, 0.4);
+  --pwpl-text: #7c2d12;
+  --pwpl-muted: rgba(124, 45, 18, 0.7);
+  --pwpl-accent: #fb923c;
+  --pwpl-accent-strong: #f97316;
+  --pwpl-sale: #b91c1c;
+  --pwpl-badge-bg: rgba(249, 115, 22, 0.2);
+  --pwpl-badge-color: #7c2d12;
+  --pwpl-location-bg: rgba(234, 179, 8, 0.3);
+  --pwpl-location-text: #92400e;
+  --pwpl-cta-bg: #facc15;
+  --pwpl-cta-hover-bg: #f59e0b;
+  --pwpl-cta-color: #7c2d12;
+  --pwpl-cta-shadow: 0 18px 36px rgba(234, 179, 8, 0.3);
+}
+
+.pwpl-table--theme-blue {
+  --pwpl-bg: linear-gradient(180deg, #1e3a8a 0%, #1d4ed8 55%, #1e40af 100%);
+  --pwpl-border: rgba(96, 165, 250, 0.35);
+  --pwpl-text: #f8fafc;
+  --pwpl-muted: rgba(226, 232, 240, 0.75);
+  --pwpl-accent: #38bdf8;
+  --pwpl-accent-strong: #0ea5e9;
+  --pwpl-tab-bg: rgba(15, 23, 42, 0.5);
+  --pwpl-tab-border: rgba(96, 165, 250, 0.45);
+  --pwpl-tab-active-bg: #facc15;
+  --pwpl-tab-active-text: #1e293b;
+  --pwpl-tab-badge-bg: rgba(56, 189, 248, 0.25);
+  --pwpl-tab-badge-color: #e0f2fe;
+  --pwpl-location-bg: rgba(37, 99, 235, 0.35);
+  --pwpl-location-text: #e0f2fe;
+  --pwpl-badge-bg: rgba(56, 189, 248, 0.22);
+  --pwpl-badge-color: #e0f2fe;
+  --pwpl-badge-shadow-color: rgba(56, 189, 248, 0.35);
+  --pwpl-cta-bg: #facc15;
+  --pwpl-cta-hover-bg: #eab308;
+  --pwpl-cta-color: #1e293b;
+  --pwpl-cta-shadow: 0 20px 42px rgba(8, 145, 178, 0.35);
+  --pwpl-featured-border: #38bdf8;
+  --pwpl-featured-bg: #facc15;
+  --pwpl-featured-text: #1e293b;
+}
+
+.pwpl-plan.pwpl-theme--blue {
+  --pwpl-card-bg: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
+  --pwpl-border: rgba(96, 165, 250, 0.35);
+  --pwpl-text: #f8fafc;
+  --pwpl-muted: rgba(226, 232, 240, 0.75);
+  --pwpl-accent: #38bdf8;
+  --pwpl-accent-strong: #0ea5e9;
+  --pwpl-sale: #fca5a5;
+  --pwpl-badge-bg: rgba(56, 189, 248, 0.22);
+  --pwpl-badge-color: #e0f2fe;
+  --pwpl-location-bg: rgba(37, 99, 235, 0.35);
+  --pwpl-location-text: #e0f2fe;
+  --pwpl-cta-bg: #facc15;
+  --pwpl-cta-hover-bg: #eab308;
+  --pwpl-cta-color: #1e293b;
+  --pwpl-cta-shadow: 0 20px 42px rgba(8, 145, 178, 0.35);
+}
+
+.pwpl-table--theme-modern-discount {
+  --pwpl-bg: radial-gradient(125% 180% at 50% 0%, #111827 0%, #020617 100%);
+  --pwpl-border: rgba(59, 130, 246, 0.25);
+  --pwpl-text: #f8fafc;
+  --pwpl-muted: rgba(203, 213, 225, 0.78);
+  --pwpl-accent: #60a5fa;
+  --pwpl-accent-strong: #3b82f6;
+  --pwpl-accent-contrast: #0f172a;
+  --pwpl-tab-bg: rgba(2, 6, 23, 0.7);
+  --pwpl-tab-border: rgba(96, 165, 250, 0.4);
+  --pwpl-tab-active-bg: #facc15;
+  --pwpl-tab-active-text: #1f2937;
+  --pwpl-tab-badge-bg: rgba(250, 204, 21, 0.36);
+  --pwpl-tab-badge-color: #1f2937;
+  --pwpl-location-bg: rgba(96, 165, 250, 0.22);
+  --pwpl-location-text: #bfdbfe;
+  --pwpl-badge-bg: rgba(250, 204, 21, 0.32);
+  --pwpl-badge-color: #1f2937;
+  --pwpl-badge-shadow-color: rgba(250, 204, 21, 0.4);
+  --pwpl-cta-bg: #facc15;
+  --pwpl-cta-hover-bg: #f59e0b;
+  --pwpl-cta-color: #1f2937;
+  --pwpl-cta-shadow: 0 24px 40px rgba(250, 204, 21, 0.35);
+  --pwpl-featured-border: #facc15;
+  --pwpl-featured-bg: #facc15;
+  --pwpl-featured-text: #1f2937;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount {
+  --pwpl-card-bg: radial-gradient(120% 140% at 50% 0%, #1f2937 0%, #0f172a 45%, #0b1120 100%);
+  --pwpl-border: rgba(59, 130, 246, 0.25);
+  --pwpl-text: #f8fafc;
+  --pwpl-muted: rgba(203, 213, 225, 0.78);
+  --pwpl-accent: #60a5fa;
+  --pwpl-accent-strong: #3b82f6;
+  --pwpl-accent-contrast: #0f172a;
+  --pwpl-sale: #f97316;
+  --pwpl-tab-bg: rgba(2, 6, 23, 0.7);
+  --pwpl-tab-border: rgba(96, 165, 250, 0.4);
+  --pwpl-tab-active-bg: #facc15;
+  --pwpl-tab-active-text: #1f2937;
+  --pwpl-location-bg: rgba(96, 165, 250, 0.22);
+  --pwpl-location-text: #bfdbfe;
+  --pwpl-badge-bg: rgba(250, 204, 21, 0.32);
+  --pwpl-badge-color: #1f2937;
+  --pwpl-badge-shadow-color: rgba(250, 204, 21, 0.4);
+  --pwpl-cta-bg: #facc15;
+  --pwpl-cta-hover-bg: #f59e0b;
+  --pwpl-cta-color: #1f2937;
+  --pwpl-cta-shadow: 0 24px 40px rgba(250, 204, 21, 0.35);
+}
+
+.pwpl-plan.pwpl-theme--modern-discount {
+  position: relative;
+  overflow: hidden;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(14, 116, 144, 0.2) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__header-meta {
+  align-items: flex-start;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__location {
+  background: rgba(96, 165, 250, 0.28);
+  color: #bfdbfe;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__badge {
+  backdrop-filter: blur(8px);
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__title {
+  font-size: 1.45rem;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__pricing {
+  font-size: 1.6rem;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__cta {
+  gap: 12px;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__cta-button {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 999px;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__specs {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.65) 0%, rgba(15, 23, 42, 0.35) 100%);
+  border-radius: 16px;
+  padding: 18px;
+  gap: 12px;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__specs li {
+  position: relative;
+  padding-left: 22px;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__specs li::before {
+  content: '✔';
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 0.9rem;
+  color: #facc15;
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__spec-label,
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__spec-value {
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.pwpl-plan.pwpl-theme--modern-discount .pwpl-plan__price-original {
+  color: rgba(226, 232, 240, 0.6);
+}

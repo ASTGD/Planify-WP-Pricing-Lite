@@ -122,9 +122,296 @@
         return selection;
     }
 
+    function parseJSONAttribute(element, attribute, fallback) {
+        if (!element) {
+            return fallback;
+        }
+        const cacheKey = '__pwpl' + attribute.charAt(0).toUpperCase() + attribute.slice(1);
+        if (Object.prototype.hasOwnProperty.call(element, cacheKey)) {
+            return element[cacheKey];
+        }
+        let value = fallback;
+        const raw = element.getAttribute('data-' + attribute.replace(/[A-Z]/g, function(match){ return '-' + match.toLowerCase(); })) || '';
+        if (raw) {
+            try {
+                value = JSON.parse(raw);
+            } catch (err) {
+                value = fallback;
+            }
+        }
+        element[cacheKey] = value || fallback;
+        return element[cacheKey];
+    }
+
+    function getTableBadges(table) {
+        return parseJSONAttribute(table, 'badges', {});
+    }
+
+    function getDimensionLabels(table) {
+        return parseJSONAttribute(table, 'dimensionLabels', {});
+    }
+
+    function getPlanBadges(plan) {
+        return parseJSONAttribute(plan, 'badgesOverride', {});
+    }
+
+    function parseBadgeDate(dateStr, endOfDay) {
+        if (!dateStr) {
+            return null;
+        }
+        const parts = dateStr.split('-');
+        if (parts.length !== 3) {
+            return null;
+        }
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+            return null;
+        }
+        return new Date(year, month, day, endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0);
+    }
+
+    function badgeIsActive(badge) {
+        if (!badge || typeof badge !== 'object') {
+            return false;
+        }
+        const now = new Date();
+        const start = parseBadgeDate(badge.start || '', false);
+        if (start && start.getTime() > now.getTime()) {
+            return false;
+        }
+        const end = parseBadgeDate(badge.end || '', true);
+        if (end && end.getTime() < now.getTime()) {
+            return false;
+        }
+        return true;
+    }
+
+    function hexToRgba(hex, alpha) {
+        if (!hex) {
+            return '';
+        }
+        var value = String(hex).trim();
+        if (!value) {
+            return '';
+        }
+        if (value[0] === '#') {
+            value = value.slice(1);
+        }
+        if (value.length === 3) {
+            value = value[0] + value[0] + value[1] + value[1] + value[2] + value[2];
+        }
+        if (value.length !== 6 || /[^0-9a-f]/i.test(value)) {
+            return '';
+        }
+        var intVal = parseInt(value, 16);
+        var r = (intVal >> 16) & 255;
+        var g = (intVal >> 8) & 255;
+        var b = intVal & 255;
+        var a = typeof alpha === 'number' ? Math.min(Math.max(alpha, 0), 1) : 0.35;
+        return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + a + ')';
+    }
+
+    function findBadgeForSlug(collection, slug) {
+        if (!Array.isArray(collection)) {
+            return null;
+        }
+        for (let index = 0; index < collection.length; index++) {
+            const badge = collection[index];
+            if (!badge || typeof badge !== 'object') {
+                continue;
+            }
+            if (badge.slug !== slug) {
+                continue;
+            }
+            if (!badgeIsActive(badge)) {
+                continue;
+            }
+            return badge;
+        }
+        return null;
+    }
+
+    function resolveBadge(selection, override, tableBadges) {
+        const dimensions = ['period', 'location', 'platform'];
+        const overridePriority = Array.isArray(override.priority) ? override.priority.filter(function(item){
+            return dimensions.indexOf(item) !== -1;
+        }) : [];
+        const tablePriority = Array.isArray(tableBadges.priority) ? tableBadges.priority.filter(function(item){
+            return dimensions.indexOf(item) !== -1;
+        }) : [];
+        const combined = overridePriority.length ? overridePriority : tablePriority;
+        const priority = [];
+        combined.concat(dimensions).forEach(function(dimension){
+            if (priority.indexOf(dimension) === -1) {
+                priority.push(dimension);
+            }
+        });
+
+        for (let i = 0; i < priority.length; i++) {
+            const dimension = priority[i];
+            const slug = selection[dimension];
+            if (!slug) {
+                continue;
+            }
+            const overrideBadge = findBadgeForSlug(override[dimension], slug);
+            if (overrideBadge) {
+                return overrideBadge;
+            }
+            const tableBadge = findBadgeForSlug(tableBadges[dimension], slug);
+            if (tableBadge) {
+                return tableBadge;
+            }
+        }
+        return null;
+    }
+
+    function updateBadge(plan, selection, tableBadges) {
+        const badgeEl = plan.querySelector('[data-pwpl-badge]');
+        if (!badgeEl) {
+            return;
+        }
+
+        const toneClasses = ['pwpl-plan__badge--tone-success', 'pwpl-plan__badge--tone-info', 'pwpl-plan__badge--tone-warning', 'pwpl-plan__badge--tone-danger', 'pwpl-plan__badge--tone-neutral'];
+        toneClasses.forEach(function(cls){ badgeEl.classList.remove(cls); });
+
+        const badge = resolveBadge(selection, getPlanBadges(plan), tableBadges);
+
+        const iconEl = badgeEl.querySelector('[data-pwpl-badge-icon]');
+        const labelEl = badgeEl.querySelector('[data-pwpl-badge-label]');
+
+        if (!badge) {
+            badgeEl.hidden = true;
+            badgeEl.dataset.badgeColor = '';
+            badgeEl.dataset.badgeText = '';
+            badgeEl.dataset.badgeTone = '';
+            badgeEl.style.removeProperty('--pwpl-badge-bg');
+            badgeEl.style.removeProperty('--pwpl-badge-color');
+            if (iconEl) {
+                iconEl.textContent = '';
+                iconEl.hidden = true;
+            }
+            if (labelEl) {
+                labelEl.textContent = '';
+            }
+            return;
+        }
+
+        badgeEl.hidden = false;
+        const color = badge.color || '';
+        const textColor = badge.text_color || '';
+        const tone = badge.tone || '';
+
+        badgeEl.dataset.badgeColor = color;
+        badgeEl.dataset.badgeText = textColor;
+        badgeEl.dataset.badgeTone = tone;
+
+        if (color) {
+            badgeEl.style.setProperty('--pwpl-badge-bg', color);
+            const glow = hexToRgba(color, 0.4);
+            if (glow) {
+                badgeEl.style.setProperty('--pwpl-badge-shadow-color', glow);
+            }
+        } else {
+            badgeEl.style.removeProperty('--pwpl-badge-bg');
+            badgeEl.style.removeProperty('--pwpl-badge-shadow-color');
+        }
+        if (textColor) {
+            badgeEl.style.setProperty('--pwpl-badge-color', textColor);
+        } else {
+            badgeEl.style.removeProperty('--pwpl-badge-color');
+        }
+
+        // Apply tone class only when no custom colors are set.
+        if (!color && !textColor && tone) {
+            badgeEl.classList.add('pwpl-plan__badge--tone-' + tone);
+        }
+
+        if (iconEl) {
+            iconEl.textContent = badge.icon || '';
+            iconEl.hidden = !badge.icon;
+        }
+
+        if (labelEl && badge.label) {
+            labelEl.textContent = badge.label;
+        }
+    }
+
+    function updateLocation(plan, selection, dimensionLabels) {
+        const locationEl = plan.querySelector('[data-pwpl-location]');
+        if (!locationEl) {
+            return;
+        }
+        const slug = selection.location || '';
+        const labels = dimensionLabels.location || {};
+        if (!slug || !labels[slug]) {
+            locationEl.hidden = true;
+            locationEl.textContent = '';
+        } else {
+            locationEl.hidden = false;
+            locationEl.textContent = labels[slug];
+        }
+    }
+
+    function updateCta(plan, variant) {
+        const ctaButton = plan.querySelector('[data-pwpl-cta-button]');
+        const ctaLabel = plan.querySelector('[data-pwpl-cta-label]');
+        if (!ctaButton || !ctaLabel) {
+            return;
+        }
+
+        if (!variant || !variant.cta_label || !variant.cta_url) {
+            ctaButton.hidden = true;
+            ctaButton.removeAttribute('href');
+            ctaButton.removeAttribute('target');
+            ctaButton.removeAttribute('rel');
+            ctaLabel.textContent = '';
+            return;
+        }
+
+        ctaButton.hidden = false;
+        ctaButton.setAttribute('href', variant.cta_url);
+        ctaLabel.textContent = variant.cta_label;
+
+        if (variant.target && (variant.target === '_blank' || variant.target === '_self')) {
+            ctaButton.setAttribute('target', variant.target);
+            if (variant.target === '_blank' && !variant.rel) {
+                ctaButton.setAttribute('rel', 'noopener noreferrer');
+            }
+        } else {
+            ctaButton.removeAttribute('target');
+        }
+
+        if (variant.rel) {
+            ctaButton.setAttribute('rel', variant.rel);
+        } else if (variant.target !== '_blank') {
+            ctaButton.removeAttribute('rel');
+        }
+    }
+
+    function updateBilling(plan, selection, dimensionLabels) {
+        const billingEl = plan.querySelector('[data-pwpl-billing]');
+        if (!billingEl) {
+            return;
+        }
+        const periodSlug = selection.period || '';
+        const labels = dimensionLabels.period || {};
+        if (!periodSlug || !labels[periodSlug]) {
+            billingEl.hidden = true;
+            billingEl.textContent = '';
+            return;
+        }
+        billingEl.hidden = false;
+        const label = String(labels[periodSlug]);
+        billingEl.textContent = __( 'Billed' ) + ' ' + label;
+    }
+
     function updateTable(table) {
         const selection = currentSelection(table);
         const plans = table.querySelectorAll('.pwpl-plan');
+        const tableBadges = getTableBadges(table);
+        const dimensionLabels = getDimensionLabels(table);
         plans.forEach(function(plan){
             const variants = getVariants(plan);
             const best = resolveVariant(variants, selection);
@@ -132,6 +419,10 @@
             if (priceEl) {
                 priceEl.innerHTML = buildPriceHTML(best);
             }
+            updateBadge(plan, selection, tableBadges);
+            updateLocation(plan, selection, dimensionLabels);
+            updateCta(plan, best);
+            updateBilling(plan, selection, dimensionLabels);
         });
     }
 
