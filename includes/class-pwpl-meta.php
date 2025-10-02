@@ -208,6 +208,9 @@ class PWPL_Meta {
             }
         }
 
+        $shadow = isset( $value['shadow'] ) ? (int) $value['shadow'] : 0;
+        $shadow = max( 0, min( $shadow, 60 ) );
+
         $priority = isset( $value['priority'] ) && is_array( $value['priority'] )
             ? array_values( array_intersect( array_map( 'sanitize_key', $value['priority'] ), $dimensions ) )
             : [];
@@ -220,6 +223,7 @@ class PWPL_Meta {
         $priority = array_values( array_unique( array_merge( $priority, $dimensions ) ) );
 
         $clean['priority'] = $priority;
+        $clean['shadow']   = $shadow;
 
         return $clean;
     }

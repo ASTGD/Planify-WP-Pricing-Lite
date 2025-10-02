@@ -188,6 +188,31 @@
         return true;
     }
 
+    function hexToRgba(hex, alpha) {
+        if (!hex) {
+            return '';
+        }
+        var value = String(hex).trim();
+        if (!value) {
+            return '';
+        }
+        if (value[0] === '#') {
+            value = value.slice(1);
+        }
+        if (value.length === 3) {
+            value = value[0] + value[0] + value[1] + value[1] + value[2] + value[2];
+        }
+        if (value.length !== 6 || /[^0-9a-f]/i.test(value)) {
+            return '';
+        }
+        var intVal = parseInt(value, 16);
+        var r = (intVal >> 16) & 255;
+        var g = (intVal >> 8) & 255;
+        var b = intVal & 255;
+        var a = typeof alpha === 'number' ? Math.min(Math.max(alpha, 0), 1) : 0.35;
+        return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + a + ')';
+    }
+
     function findBadgeForSlug(collection, slug) {
         if (!Array.isArray(collection)) {
             return null;
@@ -284,8 +309,13 @@
 
         if (color) {
             badgeEl.style.setProperty('--pwpl-badge-bg', color);
+            const glow = hexToRgba(color, 0.4);
+            if (glow) {
+                badgeEl.style.setProperty('--pwpl-badge-shadow-color', glow);
+            }
         } else {
             badgeEl.style.removeProperty('--pwpl-badge-bg');
+            badgeEl.style.removeProperty('--pwpl-badge-shadow-color');
         }
         if (textColor) {
             badgeEl.style.setProperty('--pwpl-badge-color', textColor);

@@ -135,9 +135,16 @@ class PWPL_Shortcode {
         $table_theme = get_post_meta( $table_id, PWPL_Meta::TABLE_THEME, true );
         $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
 
+        $badge_shadow = isset( $table_badges['shadow'] ) ? (int) $table_badges['shadow'] : 0;
+        $badge_shadow = max( 0, min( $badge_shadow, 60 ) );
+        $table_style_attr = '';
+        if ( $badge_shadow > 0 ) {
+            $table_style_attr = ' style="--pwpl-badge-shadow-strength:' . esc_attr( $badge_shadow ) . ';"';
+        }
+
         ob_start();
         ?>
-        <div class="pwpl-table pwpl-table--theme-<?php echo esc_attr( $table_theme ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } ?>>
+        <div class="pwpl-table pwpl-table--theme-<?php echo esc_attr( $table_theme ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } echo $table_style_attr; ?>>
             <div class="pwpl-table__header">
                 <h3 class="pwpl-table__title"><?php echo $table_title; ?></h3>
             </div>
@@ -147,7 +154,7 @@ class PWPL_Shortcode {
                     <?php foreach ( $values as $index => $item ) :
                         $is_active = $index === 0 ? ' is-active' : '';
                         $tab_badge_raw = $this->match_badge_for_slug( $item['slug'], $table_badges[ $dimension ] ?? [] );
-                        $tab_badge     = $this->format_badge_for_output( $tab_badge_raw );
+                        $tab_badge     = $this->format_badge_for_output( $tab_badge_raw, $badge_shadow );
                         ?>
                         <button type="button" class="pwpl-tab<?php echo $is_active; ?>" data-value="<?php echo esc_attr( $item['slug'] ); ?>" aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>">
                             <span class="pwpl-tab__label"><?php echo esc_html( $item['label'] ); ?></span>
@@ -204,7 +211,7 @@ class PWPL_Shortcode {
                     $variant = $this->resolve_variant( $variants, $active_values );
                     $price_html = $this->build_price_html( $variant, $settings );
                     $badge        = $this->resolve_badge( $active_values, $override_badges, $table_badges );
-                    $badge_view   = $this->format_badge_for_output( $badge );
+                    $badge_view   = $this->format_badge_for_output( $badge, $badge_shadow );
                     $cta          = $this->prepare_cta( $variant );
                     $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );
 
@@ -228,6 +235,9 @@ class PWPL_Shortcode {
                                     <span class="pwpl-plan__badge-icon" data-pwpl-badge-icon aria-hidden="true"><?php echo esc_html( $badge_view['icon'] ); ?></span>
                                     <span class="pwpl-plan__badge-label" data-pwpl-badge-label><?php echo esc_html( $badge_view['label'] ); ?></span>
                                 </span>
+                                <?php if ( $is_featured ) : ?>
+                                    <span class="pwpl-plan__featured-tag" data-pwpl-featured-label><?php esc_html_e( 'Featured', 'planify-wp-pricing-lite' ); ?></span>
+                                <?php endif; ?>
                             </div>
                             <h4 class="pwpl-plan__title"><?php echo $plan_title; ?></h4>
                             <div class="pwpl-plan__pricing" data-pwpl-price>
@@ -480,7 +490,7 @@ class PWPL_Shortcode {
         }
     }
 
-    private function format_badge_for_output( $badge ) {
+    private function format_badge_for_output( $badge, $shadow = 0 ) {
         $defaults = [
             'label'      => '',
             'color'      => '',
@@ -507,6 +517,15 @@ class PWPL_Shortcode {
         if ( $text_color ) {
             $style .= '--pwpl-badge-color:' . $text_color . ';';
         }
+        if ( $shadow > 0 ) {
+            $style .= '--pwpl-badge-shadow-strength:' . $shadow . ';';
+        }
+        if ( $color ) {
+            $rgba = $this->hex_to_rgba( $color, 0.35 );
+            if ( $rgba ) {
+                $style .= '--pwpl-badge-shadow-color:' . $rgba . ';';
+            }
+        }
 
         $has_custom = ( $color !== '' ) || ( $text_color !== '' );
 
@@ -521,6 +540,29 @@ class PWPL_Shortcode {
             'style'      => $style,
             'hidden'     => false,
         ];
+    }
+
+    private function hex_to_rgba( $hex, $alpha = 0.35 ) {
+        $hex = trim( (string) $hex );
+        if ( '' === $hex ) {
+            return '';
+        }
+        if ( strpos( $hex, '#' ) === 0 ) {
+            $hex = substr( $hex, 1 );
+        }
+        if ( strlen( $hex ) === 3 ) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+        if ( strlen( $hex ) !== 6 || ! ctype_xdigit( $hex ) ) {
+            return '';
+        }
+        $int = hexdec( $hex );
+        $r   = ( $int >> 16 ) & 255;
+        $g   = ( $int >> 8 ) & 255;
+        $b   = $int & 255;
+
+        $alpha = max( 0, min( (float) $alpha, 1 ) );
+        return sprintf( 'rgba(%d, %d, %d, %.3f)', $r, $g, $b, $alpha );
     }
 
     private function get_dimension_label( $dimension, $slug, array $labels ) {

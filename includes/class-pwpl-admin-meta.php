@@ -362,6 +362,9 @@ class PWPL_Admin_Meta {
             $badges = [];
         }
 
+        $shadow = isset( $badges['shadow'] ) ? (int) $badges['shadow'] : 0;
+        $shadow = max( 0, min( $shadow, 60 ) );
+
         $groups = [
             'period'   => __( 'Period promotions', 'planify-wp-pricing-lite' ),
             'location' => __( 'Location promotions', 'planify-wp-pricing-lite' ),
@@ -371,6 +374,14 @@ class PWPL_Admin_Meta {
         ?>
         <div class="pwpl-meta pwpl-meta--badges">
             <p class="description"><?php esc_html_e( 'Highlight seasonal or location-based offers. Badges appear on matching plans according to priority.', 'planify-wp-pricing-lite' ); ?></p>
+            <div class="pwpl-field pwpl-badge-shadow">
+                <label for="pwpl_table_badges_shadow"><strong><?php esc_html_e( 'Badge shadow intensity', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <div class="pwpl-badge-shadow__controls">
+                    <input type="range" id="pwpl_table_badges_shadow" name="pwpl_table_badges[shadow]" min="0" max="60" step="1" value="<?php echo esc_attr( $shadow ); ?>" data-pwpl-shadow-range />
+                    <output for="pwpl_table_badges_shadow" data-pwpl-shadow-value><?php echo esc_html( $shadow ); ?></output>
+                </div>
+                <p class="description"><?php esc_html_e( '0 disables the glow. Increase the value to add more halo around badges—perfect for darker themes.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
             <?php foreach ( $groups as $dimension => $label ) :
                 $rows = isset( $badges[ $dimension ] ) && is_array( $badges[ $dimension ] ) ? $badges[ $dimension ] : [];
                 $this->render_badge_section( 'table', $dimension, $label, $rows, $options[ $dimension ] ?? [] );

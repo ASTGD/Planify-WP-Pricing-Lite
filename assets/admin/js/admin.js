@@ -146,5 +146,10 @@
 
     togglePlanBadgeFields();
     $(document).on('change', '#pwpl_plan_badges_override_enabled', togglePlanBadgeFields);
+
+    $(document).on('input change', '[data-pwpl-shadow-range]', function(){
+      var value = $(this).val();
+      $(this).closest('.pwpl-badge-shadow').find('[data-pwpl-shadow-value]').text(value);
+    });
   });
 })(jQuery);

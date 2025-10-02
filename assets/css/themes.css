@@ -18,15 +18,21 @@
   --pwpl-tab-border: #d0d7e2;
   --pwpl-tab-active-bg: var(--pwpl-accent);
   --pwpl-tab-active-text: var(--pwpl-accent-contrast);
+  --pwpl-tab-badge-bg: rgba(59, 130, 246, 0.16);
+  --pwpl-tab-badge-color: #1d4ed8;
   --pwpl-location-bg: rgba(37, 99, 235, 0.14);
   --pwpl-location-text: var(--pwpl-accent);
   --pwpl-badge-bg: rgba(14, 165, 233, 0.14);
   --pwpl-badge-color: #075985;
-  --pwpl-badge-shadow: none;
+  --pwpl-badge-shadow-strength: 0;
+  --pwpl-badge-shadow-color: rgba(37, 99, 235, 0.28);
   --pwpl-cta-bg: var(--pwpl-accent);
   --pwpl-cta-hover-bg: var(--pwpl-accent-strong);
   --pwpl-cta-color: var(--pwpl-accent-contrast);
   --pwpl-cta-shadow: 0 18px 36px rgba(37, 99, 235, 0.25);
+  --pwpl-featured-border: var(--pwpl-accent);
+  --pwpl-featured-bg: var(--pwpl-accent);
+  --pwpl-featured-text: var(--pwpl-accent-contrast);
 }
 
 .pwpl-table--theme-warm {
@@ -40,14 +46,20 @@
   --pwpl-tab-border: rgba(245, 158, 11, 0.45);
   --pwpl-tab-active-bg: #facc15;
   --pwpl-tab-active-text: #7c2d12;
+  --pwpl-tab-badge-bg: rgba(249, 115, 22, 0.22);
+  --pwpl-tab-badge-color: #7c2d12;
   --pwpl-location-bg: rgba(234, 179, 8, 0.3);
   --pwpl-location-text: #92400e;
   --pwpl-badge-bg: rgba(249, 115, 22, 0.2);
   --pwpl-badge-color: #7c2d12;
+  --pwpl-badge-shadow-color: rgba(249, 115, 22, 0.32);
   --pwpl-cta-bg: #facc15;
   --pwpl-cta-hover-bg: #f59e0b;
   --pwpl-cta-color: #7c2d12;
   --pwpl-cta-shadow: 0 18px 36px rgba(234, 179, 8, 0.3);
+  --pwpl-featured-border: #f97316;
+  --pwpl-featured-bg: #facc15;
+  --pwpl-featured-text: #7c2d12;
 }
 
 .pwpl-plan.pwpl-theme--warm {
@@ -79,14 +91,20 @@
   --pwpl-tab-border: rgba(96, 165, 250, 0.45);
   --pwpl-tab-active-bg: #facc15;
   --pwpl-tab-active-text: #1e293b;
+  --pwpl-tab-badge-bg: rgba(56, 189, 248, 0.25);
+  --pwpl-tab-badge-color: #e0f2fe;
   --pwpl-location-bg: rgba(37, 99, 235, 0.35);
   --pwpl-location-text: #e0f2fe;
   --pwpl-badge-bg: rgba(56, 189, 248, 0.22);
   --pwpl-badge-color: #e0f2fe;
+  --pwpl-badge-shadow-color: rgba(56, 189, 248, 0.35);
   --pwpl-cta-bg: #facc15;
   --pwpl-cta-hover-bg: #eab308;
   --pwpl-cta-color: #1e293b;
   --pwpl-cta-shadow: 0 20px 42px rgba(8, 145, 178, 0.35);
+  --pwpl-featured-border: #38bdf8;
+  --pwpl-featured-bg: #facc15;
+  --pwpl-featured-text: #1e293b;
 }
 
 .pwpl-plan.pwpl-theme--blue {
@@ -119,15 +137,20 @@
   --pwpl-tab-border: rgba(96, 165, 250, 0.4);
   --pwpl-tab-active-bg: #facc15;
   --pwpl-tab-active-text: #1f2937;
+  --pwpl-tab-badge-bg: rgba(250, 204, 21, 0.36);
+  --pwpl-tab-badge-color: #1f2937;
   --pwpl-location-bg: rgba(96, 165, 250, 0.22);
   --pwpl-location-text: #bfdbfe;
-  --pwpl-badge-bg: rgba(250, 204, 21, 0.22);
-  --pwpl-badge-color: #fef3c7;
-  --pwpl-badge-shadow: 0 6px 18px rgba(250, 204, 21, 0.35);
+  --pwpl-badge-bg: rgba(250, 204, 21, 0.32);
+  --pwpl-badge-color: #1f2937;
+  --pwpl-badge-shadow-color: rgba(250, 204, 21, 0.4);
   --pwpl-cta-bg: #facc15;
   --pwpl-cta-hover-bg: #f59e0b;
   --pwpl-cta-color: #1f2937;
   --pwpl-cta-shadow: 0 24px 40px rgba(250, 204, 21, 0.35);
+  --pwpl-featured-border: #facc15;
+  --pwpl-featured-bg: #facc15;
+  --pwpl-featured-text: #1f2937;
 }
 
 .pwpl-plan.pwpl-theme--modern-discount {
@@ -139,15 +162,15 @@
   --pwpl-accent-strong: #3b82f6;
   --pwpl-accent-contrast: #0f172a;
   --pwpl-sale: #f97316;
-  --pwpl-tab-bg: rgba(15, 23, 42, 0.65);
-  --pwpl-tab-border: rgba(96, 165, 250, 0.3);
+  --pwpl-tab-bg: rgba(2, 6, 23, 0.7);
+  --pwpl-tab-border: rgba(96, 165, 250, 0.4);
   --pwpl-tab-active-bg: #facc15;
   --pwpl-tab-active-text: #1f2937;
   --pwpl-location-bg: rgba(96, 165, 250, 0.22);
   --pwpl-location-text: #bfdbfe;
-  --pwpl-badge-bg: rgba(250, 204, 21, 0.22);
-  --pwpl-badge-color: #fef3c7;
-  --pwpl-badge-shadow: 0 6px 18px rgba(250, 204, 21, 0.35);
+  --pwpl-badge-bg: rgba(250, 204, 21, 0.32);
+  --pwpl-badge-color: #1f2937;
+  --pwpl-badge-shadow-color: rgba(250, 204, 21, 0.4);
   --pwpl-cta-bg: #facc15;
   --pwpl-cta-hover-bg: #f59e0b;
   --pwpl-cta-color: #1f2937;
