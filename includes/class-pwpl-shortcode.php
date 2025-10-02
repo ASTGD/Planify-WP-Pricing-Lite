@@ -25,6 +25,10 @@ class PWPL_Shortcode {
         if ( file_exists( $css ) ) {
             wp_enqueue_style( 'pwpl-frontend', PWPL_URL . 'assets/css/frontend.css', [], filemtime( $css ) );
         }
+        $css_themes = PWPL_DIR . 'assets/css/themes.css';
+        if ( file_exists( $css_themes ) ) {
+            wp_enqueue_style( 'pwpl-frontend-themes', PWPL_URL . 'assets/css/themes.css', [ 'pwpl-frontend' ], filemtime( $css_themes ) );
+        }
         if ( file_exists( $js ) ) {
             wp_enqueue_script( 'pwpl-frontend', PWPL_URL . 'assets/js/frontend.js', [], filemtime( $js ), true );
         }

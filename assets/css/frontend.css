@@ -1,11 +1,12 @@
 /* Planify WP Pricing Lite - frontend styles */
 .pwpl-table {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--pwpl-border, #e2e8f0);
   border-radius: 12px;
   padding: 24px;
-  background: #fff;
+  background: var(--pwpl-bg, #fff);
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   margin: 32px 0;
+  color: var(--pwpl-text, #0f172a);
 }
 
 .pwpl-table__title {
@@ -23,8 +24,8 @@
 }
 
 .pwpl-tab {
-  border: 1px solid #d1d5db;
-  background: #f8fafc;
+  border: 1px solid var(--pwpl-tab-border, #d1d5db);
+  background: var(--pwpl-tab-bg, #f8fafc);
   border-radius: 999px;
   padding: 6px 16px;
   font-size: 0.875rem;
@@ -34,9 +35,9 @@
 
 .pwpl-tab:hover,
 .pwpl-tab.is-active {
-  background: #2563eb;
-  border-color: #2563eb;
-  color: #fff;
+  background: var(--pwpl-tab-active-bg, #2563eb);
+  border-color: var(--pwpl-tab-active-bg, #2563eb);
+  color: var(--pwpl-tab-active-text, #fff);
 }
 
 .pwpl-plan-rail-wrapper {
@@ -59,7 +60,7 @@
   flex: 0 0 260px;
   border-radius: 12px;
   padding: 20px;
-  background: #f8fafc;
+  background: var(--pwpl-card-bg, #f8fafc);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -96,8 +97,8 @@
 
 .pwpl-plan-nav button {
   pointer-events: auto;
-  background: rgba(15, 23, 42, 0.65);
-  color: #fff;
+  background: var(--pwpl-arrow-bg, rgba(15, 23, 42, 0.65));
+  color: var(--pwpl-arrow-text, #fff);
   border: none;
   width: 36px;
   height: 36px;
@@ -110,7 +111,7 @@
 
 .pwpl-plan-nav button:hover,
 .pwpl-plan-nav button:focus {
-  background: rgba(37, 99, 235, 0.85);
+  background: var(--pwpl-arrow-hover-bg, rgba(37, 99, 235, 0.85));
   outline: none;
 }
 
@@ -134,7 +135,7 @@
 }
 
 .pwpl-plan__price-sale {
-  color: #dc2626;
+  color: var(--pwpl-sale, #dc2626);
 }
 
 .pwpl-plan__specs {
@@ -154,11 +155,11 @@
 
 .pwpl-plan__spec-label {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--pwpl-text, #0f172a);
 }
 
 .pwpl-plan__spec-value {
-  color: #475569;
+  color: var(--pwpl-muted, #475569);
 }
 
 /* Themes */
