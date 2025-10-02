@@ -293,7 +293,8 @@
             badgeEl.style.removeProperty('--pwpl-badge-color');
         }
 
-        if (tone) {
+        // Apply tone class only when no custom colors are set.
+        if (!color && !textColor && tone) {
             badgeEl.classList.add('pwpl-plan__badge--tone-' + tone);
         }
 

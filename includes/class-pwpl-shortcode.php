@@ -146,7 +146,7 @@ class PWPL_Shortcode {
                 <div class="pwpl-dimension-nav" data-dimension="<?php echo esc_attr( $dimension ); ?>">
                     <?php foreach ( $values as $index => $item ) :
                         $is_active = $index === 0 ? ' is-active' : '';
-                        $tab_badge_raw = $this->match_badge_for_slug( $table_badges[ $dimension ] ?? [], $item['slug'] );
+                        $tab_badge_raw = $this->match_badge_for_slug( $item['slug'], $table_badges[ $dimension ] ?? [] );
                         $tab_badge     = $this->format_badge_for_output( $tab_badge_raw );
                         ?>
                         <button type="button" class="pwpl-tab<?php echo $is_active; ?>" data-value="<?php echo esc_attr( $item['slug'] ); ?>" aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>">
@@ -508,13 +508,16 @@ class PWPL_Shortcode {
             $style .= '--pwpl-badge-color:' . $text_color . ';';
         }
 
+        $has_custom = ( $color !== '' ) || ( $text_color !== '' );
+
         return [
             'label'      => $badge['label'] ?? '',
             'color'      => $color,
             'text_color' => $text_color,
             'icon'       => $badge['icon'] ?? '',
             'tone'       => $tone,
-            'tone_class' => $tone ? ' pwpl-plan__badge--tone-' . $tone : '',
+            // Only apply tone class when no custom colors are provided
+            'tone_class' => ( ! $has_custom && $tone ) ? ' pwpl-plan__badge--tone-' . $tone : '',
             'style'      => $style,
             'hidden'     => false,
         ];
