@@ -28,11 +28,29 @@ class PWPL_Admin_Meta {
         );
 
         add_meta_box(
+            'pwpl_table_badges',
+            __( 'Badges & Promotions', 'planify-wp-pricing-lite' ),
+            [ $this, 'render_table_badges_meta' ],
+            'pwpl_table',
+            'side',
+            'default'
+        );
+
+        add_meta_box(
             'pwpl_plan_details',
             __( 'Plan Details', 'planify-wp-pricing-lite' ),
             [ $this, 'render_plan_meta' ],
             'pwpl_plan',
             'normal',
+            'default'
+        );
+
+        add_meta_box(
+            'pwpl_plan_badges',
+            __( 'Promotions (Override)', 'planify-wp-pricing-lite' ),
+            [ $this, 'render_plan_badges_meta' ],
+            'pwpl_plan',
+            'side',
             'default'
         );
     }
@@ -55,6 +73,203 @@ class PWPL_Admin_Meta {
         return new PWPL_Settings();
     }
 
+    private function get_dimension_catalog() {
+        $settings = $this->settings();
+        $catalog  = [
+            'period'   => (array) $settings->get( 'periods' ),
+            'location' => (array) $settings->get( 'locations' ),
+            'platform' => (array) $settings->get( 'platforms' ),
+        ];
+
+        $indexed = [];
+        foreach ( $catalog as $dimension => $items ) {
+            $indexed[ $dimension ] = [];
+            foreach ( $items as $item ) {
+                if ( empty( $item['slug'] ) ) {
+                    continue;
+                }
+                $indexed[ $dimension ][ $item['slug'] ] = [
+                    'slug'  => $item['slug'],
+                    'label' => $item['label'] ?? $item['slug'],
+                ];
+            }
+        }
+
+        return $indexed;
+    }
+
+    private function get_dimension_options( $table_id = 0 ) {
+        $catalog   = $this->get_dimension_catalog();
+        $dimensions = [ 'period', 'location', 'platform' ];
+        $options   = [];
+
+        if ( $table_id ) {
+            $allowed_map = [
+                'period'   => get_post_meta( $table_id, PWPL_Meta::ALLOWED_PERIODS, true ),
+                'location' => get_post_meta( $table_id, PWPL_Meta::ALLOWED_LOCATIONS, true ),
+                'platform' => get_post_meta( $table_id, PWPL_Meta::ALLOWED_PLATFORMS, true ),
+            ];
+        } else {
+            $allowed_map = [ 'period' => [], 'location' => [], 'platform' => [] ];
+        }
+
+        foreach ( $dimensions as $dimension ) {
+            $options[ $dimension ] = [];
+            $allowed_slugs = array_filter( (array) ( $allowed_map[ $dimension ] ?? [] ) );
+
+            if ( empty( $allowed_slugs ) ) {
+                $allowed_slugs = array_keys( $catalog[ $dimension ] );
+            }
+
+            foreach ( $allowed_slugs as $slug ) {
+                if ( isset( $catalog[ $dimension ][ $slug ] ) ) {
+                    $options[ $dimension ][] = $catalog[ $dimension ][ $slug ];
+                }
+            }
+        }
+
+        return $options;
+    }
+
+    private function render_badge_priority_controls( $context, $selected ) {
+        $field_prefix = $context === 'table' ? 'pwpl_table_badges' : 'pwpl_plan_badges_override';
+        $dimensions   = [ 'period', 'location', 'platform' ];
+        $selected     = is_array( $selected ) ? array_values( array_intersect( $selected, $dimensions ) ) : [];
+        if ( empty( $selected ) ) {
+            $selected = [ 'period', 'location', 'platform' ];
+        }
+        $selected = array_values( array_unique( array_merge( $selected, $dimensions ) ) );
+
+        ?>
+        <div class="pwpl-field pwpl-badge-priority">
+            <label><strong><?php esc_html_e( 'Badge priority', 'planify-wp-pricing-lite' ); ?></strong></label>
+            <p class="description"><?php esc_html_e( 'When multiple promotions apply, the first dimension in this list wins.', 'planify-wp-pricing-lite' ); ?></p>
+            <ol class="pwpl-badge-priority__list">
+                <?php foreach ( [0,1,2] as $index ) :
+                    $current = $selected[ $index ] ?? $dimensions[ $index ];
+                    ?>
+                    <li>
+                        <label class="screen-reader-text" for="<?php echo esc_attr( $field_prefix . '_priority_' . $index ); ?>"><?php printf( esc_html__( 'Priority %d', 'planify-wp-pricing-lite' ), $index + 1 ); ?></label>
+                        <select id="<?php echo esc_attr( $field_prefix . '_priority_' . $index ); ?>" name="<?php echo esc_attr( $field_prefix ); ?>[priority][<?php echo esc_attr( $index ); ?>]" class="widefat">
+                            <?php foreach ( $dimensions as $dimension ) : ?>
+                                <option value="<?php echo esc_attr( $dimension ); ?>" <?php selected( $current, $dimension ); ?>><?php echo esc_html( ucfirst( $dimension ) ); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </li>
+                <?php endforeach; ?>
+            </ol>
+        </div>
+        <?php
+    }
+
+    private function render_badge_section( $context, $dimension, $label, array $rows, array $options ) {
+        $field_prefix = $context === 'table' ? 'pwpl_table_badges' : 'pwpl_plan_badges_override';
+        $target       = 'badge-' . $context . '-' . $dimension;
+        $template     = 'pwpl-badge-row-' . $context . '-' . $dimension;
+        $rows         = array_values( $rows );
+        $row_count    = count( $rows );
+
+        if ( empty( $options ) ) {
+            ?>
+            <p class="description"><?php printf( esc_html__( 'No %s values available. Configure them in Dimensions & Variants first.', 'planify-wp-pricing-lite' ), esc_html( strtolower( $label ) ) ); ?></p>
+            <?php
+            return;
+        }
+
+        if ( $row_count === 0 ) {
+            $rows      = [ [] ];
+            $row_count = 0;
+        }
+
+        ?>
+        <div class="pwpl-badge-group pwpl-badge-group--<?php echo esc_attr( $dimension ); ?>">
+            <h4><?php echo esc_html( $label ); ?></h4>
+            <table class="widefat pwpl-repeatable" data-pwpl-repeatable="<?php echo esc_attr( $target ); ?>" data-template="<?php echo esc_attr( $template ); ?>" data-next-index="<?php echo esc_attr( max( $row_count, count( $rows ) ) ); ?>">
+                <thead>
+                    <tr>
+                        <th><?php esc_html_e( 'Value', 'planify-wp-pricing-lite' ); ?></th>
+                        <th><?php esc_html_e( 'Badge label', 'planify-wp-pricing-lite' ); ?></th>
+                        <th><?php esc_html_e( 'Badge color', 'planify-wp-pricing-lite' ); ?></th>
+                        <th><?php esc_html_e( 'Text color', 'planify-wp-pricing-lite' ); ?></th>
+                        <th><?php esc_html_e( 'Icon', 'planify-wp-pricing-lite' ); ?></th>
+                        <th><?php esc_html_e( 'Tone', 'planify-wp-pricing-lite' ); ?></th>
+                        <th><?php esc_html_e( 'Start', 'planify-wp-pricing-lite' ); ?></th>
+                        <th><?php esc_html_e( 'End', 'planify-wp-pricing-lite' ); ?></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ( $rows as $index => $row ) :
+                        $value      = $row['slug'] ?? '';
+                        $badge      = $row['label'] ?? '';
+                        $color      = $row['color'] ?? '';
+                        $text_color = $row['text_color'] ?? '';
+                        $icon       = $row['icon'] ?? '';
+                        $tone       = $row['tone'] ?? '';
+                        $start      = $row['start'] ?? '';
+                        $end        = $row['end'] ?? '';
+                        ?>
+                        <tr>
+                            <td>
+                                <select name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][<?php echo esc_attr( $index ); ?>][slug]" class="widefat">
+                                    <option value=""><?php esc_html_e( 'Select', 'planify-wp-pricing-lite' ); ?></option>
+                                    <?php foreach ( $options as $option ) : ?>
+                                        <option value="<?php echo esc_attr( $option['slug'] ); ?>" <?php selected( $value, $option['slug'] ); ?>><?php echo esc_html( $option['label'] ); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                            <td><input type="text" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][<?php echo esc_attr( $index ); ?>][label]" value="<?php echo esc_attr( $badge ); ?>" class="widefat" /></td>
+                            <td><input type="color" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][<?php echo esc_attr( $index ); ?>][color]" value="<?php echo esc_attr( $color ); ?>" /></td>
+                            <td><input type="color" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][<?php echo esc_attr( $index ); ?>][text_color]" value="<?php echo esc_attr( $text_color ); ?>" /></td>
+                            <td><input type="text" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][<?php echo esc_attr( $index ); ?>][icon]" value="<?php echo esc_attr( $icon ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'Optional', 'planify-wp-pricing-lite' ); ?>" /></td>
+                            <td>
+                                <select name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][<?php echo esc_attr( $index ); ?>][tone]" class="widefat">
+                                    <option value=""><?php esc_html_e( 'Auto', 'planify-wp-pricing-lite' ); ?></option>
+                                    <?php foreach ( [ 'success', 'info', 'warning', 'danger', 'neutral' ] as $tone_option ) : ?>
+                                        <option value="<?php echo esc_attr( $tone_option ); ?>" <?php selected( $tone, $tone_option ); ?>><?php echo esc_html( ucfirst( $tone_option ) ); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                            <td><input type="date" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][<?php echo esc_attr( $index ); ?>][start]" value="<?php echo esc_attr( $start ); ?>" /></td>
+                            <td><input type="date" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][<?php echo esc_attr( $index ); ?>][end]" value="<?php echo esc_attr( $end ); ?>" /></td>
+                            <td><button type="button" class="button pwpl-remove-row" aria-label="<?php esc_attr_e( 'Remove badge', 'planify-wp-pricing-lite' ); ?>">&times;</button></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            <p><button type="button" class="button button-secondary pwpl-add-row" data-target="<?php echo esc_attr( $target ); ?>"><?php esc_html_e( 'Add Promotion', 'planify-wp-pricing-lite' ); ?></button></p>
+        </div>
+
+        <script type="text/html" id="tmpl-<?php echo esc_attr( $template ); ?>">
+            <tr>
+                <td>
+                    <select name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][{{data.index}}][slug]" class="widefat">
+                        <option value=""><?php esc_html_e( 'Select', 'planify-wp-pricing-lite' ); ?></option>
+                        <?php foreach ( $options as $option ) : ?>
+                            <option value="<?php echo esc_attr( $option['slug'] ); ?>"><?php echo esc_html( $option['label'] ); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+                <td><input type="text" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][{{data.index}}][label]" class="widefat" /></td>
+                <td><input type="color" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][{{data.index}}][color]" /></td>
+                <td><input type="color" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][{{data.index}}][text_color]" /></td>
+                <td><input type="text" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][{{data.index}}][icon]" class="widefat" placeholder="<?php esc_attr_e( 'Optional', 'planify-wp-pricing-lite' ); ?>" /></td>
+                <td>
+                    <select name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][{{data.index}}][tone]" class="widefat">
+                        <option value=""><?php esc_html_e( 'Auto', 'planify-wp-pricing-lite' ); ?></option>
+                        <?php foreach ( [ 'success', 'info', 'warning', 'danger', 'neutral' ] as $tone_option ) : ?>
+                            <option value="<?php echo esc_attr( $tone_option ); ?>"><?php echo esc_html( ucfirst( $tone_option ) ); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+                <td><input type="date" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][{{data.index}}][start]" /></td>
+                <td><input type="date" name="<?php echo esc_attr( $field_prefix ); ?>[<?php echo esc_attr( $dimension ); ?>][{{data.index}}][end]" /></td>
+                <td><button type="button" class="button pwpl-remove-row" aria-label="<?php esc_attr_e( 'Remove badge', 'planify-wp-pricing-lite' ); ?>">&times;</button></td>
+            </tr>
+        </script>
+        <?php
+    }
+
     public function render_table_meta( $post ) {
         wp_nonce_field( 'pwpl_save_table_' . $post->ID, 'pwpl_table_nonce' );
 
@@ -71,6 +286,16 @@ class PWPL_Admin_Meta {
         $platforms = (array) $settings->get( 'platforms' );
         $periods   = (array) $settings->get( 'periods' );
         $locations = (array) $settings->get( 'locations' );
+
+        $meta_helper = new PWPL_Meta();
+        $table_theme = get_post_meta( $post->ID, PWPL_Meta::TABLE_THEME, true );
+        $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
+        $themes = [
+            'classic'         => __( 'Classic', 'planify-wp-pricing-lite' ),
+            'warm'            => __( 'Warm', 'planify-wp-pricing-lite' ),
+            'blue'            => __( 'Blue', 'planify-wp-pricing-lite' ),
+            'modern-discount' => __( 'Modern Discount', 'planify-wp-pricing-lite' ),
+        ];
 
         $dimension_map = [
             'platform' => [
@@ -91,6 +316,15 @@ class PWPL_Admin_Meta {
         ];
         ?>
         <div class="pwpl-meta pwpl-meta--table" data-pwpl-dimensions>
+            <div class="pwpl-field">
+                <label for="pwpl_table_theme"><strong><?php esc_html_e( 'Theme / Style', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <select id="pwpl_table_theme" name="pwpl_table[theme]" class="widefat">
+                    <?php foreach ( $themes as $key => $label ) : ?>
+                        <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $table_theme, $key ); ?>><?php echo esc_html( $label ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="description"><?php esc_html_e( 'Applies to every plan within this table. Customize colors via assets/css/themes.css.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
             <?php foreach ( $dimension_map as $key => $config ) :
                 $enabled = in_array( $key, $dimensions, true );
                 ?>
@@ -121,13 +355,38 @@ class PWPL_Admin_Meta {
         <?php
     }
 
+    public function render_table_badges_meta( $post ) {
+        $options = $this->get_dimension_options( $post->ID );
+        $badges  = get_post_meta( $post->ID, PWPL_Meta::TABLE_BADGES, true );
+        if ( ! is_array( $badges ) ) {
+            $badges = [];
+        }
+
+        $groups = [
+            'period'   => __( 'Period promotions', 'planify-wp-pricing-lite' ),
+            'location' => __( 'Location promotions', 'planify-wp-pricing-lite' ),
+            'platform' => __( 'Platform promotions', 'planify-wp-pricing-lite' ),
+        ];
+
+        ?>
+        <div class="pwpl-meta pwpl-meta--badges">
+            <p class="description"><?php esc_html_e( 'Highlight seasonal or location-based offers. Badges appear on matching plans according to priority.', 'planify-wp-pricing-lite' ); ?></p>
+            <?php foreach ( $groups as $dimension => $label ) :
+                $rows = isset( $badges[ $dimension ] ) && is_array( $badges[ $dimension ] ) ? $badges[ $dimension ] : [];
+                $this->render_badge_section( 'table', $dimension, $label, $rows, $options[ $dimension ] ?? [] );
+            endforeach; ?>
+            <?php $this->render_badge_priority_controls( 'table', $badges['priority'] ?? [] ); ?>
+        </div>
+        <?php
+    }
+
     public function render_plan_meta( $post ) {
         wp_nonce_field( 'pwpl_save_plan_' . $post->ID, 'pwpl_plan_nonce' );
 
         $table_id = (int) get_post_meta( $post->ID, PWPL_Meta::PLAN_TABLE_ID, true );
-        $theme    = get_post_meta( $post->ID, PWPL_Meta::PLAN_THEME, true );
         $specs    = get_post_meta( $post->ID, PWPL_Meta::PLAN_SPECS, true );
         $variants = get_post_meta( $post->ID, PWPL_Meta::PLAN_VARIANTS, true );
+        $featured = (bool) get_post_meta( $post->ID, PWPL_Meta::PLAN_FEATURED, true );
 
         if ( ! is_array( $specs ) ) {
             $specs = [];
@@ -153,12 +412,6 @@ class PWPL_Admin_Meta {
             'order'          => 'ASC',
         ] );
 
-        $themes = [
-            'classic' => __( 'Classic', 'planify-wp-pricing-lite' ),
-            'warm'    => __( 'Warm', 'planify-wp-pricing-lite' ),
-            'blue'    => __( 'Blue', 'planify-wp-pricing-lite' ),
-        ];
-
         $settings = $this->settings();
         $platforms = (array) $settings->get( 'platforms' );
         $periods   = (array) $settings->get( 'periods' );
@@ -179,18 +432,17 @@ class PWPL_Admin_Meta {
             </div>
 
             <div class="pwpl-field">
-                <label for="pwpl_plan_theme"><strong><?php esc_html_e( 'Theme / Style', 'planify-wp-pricing-lite' ); ?></strong></label>
-                <select id="pwpl_plan_theme" name="pwpl_plan[theme]" class="widefat">
-                    <?php foreach ( $themes as $key => $label ) : ?>
-                        <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $theme ?: 'classic', $key ); ?>><?php echo esc_html( $label ); ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <label>
+                    <input type="checkbox" name="pwpl_plan[featured]" value="1" <?php checked( $featured ); ?> />
+                    <strong><?php esc_html_e( 'Mark as featured plan', 'planify-wp-pricing-lite' ); ?></strong>
+                </label>
+                <p class="description"><?php esc_html_e( 'Use this flag in your theme to highlight a primary plan.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
 
             <div class="pwpl-field">
                 <label><strong><?php esc_html_e( 'Specifications', 'planify-wp-pricing-lite' ); ?></strong></label>
                 <p class="description"><?php esc_html_e( 'Add spec rows like CPU, RAM, Bandwidth. Leave blank rows to remove.', 'planify-wp-pricing-lite' ); ?></p>
-                <table class="widefat pwpl-repeatable" data-pwpl-repeatable="specs" data-next-index="<?php echo esc_attr( max( $spec_count, count( $specs ) ) ); ?>">
+                <table class="widefat pwpl-repeatable" data-pwpl-repeatable="specs" data-template="pwpl-row-specs" data-next-index="<?php echo esc_attr( max( $spec_count, count( $specs ) ) ); ?>">
                     <thead>
                         <tr>
                             <th><?php esc_html_e( 'Label', 'planify-wp-pricing-lite' ); ?></th>
@@ -217,7 +469,7 @@ class PWPL_Admin_Meta {
             <div class="pwpl-field">
                 <label><strong><?php esc_html_e( 'Price Variants', 'planify-wp-pricing-lite' ); ?></strong></label>
                 <p class="description"><?php esc_html_e( 'Define price combinations per Platform / Period / Location. Leave optional dimensions blank if not used.', 'planify-wp-pricing-lite' ); ?></p>
-                <table class="widefat pwpl-repeatable" data-pwpl-repeatable="variants" data-next-index="<?php echo esc_attr( max( $variant_count, count( $variants ) ) ); ?>">
+                <table class="widefat pwpl-repeatable" data-pwpl-repeatable="variants" data-template="pwpl-row-variants" data-next-index="<?php echo esc_attr( max( $variant_count, count( $variants ) ) ); ?>">
                     <thead>
                         <tr>
                             <th><?php esc_html_e( 'Platform', 'planify-wp-pricing-lite' ); ?></th>
@@ -225,6 +477,10 @@ class PWPL_Admin_Meta {
                             <th><?php esc_html_e( 'Location', 'planify-wp-pricing-lite' ); ?></th>
                             <th><?php esc_html_e( 'Price', 'planify-wp-pricing-lite' ); ?></th>
                             <th><?php esc_html_e( 'Sale Price', 'planify-wp-pricing-lite' ); ?></th>
+                            <th><?php esc_html_e( 'CTA Label', 'planify-wp-pricing-lite' ); ?></th>
+                            <th><?php esc_html_e( 'CTA URL', 'planify-wp-pricing-lite' ); ?></th>
+                            <th><?php esc_html_e( 'Target', 'planify-wp-pricing-lite' ); ?></th>
+                            <th><?php esc_html_e( 'Rel', 'planify-wp-pricing-lite' ); ?></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -235,6 +491,10 @@ class PWPL_Admin_Meta {
                             $location = $row['location'] ?? '';
                             $price    = $row['price'] ?? '';
                             $sale     = $row['sale_price'] ?? '';
+                            $cta_label = $row['cta_label'] ?? '';
+                            $cta_url   = $row['cta_url'] ?? '';
+                            $target    = $row['target'] ?? '';
+                            $rel       = $row['rel'] ?? '';
                             ?>
                             <tr>
                                 <td><?php $this->render_select( "pwpl_plan[variants][{$index}][platform]", $platforms, $platform, __( 'Any', 'planify-wp-pricing-lite' ) ); ?></td>
@@ -242,6 +502,16 @@ class PWPL_Admin_Meta {
                                 <td><?php $this->render_select( "pwpl_plan[variants][{$index}][location]", $locations, $location, __( 'Any', 'planify-wp-pricing-lite' ) ); ?></td>
                                 <td><input type="text" name="pwpl_plan[variants][<?php echo esc_attr( $index ); ?>][price]" value="<?php echo esc_attr( $price ); ?>" class="widefat" /></td>
                                 <td><input type="text" name="pwpl_plan[variants][<?php echo esc_attr( $index ); ?>][sale_price]" value="<?php echo esc_attr( $sale ); ?>" class="widefat" /></td>
+                                <td><input type="text" name="pwpl_plan[variants][<?php echo esc_attr( $index ); ?>][cta_label]" value="<?php echo esc_attr( $cta_label ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'e.g. Buy Now', 'planify-wp-pricing-lite' ); ?>" /></td>
+                                <td><input type="url" name="pwpl_plan[variants][<?php echo esc_attr( $index ); ?>][cta_url]" value="<?php echo esc_attr( $cta_url ); ?>" class="widefat" placeholder="https://" /></td>
+                                <td>
+                                    <select name="pwpl_plan[variants][<?php echo esc_attr( $index ); ?>][target]" class="widefat">
+                                        <option value="" <?php selected( $target, '' ); ?>><?php esc_html_e( 'Default', 'planify-wp-pricing-lite' ); ?></option>
+                                        <option value="_self" <?php selected( $target, '_self' ); ?>><?php esc_html_e( 'Same tab', 'planify-wp-pricing-lite' ); ?></option>
+                                        <option value="_blank" <?php selected( $target, '_blank' ); ?>><?php esc_html_e( 'New tab', 'planify-wp-pricing-lite' ); ?></option>
+                                    </select>
+                                </td>
+                                <td><input type="text" name="pwpl_plan[variants][<?php echo esc_attr( $index ); ?>][rel]" value="<?php echo esc_attr( $rel ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'nofollow noopener', 'planify-wp-pricing-lite' ); ?>" /></td>
                                 <td><button type="button" class="button pwpl-remove-row" aria-label="<?php esc_attr_e( 'Remove row', 'planify-wp-pricing-lite' ); ?>">&times;</button></td>
                             </tr>
                         <?php endforeach; ?>
@@ -265,9 +535,55 @@ class PWPL_Admin_Meta {
                 <td><?php $this->render_select( 'pwpl_plan[variants][{{data.index}}][location]', $locations, '', __( 'Any', 'planify-wp-pricing-lite' ), true ); ?></td>
                 <td><input type="text" name="pwpl_plan[variants][{{data.index}}][price]" class="widefat" /></td>
                 <td><input type="text" name="pwpl_plan[variants][{{data.index}}][sale_price]" class="widefat" /></td>
+                <td><input type="text" name="pwpl_plan[variants][{{data.index}}][cta_label]" class="widefat" placeholder="<?php esc_attr_e( 'e.g. Buy Now', 'planify-wp-pricing-lite' ); ?>" /></td>
+                <td><input type="url" name="pwpl_plan[variants][{{data.index}}][cta_url]" class="widefat" placeholder="https://" /></td>
+                <td>
+                    <select name="pwpl_plan[variants][{{data.index}}][target]" class="widefat">
+                        <option value=""><?php esc_html_e( 'Default', 'planify-wp-pricing-lite' ); ?></option>
+                        <option value="_self"><?php esc_html_e( 'Same tab', 'planify-wp-pricing-lite' ); ?></option>
+                        <option value="_blank"><?php esc_html_e( 'New tab', 'planify-wp-pricing-lite' ); ?></option>
+                    </select>
+                </td>
+                <td><input type="text" name="pwpl_plan[variants][{{data.index}}][rel]" class="widefat" placeholder="<?php esc_attr_e( 'nofollow noopener', 'planify-wp-pricing-lite' ); ?>" /></td>
                 <td><button type="button" class="button pwpl-remove-row" aria-label="<?php esc_attr_e( 'Remove row', 'planify-wp-pricing-lite' ); ?>">&times;</button></td>
             </tr>
         </script>
+        <?php
+    }
+
+    public function render_plan_badges_meta( $post ) {
+        $assigned_table = (int) get_post_meta( $post->ID, PWPL_Meta::PLAN_TABLE_ID, true );
+        $options        = $assigned_table ? $this->get_dimension_options( $assigned_table ) : $this->get_dimension_options( 0 );
+
+        $override = get_post_meta( $post->ID, PWPL_Meta::PLAN_BADGES_OVERRIDE, true );
+        if ( ! is_array( $override ) ) {
+            $override = [];
+        }
+        $enabled = ! empty( array_filter( $override ) );
+
+        $groups = [
+            'period'   => __( 'Period promotions', 'planify-wp-pricing-lite' ),
+            'location' => __( 'Location promotions', 'planify-wp-pricing-lite' ),
+            'platform' => __( 'Platform promotions', 'planify-wp-pricing-lite' ),
+        ];
+
+        ?>
+        <div class="pwpl-meta pwpl-meta--plan-badges">
+            <p>
+                <label>
+                    <input type="checkbox" id="pwpl_plan_badges_override_enabled" name="pwpl_plan_badges_override[enabled]" value="1" <?php checked( $enabled ); ?> />
+                    <?php esc_html_e( 'Override table promotions for this plan', 'planify-wp-pricing-lite' ); ?>
+                </label>
+            </p>
+            <div class="pwpl-plan-badges-fields" data-pwpl-plan-badge-fields <?php if ( ! $enabled ) echo 'style="display:none"'; ?>>
+                <p class="description"><?php esc_html_e( 'Define plan-specific badges. Leave blank to inherit table promotions.', 'planify-wp-pricing-lite' ); ?></p>
+                <?php foreach ( $groups as $dimension => $label ) :
+                    $rows = isset( $override[ $dimension ] ) && is_array( $override[ $dimension ] ) ? $override[ $dimension ] : [];
+                    $this->render_badge_section( 'plan', $dimension, $label, $rows, $options[ $dimension ] ?? [] );
+                endforeach; ?>
+                <?php $this->render_badge_priority_controls( 'plan', $override['priority'] ?? [] ); ?>
+            </div>
+        </div>
         <?php
     }
 
@@ -298,6 +614,14 @@ class PWPL_Admin_Meta {
         $input = $_POST['pwpl_table'] ?? [];
         $meta  = new PWPL_Meta();
         $settings = $this->settings();
+
+        $badges_input = $_POST['pwpl_table_badges'] ?? [];
+        $badges       = $meta->sanitize_badges( $badges_input );
+        update_post_meta( $post_id, PWPL_Meta::TABLE_BADGES, $badges );
+
+        $theme_input = $input['theme'] ?? '';
+        $theme       = $meta->sanitize_theme( $theme_input ?: 'classic' );
+        update_post_meta( $post_id, PWPL_Meta::TABLE_THEME, $theme );
 
         $dimensions = isset( $input['dimensions'] ) ? (array) $input['dimensions'] : [];
         $dimensions = $meta->sanitize_dimensions( $dimensions );
@@ -338,8 +662,21 @@ class PWPL_Admin_Meta {
         $table_id = isset( $input['table_id'] ) ? (int) $input['table_id'] : 0;
         update_post_meta( $post_id, PWPL_Meta::PLAN_TABLE_ID, $table_id );
 
-        $theme = isset( $input['theme'] ) ? sanitize_key( $input['theme'] ) : 'classic';
-        update_post_meta( $post_id, PWPL_Meta::PLAN_THEME, $theme );
+        $featured = ! empty( $input['featured'] );
+        update_post_meta( $post_id, PWPL_Meta::PLAN_FEATURED, $featured ? 1 : 0 );
+
+        $override_input    = $_POST['pwpl_plan_badges_override'] ?? [];
+        $override_enabled  = ! empty( $override_input['enabled'] );
+        if ( isset( $override_input['enabled'] ) ) {
+            unset( $override_input['enabled'] );
+        }
+
+        if ( $override_enabled ) {
+            $override_badges = $meta->sanitize_badges( $override_input );
+            update_post_meta( $post_id, PWPL_Meta::PLAN_BADGES_OVERRIDE, $override_badges );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::PLAN_BADGES_OVERRIDE );
+        }
 
         $specs = $input['specs'] ?? [];
         if ( is_array( $specs ) ) {
