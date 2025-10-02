@@ -218,6 +218,7 @@ class PWPL_Meta {
 
         $min = isset( $value['min'] ) ? (int) $value['min'] : $defaults['min'];
         $max = isset( $value['max'] ) ? (int) $value['max'] : $defaults['max'];
+        $base = isset( $value['base'] ) ? (int) $value['base'] : 0;
 
         $min = max( 0, min( $min, 4000 ) );
         $max = max( 0, min( $max, 4000 ) );
@@ -232,9 +233,16 @@ class PWPL_Meta {
             $min = $max;
         }
 
+        if ( $base > 0 ) {
+            $base = max( 640, min( $base, 1440 ) );
+        } else {
+            $base = 0;
+        }
+
         return [
             'min' => $min,
             'max' => $max,
+            'base' => $base,
         ];
     }
 

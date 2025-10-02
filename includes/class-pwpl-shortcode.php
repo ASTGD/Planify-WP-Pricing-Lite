@@ -135,12 +135,61 @@ class PWPL_Shortcode {
         $table_theme = get_post_meta( $table_id, PWPL_Meta::TABLE_THEME, true );
         $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
 
+        $size_meta  = get_post_meta( $table_id, PWPL_Meta::TABLE_SIZE, true );
+        $size_values = $meta_helper->sanitize_table_size( is_array( $size_meta ) ? $size_meta : [] );
+
+        $breakpoint_meta = get_post_meta( $table_id, PWPL_Meta::TABLE_BREAKPOINTS, true );
+        $breakpoint_values = $meta_helper->sanitize_table_breakpoints( is_array( $breakpoint_meta ) ? $breakpoint_meta : [] );
+
         $badge_shadow = isset( $table_badges['shadow'] ) ? (int) $table_badges['shadow'] : 0;
         $badge_shadow = max( 0, min( $badge_shadow, 60 ) );
-        $table_style_attr = '';
-        if ( $badge_shadow > 0 ) {
-            $table_style_attr = ' style="--pwpl-badge-shadow-strength:' . esc_attr( $badge_shadow ) . ';"';
+
+        $style_vars = [
+            '--pwpl-table-min' => $size_values['min'] . 'px',
+            '--pwpl-table-max' => $size_values['max'] . 'px',
+        ];
+
+        if ( ! empty( $size_values['base'] ) ) {
+            $style_vars['--pwpl-table-base'] = $size_values['base'] . 'px';
         }
+
+        if ( $badge_shadow > 0 ) {
+            $style_vars['--pwpl-badge-shadow-strength'] = $badge_shadow;
+        }
+
+        $device_suffix = [
+            'mobile'  => 'sm',
+            'tablet'  => 'md',
+            'laptop'  => 'lg',
+            'desktop' => 'xl',
+            'big'     => 'xxl',
+        ];
+
+        foreach ( $device_suffix as $device => $suffix ) {
+            if ( empty( $breakpoint_values[ $device ] ) ) {
+                continue;
+            }
+            $values = $breakpoint_values[ $device ];
+            if ( ! empty( $values['table_max'] ) ) {
+                $style_vars[ '--pwpl-table-max-' . $suffix ] = (int) $values['table_max'] . 'px';
+            }
+            if ( ! empty( $values['card_min'] ) ) {
+                $style_vars[ '--pwpl-card-min-' . $suffix ] = (int) $values['card_min'] . 'px';
+            }
+            if ( ! empty( $values['card_min_h'] ) ) {
+                $style_vars[ '--pwpl-card-min-h-' . $suffix ] = (int) $values['card_min_h'] . 'px';
+            }
+        }
+
+        $style_inline = '';
+        foreach ( $style_vars as $var => $value ) {
+            if ( '' === $value && '0' !== $value ) {
+                continue;
+            }
+            $style_inline .= $var . ':' . $value . ';';
+        }
+
+        $table_style_attr = $style_inline ? ' style="' . esc_attr( $style_inline ) . '"' : '';
 
         ob_start();
         ?>

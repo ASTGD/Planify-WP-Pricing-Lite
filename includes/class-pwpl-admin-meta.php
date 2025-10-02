@@ -288,6 +288,29 @@ class PWPL_Admin_Meta {
         $locations = (array) $settings->get( 'locations' );
 
         $meta_helper = new PWPL_Meta();
+        $size_meta   = get_post_meta( $post->ID, PWPL_Meta::TABLE_SIZE, true );
+        $size_values = $meta_helper->sanitize_table_size( is_array( $size_meta ) ? $size_meta : [] );
+
+        $breakpoint_meta = get_post_meta( $post->ID, PWPL_Meta::TABLE_BREAKPOINTS, true );
+        $breakpoint_values = $meta_helper->sanitize_table_breakpoints( is_array( $breakpoint_meta ) ? $breakpoint_meta : [] );
+
+        $device_map = [
+            'big'     => __( 'Big screens (≥ 1536px)', 'planify-wp-pricing-lite' ),
+            'desktop' => __( 'Desktop (1280–1535px)', 'planify-wp-pricing-lite' ),
+            'laptop'  => __( 'Laptop (1024–1279px)', 'planify-wp-pricing-lite' ),
+            'tablet'  => __( 'Tablet (768–1023px)', 'planify-wp-pricing-lite' ),
+            'mobile'  => __( 'Mobile (≤ 767px)', 'planify-wp-pricing-lite' ),
+        ];
+
+        $device_placeholders = [
+            'big'     => 1536,
+            'desktop' => 1280,
+            'laptop'  => 1024,
+            'tablet'  => 768,
+            'mobile'  => 360,
+        ];
+
+        $meta_helper = new PWPL_Meta();
         $table_theme = get_post_meta( $post->ID, PWPL_Meta::TABLE_THEME, true );
         $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
         $themes = [
@@ -316,6 +339,57 @@ class PWPL_Admin_Meta {
         ];
         ?>
         <div class="pwpl-meta pwpl-meta--table" data-pwpl-dimensions>
+            <div class="pwpl-field pwpl-layout-size">
+                <h4><?php esc_html_e( 'Layout & Size', 'planify-wp-pricing-lite' ); ?></h4>
+                <p class="description"><?php esc_html_e( 'Control how wide the table can grow. Device presets let you fine tune card widths at specific breakpoints.', 'planify-wp-pricing-lite' ); ?></p>
+
+                <div class="pwpl-range-control">
+                    <label for="pwpl_table_size_min"><strong><?php esc_html_e( 'Minimum width', 'planify-wp-pricing-lite' ); ?></strong></label>
+                    <div class="pwpl-range-control__inputs">
+                        <input type="range" id="pwpl_table_size_min" name="pwpl_table[size][min]" min="320" max="1024" step="10" value="<?php echo esc_attr( $size_values['min'] ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_table_size_min_value" data-pwpl-range-unit="px" />
+                        <div class="pwpl-range-control__value"><output id="pwpl_table_size_min_value"><?php echo esc_html( $size_values['min'] ); ?>px</output></div>
+                    </div>
+                    <p class="description"><?php esc_html_e( 'The table will never shrink smaller than this value.', 'planify-wp-pricing-lite' ); ?></p>
+                </div>
+
+                <div class="pwpl-range-control">
+                    <label for="pwpl_table_size_max"><strong><?php esc_html_e( 'Maximum width', 'planify-wp-pricing-lite' ); ?></strong></label>
+                    <div class="pwpl-range-control__inputs">
+                        <input type="range" id="pwpl_table_size_max" name="pwpl_table[size][max]" min="640" max="1440" step="10" value="<?php echo esc_attr( $size_values['max'] ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_table_size_max_value" data-pwpl-range-unit="px" />
+                        <div class="pwpl-range-control__value"><output id="pwpl_table_size_max_value"><?php echo esc_html( $size_values['max'] ); ?>px</output></div>
+                    </div>
+                    <p class="description"><?php esc_html_e( 'Set the maximum width for large screens. The table stays centered inside this width.', 'planify-wp-pricing-lite' ); ?></p>
+                </div>
+
+                <details class="pwpl-device-presets">
+                    <summary><strong><?php esc_html_e( 'Device presets', 'planify-wp-pricing-lite' ); ?></strong></summary>
+                    <p class="description"><?php esc_html_e( 'Override width and card dimensions for specific breakpoints. Leave any field blank to inherit the global setting.', 'planify-wp-pricing-lite' ); ?></p>
+                    <?php foreach ( $device_map as $device_key => $device_label ) :
+                        $values    = $breakpoint_values[ $device_key ] ?? [];
+                        $table_max = isset( $values['table_max'] ) ? (int) $values['table_max'] : '';
+                        $card_min  = isset( $values['card_min'] ) ? (int) $values['card_min'] : '';
+                        $card_h    = isset( $values['card_min_h'] ) ? (int) $values['card_min_h'] : '';
+                        ?>
+                        <div class="pwpl-device-group">
+                            <h5><?php echo esc_html( $device_label ); ?></h5>
+                            <div class="pwpl-device-grid">
+                                <label>
+                                    <span><?php esc_html_e( 'Table max width (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="0" max="4000" step="10" name="pwpl_table[breakpoints][<?php echo esc_attr( $device_key ); ?>][table_max]" value="<?php echo '' !== $table_max ? esc_attr( $table_max ) : ''; ?>" placeholder="<?php echo esc_attr( $device_placeholders[ $device_key ] ); ?>" />
+                                </label>
+                                <label>
+                                    <span><?php esc_html_e( 'Card min width (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="0" max="4000" step="10" name="pwpl_table[breakpoints][<?php echo esc_attr( $device_key ); ?>][card_min]" value="<?php echo '' !== $card_min ? esc_attr( $card_min ) : ''; ?>" placeholder="280" />
+                                </label>
+                                <label>
+                                    <span><?php esc_html_e( 'Card min height (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="0" max="4000" step="10" name="pwpl_table[breakpoints][<?php echo esc_attr( $device_key ); ?>][card_min_h]" value="<?php echo '' !== $card_h ? esc_attr( $card_h ) : ''; ?>" placeholder="0" />
+                                </label>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </details>
+            </div>
             <div class="pwpl-field">
                 <label for="pwpl_table_theme"><strong><?php esc_html_e( 'Theme / Style', 'planify-wp-pricing-lite' ); ?></strong></label>
                 <select id="pwpl_table_theme" name="pwpl_table[theme]" class="widefat">
@@ -377,8 +451,8 @@ class PWPL_Admin_Meta {
             <div class="pwpl-field pwpl-badge-shadow">
                 <label for="pwpl_table_badges_shadow"><strong><?php esc_html_e( 'Badge shadow intensity', 'planify-wp-pricing-lite' ); ?></strong></label>
                 <div class="pwpl-badge-shadow__controls">
-                    <input type="range" id="pwpl_table_badges_shadow" name="pwpl_table_badges[shadow]" min="0" max="60" step="1" value="<?php echo esc_attr( $shadow ); ?>" data-pwpl-shadow-range />
-                    <output for="pwpl_table_badges_shadow" data-pwpl-shadow-value><?php echo esc_html( $shadow ); ?></output>
+                    <input type="range" id="pwpl_table_badges_shadow" name="pwpl_table_badges[shadow]" min="0" max="60" step="1" value="<?php echo esc_attr( $shadow ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_table_badges_shadow_value" data-pwpl-range-unit="" />
+                    <output id="pwpl_table_badges_shadow_value"><?php echo esc_html( $shadow ); ?></output>
                 </div>
                 <p class="description"><?php esc_html_e( '0 disables the glow. Increase the value to add more halo around badges—perfect for darker themes.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
@@ -387,6 +461,93 @@ class PWPL_Admin_Meta {
                 $this->render_badge_section( 'table', $dimension, $label, $rows, $options[ $dimension ] ?? [] );
             endforeach; ?>
             <?php $this->render_badge_priority_controls( 'table', $badges['priority'] ?? [] ); ?>
+        </div>
+        <?php
+        $size_meta   = get_post_meta( $post->ID, PWPL_Meta::TABLE_SIZE, true );
+        $meta_helper = new PWPL_Meta();
+        $size_values = $meta_helper->sanitize_table_size( is_array( $size_meta ) ? $size_meta : [] );
+        $breakpoint_meta = get_post_meta( $post->ID, PWPL_Meta::TABLE_BREAKPOINTS, true );
+        $breakpoint_values = $meta_helper->sanitize_table_breakpoints( is_array( $breakpoint_meta ) ? $breakpoint_meta : [] );
+        ?>
+        <div class="pwpl-meta pwpl-meta--layout">
+            <div class="pwpl-layout-size">
+                <h4><?php esc_html_e( 'Layout & Size', 'planify-wp-pricing-lite' ); ?></h4>
+                <p class="description"><?php esc_html_e( 'Control how wide the table can grow. Device presets let you fine tune card widths at specific breakpoints.', 'planify-wp-pricing-lite' ); ?></p>
+
+                <div class="pwpl-range-control">
+                    <label for="pwpl_table_size_min"><strong><?php esc_html_e( 'Minimum width', 'planify-wp-pricing-lite' ); ?></strong></label>
+                    <div class="pwpl-range-control__inputs">
+                        <input type="range" id="pwpl_table_size_min" name="pwpl_table[size][min]" min="320" max="1024" step="10" value="<?php echo esc_attr( $size_values['min'] ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_table_size_min_value" data-pwpl-range-unit="px" />
+                        <div class="pwpl-range-control__value"><output id="pwpl_table_size_min_value"><?php echo esc_html( $size_values['min'] ); ?>px</output></div>
+                    </div>
+                    <p class="description"><?php esc_html_e( 'The table will never shrink smaller than this value.', 'planify-wp-pricing-lite' ); ?></p>
+                </div>
+
+                <div class="pwpl-range-control">
+                    <label for="pwpl_table_size_max"><strong><?php esc_html_e( 'Maximum width', 'planify-wp-pricing-lite' ); ?></strong></label>
+                    <div class="pwpl-range-control__inputs">
+                        <input type="range" id="pwpl_table_size_max" name="pwpl_table[size][max]" min="640" max="1440" step="10" value="<?php echo esc_attr( $size_values['max'] ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_table_size_max_value" data-pwpl-range-unit="px" />
+                        <div class="pwpl-range-control__value"><output id="pwpl_table_size_max_value"><?php echo esc_html( $size_values['max'] ); ?>px</output></div>
+                    </div>
+                    <p class="description"><?php esc_html_e( 'Set the maximum width for large screens. The table stays centered inside this width.', 'planify-wp-pricing-lite' ); ?></p>
+                </div>
+
+                <?php
+                $base_value = ! empty( $size_meta['base'] ) ? (int) $size_meta['base'] : 0;
+                ?>
+                <div class="pwpl-range-control">
+                    <label for="pwpl_table_size_base"><strong><?php esc_html_e( 'Table width', 'planify-wp-pricing-lite' ); ?></strong></label>
+                    <div class="pwpl-range-control__inputs">
+                        <input type="range" id="pwpl_table_size_base" name="pwpl_table[size][base]" min="640" max="1440" step="10" value="<?php echo esc_attr( $base_value ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_table_size_base_value" data-pwpl-range-unit="px" />
+                        <div class="pwpl-range-control__value"><output id="pwpl_table_size_base_value"><?php echo $base_value ? esc_html( $base_value . 'px' ) : esc_html__( 'unset', 'planify-wp-pricing-lite' ); ?></output></div>
+                    </div>
+                    <p class="description"><?php esc_html_e( 'When set, the table centers at this width on large screens. Device presets can still override at specific breakpoints.', 'planify-wp-pricing-lite' ); ?></p>
+                </div>
+
+                <details class="pwpl-device-presets">
+                    <summary><strong><?php esc_html_e( 'Device presets', 'planify-wp-pricing-lite' ); ?></strong></summary>
+                    <p class="description"><?php esc_html_e( 'Override width and card dimensions for specific breakpoints. Leave any field blank to inherit the global setting.', 'planify-wp-pricing-lite' ); ?></p>
+                    <?php
+                    $device_map = [
+                        'big'     => __( 'Big screens (≥ 1536px)', 'planify-wp-pricing-lite' ),
+                        'desktop' => __( 'Desktop (1280–1535px)', 'planify-wp-pricing-lite' ),
+                        'laptop'  => __( 'Laptop (1024–1279px)', 'planify-wp-pricing-lite' ),
+                        'tablet'  => __( 'Tablet (768–1023px)', 'planify-wp-pricing-lite' ),
+                        'mobile'  => __( 'Mobile (≤ 767px)', 'planify-wp-pricing-lite' ),
+                    ];
+                    $device_placeholders = [
+                        'big'     => 1536,
+                        'desktop' => 1280,
+                        'laptop'  => 1024,
+                        'tablet'  => 768,
+                        'mobile'  => 360,
+                    ];
+                    foreach ( $device_map as $device_key => $device_label ) :
+                        $values    = $breakpoint_values[ $device_key ] ?? [];
+                        $table_max = isset( $values['table_max'] ) ? (int) $values['table_max'] : '';
+                        $card_min  = isset( $values['card_min'] ) ? (int) $values['card_min'] : '';
+                        $card_h    = isset( $values['card_min_h'] ) ? (int) $values['card_min_h'] : '';
+                        ?>
+                        <div class="pwpl-device-group">
+                            <h5><?php echo esc_html( $device_label ); ?></h5>
+                            <div class="pwpl-device-grid">
+                                <label>
+                                    <span><?php esc_html_e( 'Table max width (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="0" max="4000" step="10" name="pwpl_table[breakpoints][<?php echo esc_attr( $device_key ); ?>][table_max]" value="<?php echo '' !== $table_max ? esc_attr( $table_max ) : ''; ?>" placeholder="<?php echo esc_attr( $device_placeholders[ $device_key ] ); ?>" />
+                                </label>
+                                <label>
+                                    <span><?php esc_html_e( 'Card min width (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="0" max="4000" step="10" name="pwpl_table[breakpoints][<?php echo esc_attr( $device_key ); ?>][card_min]" value="<?php echo '' !== $card_min ? esc_attr( $card_min ) : ''; ?>" placeholder="280" />
+                                </label>
+                                <label>
+                                    <span><?php esc_html_e( 'Card min height (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="0" max="4000" step="10" name="pwpl_table[breakpoints][<?php echo esc_attr( $device_key ); ?>][card_min_h]" value="<?php echo '' !== $card_h ? esc_attr( $card_h ) : ''; ?>" placeholder="0" />
+                                </label>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </details>
+            </div>
         </div>
         <?php
     }
@@ -454,8 +615,8 @@ class PWPL_Admin_Meta {
                 <label for="pwpl_plan_badge_shadow"><strong><?php esc_html_e( 'Badge glow (override)', 'planify-wp-pricing-lite' ); ?></strong></label>
                 <?php $badge_shadow = (int) get_post_meta( $post->ID, PWPL_Meta::PLAN_BADGE_SHADOW, true ); ?>
                 <div>
-                    <input type="range" id="pwpl_plan_badge_shadow" name="pwpl_plan[badge_shadow]" min="0" max="60" step="1" value="<?php echo esc_attr( $badge_shadow ); ?>" />
-                    <output for="pwpl_plan_badge_shadow"><?php echo esc_html( $badge_shadow ); ?></output>
+                    <input type="range" id="pwpl_plan_badge_shadow" name="pwpl_plan[badge_shadow]" min="0" max="60" step="1" value="<?php echo esc_attr( $badge_shadow ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_plan_badge_shadow_value" data-pwpl-range-unit="" />
+                    <output id="pwpl_plan_badge_shadow_value"><?php echo esc_html( $badge_shadow ); ?></output>
                 </div>
                 <p class="description"><?php esc_html_e( 'Leave 0 to inherit from table. Increase to intensify the badge glow for this plan only.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
@@ -644,6 +805,18 @@ class PWPL_Admin_Meta {
         $theme       = $meta->sanitize_theme( $theme_input ?: 'classic' );
         update_post_meta( $post_id, PWPL_Meta::TABLE_THEME, $theme );
 
+        $size_input = isset( $input['size'] ) ? (array) $input['size'] : [];
+        $size_values = $meta->sanitize_table_size( $size_input );
+        update_post_meta( $post_id, PWPL_Meta::TABLE_SIZE, $size_values );
+
+        $breakpoints_input = isset( $input['breakpoints'] ) ? (array) $input['breakpoints'] : [];
+        $breakpoint_values  = $meta->sanitize_table_breakpoints( $breakpoints_input );
+        if ( empty( $breakpoint_values ) ) {
+            delete_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS );
+        } else {
+            update_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS, $breakpoint_values );
+        }
+
         $dimensions = isset( $input['dimensions'] ) ? (array) $input['dimensions'] : [];
         $dimensions = $meta->sanitize_dimensions( $dimensions );
         update_post_meta( $post_id, PWPL_Meta::DIMENSION_META, $dimensions );
@@ -688,7 +861,11 @@ class PWPL_Admin_Meta {
 
         $badge_shadow = isset( $input['badge_shadow'] ) ? (int) $input['badge_shadow'] : 0;
         $badge_shadow = max( 0, min( $badge_shadow, 60 ) );
-        update_post_meta( $post_id, PWPL_Meta::PLAN_BADGE_SHADOW, $badge_shadow );
+        if ( $badge_shadow > 0 ) {
+            update_post_meta( $post_id, PWPL_Meta::PLAN_BADGE_SHADOW, $badge_shadow );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::PLAN_BADGE_SHADOW );
+        }
 
         $override_input    = $_POST['pwpl_plan_badges_override'] ?? [];
         $override_enabled  = ! empty( $override_input['enabled'] );

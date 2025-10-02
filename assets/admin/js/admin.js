@@ -147,9 +147,25 @@
     togglePlanBadgeFields();
     $(document).on('change', '#pwpl_plan_badges_override_enabled', togglePlanBadgeFields);
 
-    $(document).on('input change', '[data-pwpl-shadow-range]', function(){
-      var value = $(this).val();
-      $(this).closest('.pwpl-badge-shadow').find('[data-pwpl-shadow-value]').text(value);
+    function updateRangeDisplay($input) {
+      var selector = $input.data('pwplRangeOutput');
+      if (!selector) {
+        return;
+      }
+      var unit = $input.data('pwplRangeUnit') || '';
+      var value = $input.val();
+      var $output = $(selector);
+      if ($output.length) {
+        $output.text(value + unit);
+      }
+    }
+
+    $('[data-pwpl-range]').each(function(){
+      updateRangeDisplay($(this));
+    });
+
+    $(document).on('input change', '[data-pwpl-range]', function(){
+      updateRangeDisplay($(this));
     });
   });
 })(jQuery);

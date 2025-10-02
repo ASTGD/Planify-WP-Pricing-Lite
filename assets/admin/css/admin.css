@@ -68,3 +68,58 @@
 .pwpl-copy-feedback.is-visible {
   display: block;
 }
+
+.pwpl-layout-size {
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f9fbff;
+}
+
+.pwpl-range-control {
+  margin-bottom: 16px;
+}
+
+.pwpl-range-control__inputs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pwpl-range-control__value {
+  min-width: 72px;
+  font-weight: 600;
+}
+
+.pwpl-badge-shadow__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pwpl-device-presets {
+  margin-top: 12px;
+}
+
+.pwpl-device-group {
+  border-top: 1px solid #e3e8f2;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.pwpl-device-group:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.pwpl-device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.pwpl-meta--layout {
+  display: grid;
+  gap: 16px;
+}
