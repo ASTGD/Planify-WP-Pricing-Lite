@@ -18,6 +18,9 @@ class PWPL_Meta {
     const PLAN_BADGES_OVERRIDE    = '_pwpl_badges_override';
     const TABLE_BADGES            = '_pwpl_badges';
     const TABLE_THEME             = '_pwpl_table_theme';
+    const LAYOUT_WIDTHS           = '_pwpl_layout_widths';
+    const LAYOUT_COLUMNS          = '_pwpl_layout_columns';
+    const LAYOUT_CARD_WIDTHS      = '_pwpl_layout_card_widths';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -91,6 +94,30 @@ class PWPL_Meta {
             'type'              => 'string',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => [ $this, 'sanitize_theme' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::LAYOUT_WIDTHS, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_layout_widths' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::LAYOUT_COLUMNS, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_layout_cards' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::LAYOUT_CARD_WIDTHS, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_layout_card_widths' ],
             'show_in_rest'      => false,
         ] );
 
@@ -234,7 +261,7 @@ class PWPL_Meta {
         }
 
         if ( $base > 0 ) {
-            $base = max( 640, min( $base, 1440 ) );
+            $base = max( 640, min( $base, 4000 ) );
         } else {
             $base = 0;
         }
@@ -275,6 +302,69 @@ class PWPL_Meta {
             if ( ! empty( $device_values ) ) {
                 $clean[ $device ] = $device_values;
             }
+        }
+
+        return $clean;
+    }
+
+    public function sanitize_layout_widths( $value ) {
+        $keys = [ 'global', 'sm', 'md', 'lg', 'xl', 'xxl' ];
+        $clean = [];
+
+        if ( ! is_array( $value ) ) {
+            $value = [];
+        }
+
+        foreach ( $keys as $key ) {
+            $raw = isset( $value[ $key ] ) ? (int) $value[ $key ] : 0;
+            if ( $raw > 0 ) {
+                $raw = max( 640, min( $raw, 4000 ) );
+            } else {
+                $raw = 0;
+            }
+            $clean[ $key ] = $raw;
+        }
+
+        return $clean;
+    }
+
+    public function sanitize_layout_cards( $value ) {
+        $keys = [ 'global', 'sm', 'md', 'lg', 'xl', 'xxl' ];
+        $clean = [];
+
+        if ( ! is_array( $value ) ) {
+            $value = [];
+        }
+
+        foreach ( $keys as $key ) {
+            $raw = isset( $value[ $key ] ) ? (int) $value[ $key ] : 0;
+            if ( $raw > 0 ) {
+                $raw = max( 1, min( $raw, 20 ) );
+            } else {
+                $raw = 0;
+            }
+            $clean[ $key ] = $raw;
+        }
+
+        return $clean;
+    }
+
+    public function sanitize_layout_card_widths( $value ) {
+        $keys = [ 'global', 'sm', 'md', 'lg', 'xl', 'xxl' ];
+        $clean = [];
+
+        if ( ! is_array( $value ) ) {
+            $value = [];
+        }
+
+        foreach ( $keys as $key ) {
+            $raw = isset( $value[ $key ] ) ? (int) $value[ $key ] : 0;
+            if ( $raw > 0 ) {
+                $raw = max( 1, min( $raw, 4000 ) );
+            } else {
+                $raw = 0;
+            }
+            $clean[ $key ] = $raw;
         }
 
         return $clean;
