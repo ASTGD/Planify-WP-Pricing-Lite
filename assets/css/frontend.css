@@ -1,5 +1,15 @@
 /* Planify WP Pricing Lite - frontend layout */
 
+:where(.pwpl-table) {
+  --pwpl-width-active: var(--pwpl-width-global, 1140px);
+  --pwpl-columns-default: 4;
+  --pwpl-columns-active: var(--pwpl-columns-global, var(--pwpl-columns-default));
+  --pwpl-card-min-active: var(--pwpl-card-min-global, 0px);
+  --pwpl-card-min-h-active: var(--pwpl-card-min-h-global, auto);
+  --pwpl-card-gap: 64px;
+  --pwpl-card-max: 420px;
+}
+
 .pwpl-table {
   --pwpl-radius: 18px;
   --pwpl-gap: 18px;
@@ -22,6 +32,8 @@
   --pwpl-featured-border: var(--pwpl-accent, #2563eb);
   --pwpl-featured-bg: var(--pwpl-accent, #2563eb);
   --pwpl-featured-text: var(--pwpl-accent-contrast, #ffffff);
+  --pwpl-table-active: var(--pwpl-width-active);
+
 
   border: 1px solid var(--pwpl-border, #e2e8f0);
   border-radius: var(--pwpl-radius);
@@ -30,6 +42,12 @@
   padding: 28px;
   margin: 32px 0;
   box-shadow: var(--pwpl-shadow);
+  width: 100%;
+  width: min(100%, var(--pwpl-width-active));
+  max-width: none;
+  min-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .pwpl-table__title {
@@ -125,8 +143,11 @@
 
 .pwpl-plan {
   scroll-snap-align: start;
-  flex: 0 0 280px;
-  min-width: 260px;
+  --pwpl-columns-effective: var(--pwpl-columns-active, var(--pwpl-columns-default, 4));
+  --pwpl-card-min-effective: var(--pwpl-card-min-active, 0px);
+  --pwpl-card-base: clamp(260px, calc((var(--pwpl-table-active) - var(--pwpl-card-gap, 64px)) / var(--pwpl-columns-effective)), var(--pwpl-card-max, 420px));
+  flex: 0 0 max(var(--pwpl-card-min-effective), var(--pwpl-card-base));
+  min-width: max(var(--pwpl-card-min-effective), var(--pwpl-card-base));
   background: var(--pwpl-card-bg, #f8fafc);
   border: 1px solid var(--pwpl-card-border, rgba(226, 232, 240, 0.7));
   border-radius: calc(var(--pwpl-radius) - 6px);
@@ -136,6 +157,7 @@
   gap: 18px;
   box-shadow: var(--pwpl-card-shadow, 0 14px 40px rgba(15, 23, 42, 0.12));
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  min-height: var(--pwpl-card-min-h-active, auto);
 }
 
 .pwpl-plan:hover {
@@ -434,23 +456,67 @@
   color: var(--pwpl-muted, #475569);
 }
 
-@media (max-width: 1024px) {
-  .pwpl-plan {
-    flex: 0 0 320px;
-  }
-}
-
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .pwpl-table {
     padding: 20px;
-  }
-
-  .pwpl-plan {
-    flex: 0 0 82vw;
-    min-width: 82vw;
+    --pwpl-width-active: var(--pwpl-width-sm, var(--pwpl-width-global, 1140px));
+    --pwpl-columns-default: 1;
+    --pwpl-columns-active: var(--pwpl-columns-sm, var(--pwpl-columns-global, var(--pwpl-columns-default)));
+    --pwpl-card-min-active: var(--pwpl-card-min-sm, var(--pwpl-card-min-global, 0px));
+    --pwpl-card-min-h-active: var(--pwpl-card-min-h-sm, var(--pwpl-card-min-h-global, auto));
+    --pwpl-card-gap: 0px;
+    --pwpl-card-max: 82vw;
   }
 
   .pwpl-plan__cta-button {
     width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .pwpl-table {
+    --pwpl-width-active: var(--pwpl-width-md, var(--pwpl-width-global, 1140px));
+    --pwpl-columns-default: 3;
+    --pwpl-columns-active: var(--pwpl-columns-md, var(--pwpl-columns-global, var(--pwpl-columns-default)));
+    --pwpl-card-min-active: var(--pwpl-card-min-md, var(--pwpl-card-min-global, 0px));
+    --pwpl-card-min-h-active: var(--pwpl-card-min-h-md, var(--pwpl-card-min-h-global, auto));
+    --pwpl-card-gap: 64px;
+    --pwpl-card-max: 380px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .pwpl-table {
+    --pwpl-width-active: var(--pwpl-width-lg, var(--pwpl-width-global, 1140px));
+    --pwpl-columns-default: 3;
+    --pwpl-columns-active: var(--pwpl-columns-lg, var(--pwpl-columns-global, var(--pwpl-columns-default)));
+    --pwpl-card-min-active: var(--pwpl-card-min-lg, var(--pwpl-card-min-global, 0px));
+    --pwpl-card-min-h-active: var(--pwpl-card-min-h-lg, var(--pwpl-card-min-h-global, auto));
+    --pwpl-card-gap: 64px;
+    --pwpl-card-max: 400px;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1535px) {
+  .pwpl-table {
+    --pwpl-width-active: var(--pwpl-width-xl, var(--pwpl-width-global, 1140px));
+    --pwpl-columns-default: 4;
+    --pwpl-columns-active: var(--pwpl-columns-xl, var(--pwpl-columns-global, var(--pwpl-columns-default)));
+    --pwpl-card-min-active: var(--pwpl-card-min-xl, var(--pwpl-card-min-global, 0px));
+    --pwpl-card-min-h-active: var(--pwpl-card-min-h-xl, var(--pwpl-card-min-h-global, auto));
+    --pwpl-card-gap: 92px;
+    --pwpl-card-max: 420px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .pwpl-table {
+    --pwpl-width-active: var(--pwpl-width-xxl, var(--pwpl-width-global, 1140px));
+    --pwpl-columns-default: 4;
+    --pwpl-columns-active: var(--pwpl-columns-xxl, var(--pwpl-columns-global, var(--pwpl-columns-default)));
+    --pwpl-card-min-active: var(--pwpl-card-min-xxl, var(--pwpl-card-min-global, 0px));
+    --pwpl-card-min-h-active: var(--pwpl-card-min-h-xxl, var(--pwpl-card-min-h-global, auto));
+    --pwpl-card-gap: 96px;
+    --pwpl-card-max: 440px;
   }
 }

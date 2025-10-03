@@ -10,6 +10,15 @@ class PWPL_Admin_Meta {
 
     public function add_meta_boxes() {
         add_meta_box(
+            'pwpl_table_layout',
+            __( 'Layout & Size', 'planify-wp-pricing-lite' ),
+            [ $this, 'render_table_layout_meta' ],
+            'pwpl_table',
+            'normal',
+            'high'
+        );
+
+        add_meta_box(
             'pwpl_table_dimensions',
             __( 'Dimensions & Variants', 'planify-wp-pricing-lite' ),
             [ $this, 'render_table_meta' ],
@@ -71,6 +80,235 @@ class PWPL_Admin_Meta {
 
     private function settings() {
         return new PWPL_Settings();
+    }
+
+    private function layout_has_values( array $values ) {
+        foreach ( $values as $value ) {
+            if ( is_array( $value ) ) {
+                if ( $this->layout_has_values( $value ) ) {
+                    return true;
+                }
+                continue;
+            }
+            if ( (int) $value > 0 ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function convert_legacy_layout_widths( $post_id, PWPL_Meta $meta ) {
+        $widths = $meta->sanitize_layout_widths( [] );
+
+        $legacy_size = get_post_meta( $post_id, PWPL_Meta::TABLE_SIZE, true );
+        if ( is_array( $legacy_size ) ) {
+            $legacy_size = $meta->sanitize_table_size( $legacy_size );
+            if ( ! empty( $legacy_size['base'] ) ) {
+                $widths['global'] = $legacy_size['base'];
+            } elseif ( ! empty( $legacy_size['max'] ) ) {
+                $widths['global'] = $legacy_size['max'];
+            }
+        }
+
+        $legacy_breakpoints = get_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS, true );
+        if ( is_array( $legacy_breakpoints ) ) {
+            $map = [ 'big' => 'xxl', 'desktop' => 'xl', 'laptop' => 'lg', 'tablet' => 'md', 'mobile' => 'sm' ];
+            foreach ( $legacy_breakpoints as $device => $values ) {
+                if ( ! isset( $map[ $device ] ) || ! is_array( $values ) ) {
+                    continue;
+                }
+                $raw = isset( $values['table_max'] ) ? (int) $values['table_max'] : 0;
+                if ( $raw <= 0 ) {
+                    continue;
+                }
+                $widths[ $map[ $device ] ] = max( 640, min( $raw, 4000 ) );
+            }
+        }
+
+        return $widths;
+    }
+
+    private function convert_legacy_card_widths( $post_id, PWPL_Meta $meta ) {
+        $widths = $meta->sanitize_layout_card_widths( [] );
+
+        $legacy_breakpoints = get_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS, true );
+        if ( is_array( $legacy_breakpoints ) ) {
+            $map = [ 'big' => 'xxl', 'desktop' => 'xl', 'laptop' => 'lg', 'tablet' => 'md', 'mobile' => 'sm' ];
+            foreach ( $legacy_breakpoints as $device => $values ) {
+                if ( ! isset( $map[ $device ] ) || ! is_array( $values ) ) {
+                    continue;
+                }
+                $raw = isset( $values['card_min'] ) ? (int) $values['card_min'] : 0;
+                if ( $raw <= 0 ) {
+                    continue;
+                }
+                $widths[ $map[ $device ] ] = max( 1, min( $raw, 4000 ) );
+            }
+        }
+
+        return $widths;
+    }
+
+    private function load_layout_meta( $post_id, PWPL_Meta $meta ) {
+        $widths_raw = get_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS, true );
+        $widths     = $meta->sanitize_layout_widths( is_array( $widths_raw ) ? $widths_raw : [] );
+
+        if ( ! $this->layout_has_values( $widths ) ) {
+            $converted = $this->convert_legacy_layout_widths( $post_id, $meta );
+            if ( $this->layout_has_values( $converted ) ) {
+                $widths = $meta->sanitize_layout_widths( $converted );
+                update_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS, $widths );
+            }
+        }
+
+        $columns_raw = get_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS, true );
+        $columns     = $meta->sanitize_layout_cards( is_array( $columns_raw ) ? $columns_raw : [] );
+
+        $card_widths_raw = get_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, true );
+        $card_widths     = $meta->sanitize_layout_card_widths( is_array( $card_widths_raw ) ? $card_widths_raw : [] );
+
+        if ( ! $this->layout_has_values( $card_widths ) ) {
+            $converted_cards = $this->convert_legacy_card_widths( $post_id, $meta );
+            if ( $this->layout_has_values( $converted_cards ) ) {
+                $card_widths = $meta->sanitize_layout_card_widths( $converted_cards );
+                update_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, $card_widths );
+            }
+        }
+
+        $breakpoints_raw = get_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS, true );
+        $breakpoints     = $meta->sanitize_table_breakpoints( is_array( $breakpoints_raw ) ? $breakpoints_raw : [] );
+
+        return [ $widths, $columns, $card_widths, $breakpoints ];
+    }
+
+    public function render_table_layout_meta( $post ) {
+        $meta_helper = new PWPL_Meta();
+        list( $layout_widths, $layout_columns, $card_widths, $breakpoint_values ) = $this->load_layout_meta( $post->ID, $meta_helper );
+
+        $width_labels = [
+            'global' => __( 'Global default width', 'planify-wp-pricing-lite' ),
+            'xxl'    => __( 'Big screens (≥ 1536px)', 'planify-wp-pricing-lite' ),
+            'xl'     => __( 'Desktop (1280–1535px)', 'planify-wp-pricing-lite' ),
+            'lg'     => __( 'Laptop (1024–1279px)', 'planify-wp-pricing-lite' ),
+            'md'     => __( 'Tablet (768–1023px)', 'planify-wp-pricing-lite' ),
+            'sm'     => __( 'Mobile (≤ 767px)', 'planify-wp-pricing-lite' ),
+        ];
+
+        $device_map = [
+            'xxl' => 'big',
+            'xl'  => 'desktop',
+            'lg'  => 'laptop',
+            'md'  => 'tablet',
+            'sm'  => 'mobile',
+        ];
+
+        $badge_overrides = __( 'Overrides columns', 'planify-wp-pricing-lite' );
+        $badge_inherits  = __( 'Inherits columns', 'planify-wp-pricing-lite' );
+
+        $global_width       = isset( $layout_widths['global'] ) ? (int) $layout_widths['global'] : 0;
+        $global_card_width  = isset( $card_widths['global'] ) ? (int) $card_widths['global'] : 0;
+        $global_columns     = isset( $layout_columns['global'] ) ? (int) $layout_columns['global'] : 0;
+        $global_badge_state = $global_card_width > 0 ? 'overrides' : 'inherits';
+        $global_badge_text  = $global_card_width > 0 ? $badge_overrides : $badge_inherits;
+
+        ?>
+        <div class="pwpl-meta pwpl-meta--layout" data-pwpl-layout>
+            <div class="pwpl-layout-v2">
+                <p class="description"><?php esc_html_e( 'Set a base width for the table and override it for specific breakpoints. Leave a value at 0 to inherit the global default.', 'planify-wp-pricing-lite' ); ?></p>
+
+                <div class="pwpl-range-control">
+                    <label for="pwpl_layout_width_global"><strong><?php echo esc_html( $width_labels['global'] ); ?></strong></label>
+                    <div class="pwpl-range-control__inputs">
+                        <input type="range" id="pwpl_layout_width_global" name="pwpl_table[layout][widths][global]" min="0" max="4000" step="1" value="<?php echo esc_attr( $global_width ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_layout_width_global_value" data-pwpl-range-unit="px" data-pwpl-range-empty="<?php esc_attr_e( 'inherit', 'planify-wp-pricing-lite' ); ?>" />
+                        <input type="number" id="pwpl_layout_width_global_number" class="pwpl-range-control__number" name="pwpl_table[layout][widths][global]" min="0" max="4000" step="1" value="<?php echo $global_width ? esc_attr( $global_width ) : ''; ?>" data-pwpl-range-input data-pwpl-range-sync="#pwpl_layout_width_global" />
+                        <div class="pwpl-range-control__value"><output id="pwpl_layout_width_global_value"><?php echo $global_width ? esc_html( $global_width . 'px' ) : esc_html__( 'inherit', 'planify-wp-pricing-lite' ); ?></output></div>
+                    </div>
+                    <p class="description"><?php esc_html_e( 'Applies to all devices unless overridden below.', 'planify-wp-pricing-lite' ); ?></p>
+                </div>
+
+                <fieldset class="pwpl-device-widths">
+                    <legend><?php esc_html_e( 'Device widths (px)', 'planify-wp-pricing-lite' ); ?></legend>
+                    <div class="pwpl-device-grid">
+                        <?php foreach ( [ 'xxl', 'xl', 'lg', 'md', 'sm' ] as $device_key ) :
+                            $value    = isset( $layout_widths[ $device_key ] ) ? (int) $layout_widths[ $device_key ] : 0;
+                            $input_id = 'pwpl_layout_width_' . $device_key;
+                            $number_id = $input_id . '_number';
+                            ?>
+                            <div class="pwpl-device-slider">
+                                <label for="<?php echo esc_attr( $input_id ); ?>"><span><?php echo esc_html( $width_labels[ $device_key ] ); ?></span></label>
+                                <div class="pwpl-range-control__inputs">
+                                    <input type="range" id="<?php echo esc_attr( $input_id ); ?>" name="pwpl_table[layout][widths][<?php echo esc_attr( $device_key ); ?>]" min="0" max="4000" step="1" value="<?php echo esc_attr( $value ); ?>" data-pwpl-range data-pwpl-range-output="#<?php echo esc_attr( $input_id ); ?>_value" data-pwpl-range-unit="px" data-pwpl-range-empty="<?php esc_attr_e( 'inherit', 'planify-wp-pricing-lite' ); ?>" />
+                                    <input type="number" id="<?php echo esc_attr( $number_id ); ?>" class="pwpl-range-control__number" name="pwpl_table[layout][widths][<?php echo esc_attr( $device_key ); ?>]" min="0" max="4000" step="1" value="<?php echo $value ? esc_attr( $value ) : ''; ?>" data-pwpl-range-input data-pwpl-range-sync="#<?php echo esc_attr( $input_id ); ?>" />
+                                    <div class="pwpl-range-control__value"><output id="<?php echo esc_attr( $input_id ); ?>_value"><?php echo $value ? esc_html( $value . 'px' ) : esc_html__( 'inherit', 'planify-wp-pricing-lite' ); ?></output></div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </fieldset>
+
+                <div class="pwpl-card-settings" data-pwpl-card-settings>
+                    <h4><?php esc_html_e( 'Cards', 'planify-wp-pricing-lite' ); ?></h4>
+                    <p class="description"><?php esc_html_e( 'Card min width overrides preferred columns at the same breakpoint. Clear the value to inherit columns.', 'planify-wp-pricing-lite' ); ?></p>
+
+                    <div class="pwpl-card-device pwpl-card-device--global" data-pwpl-card-row="global">
+                        <div class="pwpl-card-device__header">
+                            <span class="pwpl-card-device__label"><?php echo esc_html( $width_labels['global'] ); ?></span>
+                            <span class="pwpl-card-badge pwpl-card-badge--<?php echo esc_attr( $global_badge_state ); ?>" data-pwpl-card-badge data-overrides-label="<?php echo esc_attr( $badge_overrides ); ?>" data-inherit-label="<?php echo esc_attr( $badge_inherits ); ?>"><?php echo esc_html( $global_badge_text ); ?></span>
+                        </div>
+                        <div class="pwpl-range-control">
+                            <label for="pwpl_card_width_global"><strong><?php esc_html_e( 'Card min width', 'planify-wp-pricing-lite' ); ?></strong></label>
+                            <div class="pwpl-range-control__inputs">
+                                <input type="range" id="pwpl_card_width_global" name="pwpl_table[layout][card_widths][global]" min="0" max="4000" step="1" value="<?php echo esc_attr( $global_card_width ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_card_width_global_value" data-pwpl-range-unit="px" data-pwpl-range-empty="<?php esc_attr_e( 'inherit', 'planify-wp-pricing-lite' ); ?>" />
+                                <input type="number" id="pwpl_card_width_global_number" class="pwpl-range-control__number" name="pwpl_table[layout][card_widths][global]" min="0" max="4000" step="1" value="<?php echo $global_card_width ? esc_attr( $global_card_width ) : ''; ?>" data-pwpl-range-input data-pwpl-range-sync="#pwpl_card_width_global" />
+                                <div class="pwpl-range-control__value"><output id="pwpl_card_width_global_value"><?php echo $global_card_width ? esc_html( $global_card_width . 'px' ) : esc_html__( 'inherit', 'planify-wp-pricing-lite' ); ?></output></div>
+                            </div>
+                        </div>
+                        <label class="pwpl-card-device__columns" for="pwpl_card_columns_global">
+                            <strong><?php esc_html_e( 'Preferred columns', 'planify-wp-pricing-lite' ); ?></strong>
+                            <input type="number" id="pwpl_card_columns_global" name="pwpl_table[layout][columns][global]" min="0" max="20" step="1" value="<?php echo $global_columns ? esc_attr( $global_columns ) : ''; ?>" placeholder="<?php esc_attr_e( 'auto', 'planify-wp-pricing-lite' ); ?>" />
+                        </label>
+                    </div>
+
+                    <div class="pwpl-card-grid">
+                        <?php foreach ( $device_map as $layout_key => $legacy_key ) :
+                            $card_width   = isset( $card_widths[ $layout_key ] ) ? (int) $card_widths[ $layout_key ] : 0;
+                            $columns_val  = isset( $layout_columns[ $layout_key ] ) ? (int) $layout_columns[ $layout_key ] : 0;
+                            $height_val   = isset( $breakpoint_values[ $legacy_key ]['card_min_h'] ) ? (int) $breakpoint_values[ $legacy_key ]['card_min_h'] : 0;
+                            $badge_state  = $card_width > 0 ? 'overrides' : 'inherits';
+                            $badge_text   = $card_width > 0 ? $badge_overrides : $badge_inherits;
+                            $range_id     = 'pwpl_card_width_' . $layout_key;
+                            $number_id    = $range_id . '_number';
+                            $column_id    = 'pwpl_card_columns_' . $layout_key;
+                            $height_id    = 'pwpl_card_height_' . $layout_key;
+                            ?>
+                            <div class="pwpl-card-device" data-pwpl-card-row="<?php echo esc_attr( $layout_key ); ?>">
+                                <div class="pwpl-card-device__header">
+                                    <span class="pwpl-card-device__label"><?php echo esc_html( $width_labels[ $layout_key ] ); ?></span>
+                                    <span class="pwpl-card-badge pwpl-card-badge--<?php echo esc_attr( $badge_state ); ?>" data-pwpl-card-badge data-overrides-label="<?php echo esc_attr( $badge_overrides ); ?>" data-inherit-label="<?php echo esc_attr( $badge_inherits ); ?>"><?php echo esc_html( $badge_text ); ?></span>
+                                </div>
+                                <div class="pwpl-range-control">
+                                    <label for="<?php echo esc_attr( $range_id ); ?>"><?php esc_html_e( 'Card min width', 'planify-wp-pricing-lite' ); ?></label>
+                                    <div class="pwpl-range-control__inputs">
+                                        <input type="range" id="<?php echo esc_attr( $range_id ); ?>" name="pwpl_table[layout][card_widths][<?php echo esc_attr( $layout_key ); ?>]" min="0" max="4000" step="1" value="<?php echo esc_attr( $card_width ); ?>" data-pwpl-range data-pwpl-range-output="#<?php echo esc_attr( $range_id ); ?>_value" data-pwpl-range-unit="px" data-pwpl-range-empty="<?php esc_attr_e( 'inherit', 'planify-wp-pricing-lite' ); ?>" />
+                                        <input type="number" id="<?php echo esc_attr( $number_id ); ?>" class="pwpl-range-control__number" name="pwpl_table[layout][card_widths][<?php echo esc_attr( $layout_key ); ?>]" min="0" max="4000" step="1" value="<?php echo $card_width ? esc_attr( $card_width ) : ''; ?>" data-pwpl-range-input data-pwpl-range-sync="#<?php echo esc_attr( $range_id ); ?>" />
+                                        <div class="pwpl-range-control__value"><output id="<?php echo esc_attr( $range_id ); ?>_value"><?php echo $card_width ? esc_html( $card_width . 'px' ) : esc_html__( 'inherit', 'planify-wp-pricing-lite' ); ?></output></div>
+                                    </div>
+                                </div>
+                                <label class="pwpl-card-device__columns" for="<?php echo esc_attr( $column_id ); ?>">
+                                    <span><?php esc_html_e( 'Preferred columns', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" id="<?php echo esc_attr( $column_id ); ?>" name="pwpl_table[layout][columns][<?php echo esc_attr( $layout_key ); ?>]" min="0" max="20" step="1" value="<?php echo $columns_val ? esc_attr( $columns_val ) : ''; ?>" placeholder="<?php esc_attr_e( 'inherit', 'planify-wp-pricing-lite' ); ?>" />
+                                </label>
+                                <label class="pwpl-card-device__height" for="<?php echo esc_attr( $height_id ); ?>">
+                                    <span><?php esc_html_e( 'Min height (px, optional)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" id="<?php echo esc_attr( $height_id ); ?>" class="pwpl-range-control__number" name="pwpl_table[breakpoints][<?php echo esc_attr( $legacy_key ); ?>][card_min_h]" min="0" max="4000" step="1" value="<?php echo $height_val ? esc_attr( $height_val ) : ''; ?>" placeholder="<?php esc_attr_e( 'auto', 'planify-wp-pricing-lite' ); ?>" />
+                                </label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php
     }
 
     private function get_dimension_catalog() {
@@ -377,8 +615,8 @@ class PWPL_Admin_Meta {
             <div class="pwpl-field pwpl-badge-shadow">
                 <label for="pwpl_table_badges_shadow"><strong><?php esc_html_e( 'Badge shadow intensity', 'planify-wp-pricing-lite' ); ?></strong></label>
                 <div class="pwpl-badge-shadow__controls">
-                    <input type="range" id="pwpl_table_badges_shadow" name="pwpl_table_badges[shadow]" min="0" max="60" step="1" value="<?php echo esc_attr( $shadow ); ?>" data-pwpl-shadow-range />
-                    <output for="pwpl_table_badges_shadow" data-pwpl-shadow-value><?php echo esc_html( $shadow ); ?></output>
+                    <input type="range" id="pwpl_table_badges_shadow" name="pwpl_table_badges[shadow]" min="0" max="60" step="1" value="<?php echo esc_attr( $shadow ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_table_badges_shadow_value" data-pwpl-range-unit="" />
+                    <output id="pwpl_table_badges_shadow_value"><?php echo esc_html( $shadow ); ?></output>
                 </div>
                 <p class="description"><?php esc_html_e( '0 disables the glow. Increase the value to add more halo around badges—perfect for darker themes.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
@@ -388,6 +626,13 @@ class PWPL_Admin_Meta {
             endforeach; ?>
             <?php $this->render_badge_priority_controls( 'table', $badges['priority'] ?? [] ); ?>
         </div>
+        <?php
+        $size_meta   = get_post_meta( $post->ID, PWPL_Meta::TABLE_SIZE, true );
+        $meta_helper = new PWPL_Meta();
+        $size_values = $meta_helper->sanitize_table_size( is_array( $size_meta ) ? $size_meta : [] );
+        $breakpoint_meta = get_post_meta( $post->ID, PWPL_Meta::TABLE_BREAKPOINTS, true );
+        $breakpoint_values = $meta_helper->sanitize_table_breakpoints( is_array( $breakpoint_meta ) ? $breakpoint_meta : [] );
+        ?>
         <?php
     }
 
@@ -454,8 +699,8 @@ class PWPL_Admin_Meta {
                 <label for="pwpl_plan_badge_shadow"><strong><?php esc_html_e( 'Badge glow (override)', 'planify-wp-pricing-lite' ); ?></strong></label>
                 <?php $badge_shadow = (int) get_post_meta( $post->ID, PWPL_Meta::PLAN_BADGE_SHADOW, true ); ?>
                 <div>
-                    <input type="range" id="pwpl_plan_badge_shadow" name="pwpl_plan[badge_shadow]" min="0" max="60" step="1" value="<?php echo esc_attr( $badge_shadow ); ?>" />
-                    <output for="pwpl_plan_badge_shadow"><?php echo esc_html( $badge_shadow ); ?></output>
+                    <input type="range" id="pwpl_plan_badge_shadow" name="pwpl_plan[badge_shadow]" min="0" max="60" step="1" value="<?php echo esc_attr( $badge_shadow ); ?>" data-pwpl-range data-pwpl-range-output="#pwpl_plan_badge_shadow_value" data-pwpl-range-unit="" />
+                    <output id="pwpl_plan_badge_shadow_value"><?php echo esc_html( $badge_shadow ); ?></output>
                 </div>
                 <p class="description"><?php esc_html_e( 'Leave 0 to inherit from table. Increase to intensify the badge glow for this plan only.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
@@ -644,6 +889,53 @@ class PWPL_Admin_Meta {
         $theme       = $meta->sanitize_theme( $theme_input ?: 'classic' );
         update_post_meta( $post_id, PWPL_Meta::TABLE_THEME, $theme );
 
+        $layout_input = isset( $input['layout'] ) ? (array) $input['layout'] : [];
+        $layout_widths_input = isset( $layout_input['widths'] ) ? (array) $layout_input['widths'] : [];
+        $layout_widths       = $meta->sanitize_layout_widths( $layout_widths_input );
+
+        if ( $this->layout_has_values( $layout_widths ) ) {
+            update_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS, $layout_widths );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS );
+        }
+
+        $layout_columns_input = isset( $layout_input['columns'] ) ? (array) $layout_input['columns'] : [];
+        $layout_columns       = $meta->sanitize_layout_cards( $layout_columns_input );
+
+        if ( $this->layout_has_values( $layout_columns ) ) {
+            update_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS, $layout_columns );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS );
+        }
+
+        $layout_card_widths_input = isset( $layout_input['card_widths'] ) ? (array) $layout_input['card_widths'] : [];
+        $layout_card_widths       = $meta->sanitize_layout_card_widths( $layout_card_widths_input );
+
+        if ( $this->layout_has_values( $layout_card_widths ) ) {
+            update_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, $layout_card_widths );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS );
+        }
+
+        // Optional plan card size controls (legacy breakpoint container)
+        $breakpoints_input  = isset( $input['breakpoints'] ) ? (array) $input['breakpoints'] : [];
+        $breakpoint_values  = $meta->sanitize_table_breakpoints( $breakpoints_input );
+        if ( ! empty( $breakpoint_values ) ) {
+            foreach ( $breakpoint_values as $device => $values ) {
+                if ( isset( $breakpoint_values[ $device ]['card_min'] ) ) {
+                    unset( $breakpoint_values[ $device ]['card_min'] );
+                }
+                if ( empty( $breakpoint_values[ $device ] ) ) {
+                    unset( $breakpoint_values[ $device ] );
+                }
+            }
+        }
+        if ( empty( $breakpoint_values ) ) {
+            delete_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS );
+        } else {
+            update_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS, $breakpoint_values );
+        }
+
         $dimensions = isset( $input['dimensions'] ) ? (array) $input['dimensions'] : [];
         $dimensions = $meta->sanitize_dimensions( $dimensions );
         update_post_meta( $post_id, PWPL_Meta::DIMENSION_META, $dimensions );
@@ -688,7 +980,11 @@ class PWPL_Admin_Meta {
 
         $badge_shadow = isset( $input['badge_shadow'] ) ? (int) $input['badge_shadow'] : 0;
         $badge_shadow = max( 0, min( $badge_shadow, 60 ) );
-        update_post_meta( $post_id, PWPL_Meta::PLAN_BADGE_SHADOW, $badge_shadow );
+        if ( $badge_shadow > 0 ) {
+            update_post_meta( $post_id, PWPL_Meta::PLAN_BADGE_SHADOW, $badge_shadow );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::PLAN_BADGE_SHADOW );
+        }
 
         $override_input    = $_POST['pwpl_plan_badges_override'] ?? [];
         $override_enabled  = ! empty( $override_input['enabled'] );

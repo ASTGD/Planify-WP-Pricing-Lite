@@ -147,9 +147,157 @@
     togglePlanBadgeFields();
     $(document).on('change', '#pwpl_plan_badges_override_enabled', togglePlanBadgeFields);
 
-    $(document).on('input change', '[data-pwpl-shadow-range]', function(){
-      var value = $(this).val();
-      $(this).closest('.pwpl-badge-shadow').find('[data-pwpl-shadow-value]').text(value);
+    function syncRangePair($range, $number) {
+      if (!$range || !$range.length || !$number || !$number.length) {
+        return;
+      }
+
+      var min = parseInt($range.attr('min'), 10);
+      if (isNaN(min)) {
+        min = 0;
+      }
+      var max = parseInt($range.attr('max'), 10);
+      if (isNaN(max)) {
+        max = 4000;
+      }
+      var step = parseInt($range.attr('step'), 10);
+      if (isNaN(step) || step <= 0) {
+        step = 1;
+      }
+
+      var value = parseInt($range.val(), 10);
+      if (isNaN(value) || value <= 0) {
+        value = 0;
+      }
+
+      if (step && value !== 0) {
+        value = Math.round(value / step) * step;
+      }
+
+      if (value > max) {
+        value = max;
+      }
+
+      if (value !== 0 && value < min) {
+        value = min;
+      }
+
+      if (value === 0) {
+        $range.val(0);
+        $number.val('');
+      } else {
+        $range.val(value);
+        $number.val(value);
+      }
+    }
+
+    function findLinkedRange($number) {
+      if (!$number || !$number.length) {
+        return $();
+      }
+      var selector = $number.data('pwplRangeSync');
+      if (selector) {
+        var $linked = $(selector);
+        if ($linked.length) {
+          return $linked.first();
+        }
+      }
+      return $number.closest('.pwpl-range-control__inputs').find('[data-pwpl-range]').first();
+    }
+
+    function updateCardBadgeState($range) {
+      var $row = $range.closest('[data-pwpl-card-row]');
+      if (!$row.length) {
+        return;
+      }
+      var $badge = $row.find('[data-pwpl-card-badge]').first();
+      if (!$badge.length) {
+        return;
+      }
+
+      var overridesLabel = $badge.data('overridesLabel') || 'Overrides columns';
+      var inheritLabel = $badge.data('inheritLabel') || 'Inherits columns';
+      var value = parseInt($range.val(), 10);
+      if (isNaN(value)) {
+        value = 0;
+      }
+
+      var overrides = value > 0;
+      $badge
+        .text(overrides ? overridesLabel : inheritLabel)
+        .toggleClass('pwpl-card-badge--overrides', overrides)
+        .toggleClass('pwpl-card-badge--inherits', !overrides);
+    }
+
+    function updateRangeDisplay($input) {
+      var selector = $input.data('pwplRangeOutput');
+      if (!selector) {
+        return;
+      }
+      var unit = $input.data('pwplRangeUnit') || '';
+      var emptyLabel = $input.data('pwplRangeEmpty') || '';
+      var value = $input.val();
+      var display;
+
+      if (!value || value === '0') {
+        display = emptyLabel || (unit ? 'inherit' : 'inherit');
+      } else {
+        display = value + unit;
+      }
+
+      var $output = $(selector);
+      if ($output.length) {
+        $output.text(display);
+      }
+    }
+
+    $('[data-pwpl-range]').each(function(){
+      var $range = $(this);
+      var $number = $range.closest('.pwpl-range-control__inputs').find('[data-pwpl-range-input]').first();
+      if ($number.length) {
+        syncRangePair($range, $number);
+      }
+      updateRangeDisplay($range);
+      updateCardBadgeState($range);
+    });
+
+    $(document).on('input change', '[data-pwpl-range]', function(){
+      var $range = $(this);
+      var $number = $range.closest('.pwpl-range-control__inputs').find('[data-pwpl-range-input]').first();
+      if ($number.length) {
+        syncRangePair($range, $number);
+      }
+      updateRangeDisplay($range);
+      updateCardBadgeState($range);
+    });
+
+    $(document).on('input change', '[data-pwpl-range-input]', function(){
+      var $number = $(this);
+      var $range = findLinkedRange($number);
+      if (!$range.length) {
+        return;
+      }
+
+      var raw = $number.val();
+      if (raw === '') {
+        $range.val(0);
+      } else {
+        var numeric = parseInt(raw, 10);
+        if (isNaN(numeric) || numeric < 0) {
+          numeric = 0;
+        }
+
+        var max = parseInt($range.attr('max'), 10);
+        if (!isNaN(max) && numeric > max) {
+          numeric = max;
+        }
+
+        $range.val(numeric);
+      }
+
+      syncRangePair($range, $number);
+      updateRangeDisplay($range);
+      updateCardBadgeState($range);
     });
   });
 })(jQuery);

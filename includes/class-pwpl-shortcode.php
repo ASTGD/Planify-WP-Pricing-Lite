@@ -135,12 +135,115 @@ class PWPL_Shortcode {
         $table_theme = get_post_meta( $table_id, PWPL_Meta::TABLE_THEME, true );
         $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
 
+        $size_meta  = get_post_meta( $table_id, PWPL_Meta::TABLE_SIZE, true );
+        $size_values = $meta_helper->sanitize_table_size( is_array( $size_meta ) ? $size_meta : [] );
+
+        $layout_widths_raw = get_post_meta( $table_id, PWPL_Meta::LAYOUT_WIDTHS, true );
+        $layout_widths     = $meta_helper->sanitize_layout_widths( is_array( $layout_widths_raw ) ? $layout_widths_raw : [] );
+
+        $layout_columns_raw = get_post_meta( $table_id, PWPL_Meta::LAYOUT_COLUMNS, true );
+        $layout_columns     = $meta_helper->sanitize_layout_cards( is_array( $layout_columns_raw ) ? $layout_columns_raw : [] );
+
+        $card_widths_raw = get_post_meta( $table_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, true );
+        $card_widths     = $meta_helper->sanitize_layout_card_widths( is_array( $card_widths_raw ) ? $card_widths_raw : [] );
+
+        $breakpoint_meta    = get_post_meta( $table_id, PWPL_Meta::TABLE_BREAKPOINTS, true );
+        $breakpoint_values  = $meta_helper->sanitize_table_breakpoints( is_array( $breakpoint_meta ) ? $breakpoint_meta : [] );
+
+        if ( ! array_filter( $layout_widths ) ) {
+            if ( ! empty( $size_values['base'] ) ) {
+                $layout_widths['global'] = max( 640, min( (int) $size_values['base'], 4000 ) );
+            } elseif ( ! empty( $size_values['max'] ) ) {
+                $layout_widths['global'] = max( 640, min( (int) $size_values['max'], 4000 ) );
+            }
+
+            $legacy_map = [ 'big' => 'xxl', 'desktop' => 'xl', 'laptop' => 'lg', 'tablet' => 'md', 'mobile' => 'sm' ];
+            foreach ( $legacy_map as $legacy_key => $target_key ) {
+                if ( empty( $breakpoint_values[ $legacy_key ]['table_max'] ) ) {
+                    continue;
+                }
+                $layout_widths[ $target_key ] = max( 640, min( (int) $breakpoint_values[ $legacy_key ]['table_max'], 4000 ) );
+            }
+        }
+
+        if ( ! array_filter( $card_widths ) && ! empty( $breakpoint_values ) ) {
+            foreach ( [ 'mobile' => 'sm', 'tablet' => 'md', 'laptop' => 'lg', 'desktop' => 'xl', 'big' => 'xxl' ] as $legacy_device => $layout_key ) {
+                if ( empty( $breakpoint_values[ $legacy_device ]['card_min'] ) ) {
+                    continue;
+                }
+                $card_widths[ $layout_key ] = max( 1, min( (int) $breakpoint_values[ $legacy_device ]['card_min'], 4000 ) );
+            }
+        }
+
         $badge_shadow = isset( $table_badges['shadow'] ) ? (int) $table_badges['shadow'] : 0;
         $badge_shadow = max( 0, min( $badge_shadow, 60 ) );
-        $table_style_attr = '';
+
+        $style_vars = [
+            '--pwpl-table-min'   => '320px',
+            '--pwpl-table-active'=> 'var(--pwpl-width-active)',
+            '--pwpl-table-max'   => 'var(--pwpl-width-active)',
+        ];
+
         if ( $badge_shadow > 0 ) {
-            $table_style_attr = ' style="--pwpl-badge-shadow-strength:' . esc_attr( $badge_shadow ) . ';"';
+            $style_vars['--pwpl-badge-shadow-strength'] = $badge_shadow;
         }
+
+        if ( ! empty( $layout_widths['global'] ) ) {
+            $style_vars['--pwpl-width-global'] = $layout_widths['global'] . 'px';
+        }
+        if ( ! empty( $layout_columns['global'] ) ) {
+            $style_vars['--pwpl-columns-global'] = (int) $layout_columns['global'];
+        }
+        if ( ! empty( $card_widths['global'] ) ) {
+            $style_vars['--pwpl-card-min-global'] = (int) $card_widths['global'] . 'px';
+        }
+
+        $device_suffix = [
+            'sm'  => 'mobile',
+            'md'  => 'tablet',
+            'lg'  => 'laptop',
+            'xl'  => 'desktop',
+            'xxl' => 'big',
+        ];
+
+        foreach ( $device_suffix as $var_key => $legacy_key ) {
+            $width_value = isset( $layout_widths[ $var_key ] ) ? (int) $layout_widths[ $var_key ] : 0;
+            if ( $width_value > 0 ) {
+                $style_vars[ '--pwpl-width-' . $var_key ] = $width_value . 'px';
+                $style_vars[ '--pwpl-table-max-' . $var_key ] = 'var(--pwpl-width-' . $var_key . ')';
+            }
+
+            $column_value = isset( $layout_columns[ $var_key ] ) ? (int) $layout_columns[ $var_key ] : 0;
+            if ( $column_value >= 1 ) {
+                $style_vars[ '--pwpl-columns-' . $var_key ] = $column_value;
+            }
+
+            $card_width_value = isset( $card_widths[ $var_key ] ) ? (int) $card_widths[ $var_key ] : 0;
+            if ( $card_width_value > 0 ) {
+                $style_vars[ '--pwpl-card-min-' . $var_key ] = $card_width_value . 'px';
+            }
+        }
+
+        // Legacy card height overrides
+        foreach ( [ 'mobile' => 'sm', 'tablet' => 'md', 'laptop' => 'lg', 'desktop' => 'xl', 'big' => 'xxl' ] as $legacy_device => $suffix ) {
+            if ( empty( $breakpoint_values[ $legacy_device ] ) ) {
+                continue;
+            }
+            $values = $breakpoint_values[ $legacy_device ];
+            if ( ! empty( $values['card_min_h'] ) ) {
+                $style_vars[ '--pwpl-card-min-h-' . $suffix ] = (int) $values['card_min_h'] . 'px';
+            }
+        }
+
+        $style_inline = '';
+        foreach ( $style_vars as $var => $value ) {
+            if ( '' === $value && '0' !== $value ) {
+                continue;
+            }
+            $style_inline .= $var . ':' . $value . ';';
+        }
+
+        $table_style_attr = $style_inline ? ' style="' . esc_attr( $style_inline ) . '"' : '';
 
         ob_start();
         ?>

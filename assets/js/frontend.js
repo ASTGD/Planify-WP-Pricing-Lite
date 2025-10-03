@@ -476,12 +476,13 @@
 
         function updateNavVisibility() {
             const scrollLeft = rail.scrollLeft;
-            const maxScroll = rail.scrollWidth - rail.clientWidth - 1;
+            const maxScroll = Math.max(rail.scrollWidth - rail.clientWidth, 0);
+            const tolerance = 1;
             if (prevNav) {
-                prevNav.hidden = scrollLeft <= 0;
+                prevNav.hidden = scrollLeft <= tolerance;
             }
             if (nextNav) {
-                nextNav.hidden = scrollLeft >= maxScroll;
+                nextNav.hidden = scrollLeft >= (maxScroll - tolerance);
             }
         }
 
@@ -506,6 +507,10 @@
         window.addEventListener('resize', updateNavVisibility);
 
         // Initial visibility
-        setTimeout(updateNavVisibility, 0);
+        if (typeof window.requestAnimationFrame === 'function') {
+            window.requestAnimationFrame(updateNavVisibility);
+        } else {
+            setTimeout(updateNavVisibility, 0);
+        }
     }
 })();

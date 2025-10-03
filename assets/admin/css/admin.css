@@ -68,3 +68,201 @@
 .pwpl-copy-feedback.is-visible {
   display: block;
 }
+
+.pwpl-layout-size {
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f9fbff;
+}
+
+.pwpl-layout-v2 {
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  background: #f9fbff;
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.pwpl-range-control {
+  margin-bottom: 16px;
+}
+
+.pwpl-range-control__inputs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pwpl-range-control__value {
+  min-width: 72px;
+  font-weight: 600;
+}
+
+.pwpl-range-control__inputs input[type="range"] {
+  flex: 1 1 200px;
+  min-width: 160px;
+}
+
+.pwpl-range-control__number {
+  width: 110px;
+  max-width: 140px;
+}
+
+@media (max-width: 600px) {
+  .pwpl-range-control__number {
+    width: 100%;
+    max-width: none;
+  }
+
+  .pwpl-range-control__inputs {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pwpl-range-control__inputs input[type="range"] {
+    width: 100%;
+  }
+
+  .pwpl-range-control__value {
+    align-self: flex-start;
+  }
+}
+
+.pwpl-badge-shadow__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pwpl-device-presets {
+  margin-top: 12px;
+}
+
+.pwpl-device-group {
+  border-top: 1px solid #e3e8f2;
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.pwpl-device-group:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.pwpl-device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.pwpl-device-widths {
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fff;
+}
+
+.pwpl-device-widths legend {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.pwpl-device-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #e5ecf6;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.pwpl-card-layout {
+  margin-top: 12px;
+}
+
+.pwpl-card-layout summary {
+  font-weight: 600;
+}
+
+.pwpl-meta--layout {
+  display: grid;
+  gap: 16px;
+}
+
+.pwpl-card-settings {
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.pwpl-card-device {
+  border: 1px solid #e5ecf6;
+  border-radius: 6px;
+  background: #f9fbff;
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.pwpl-card-device--global {
+  background: #eef5ff;
+}
+
+.pwpl-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.pwpl-card-device__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pwpl-card-device__label {
+  font-weight: 600;
+}
+
+.pwpl-card-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.pwpl-card-badge--overrides {
+  background: rgba(37, 99, 235, 0.16);
+  color: #1d4ed8;
+}
+
+.pwpl-card-badge--inherits {
+  background: rgba(148, 163, 184, 0.28);
+  color: #1f2937;
+}
+
+.pwpl-card-device__columns,
+.pwpl-card-device__height {
+  display: grid;
+  gap: 6px;
+}
+
+.pwpl-card-device__columns input,
+.pwpl-card-device__height input {
+  width: 100%;
+}
