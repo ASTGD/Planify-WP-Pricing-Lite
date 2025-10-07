@@ -456,6 +456,10 @@
   color: var(--pwpl-muted, #475569);
 }
 
+.pwpl-hidden {
+  display: none !important;
+}
+
 @media (max-width: 767px) {
   .pwpl-table {
     padding: 20px;

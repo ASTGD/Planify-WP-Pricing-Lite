@@ -266,3 +266,49 @@
 .pwpl-card-device__height input {
   width: 100%;
 }
+
+.pwpl-platform-order {
+  margin-top: 12px;
+  border: 1px solid #dbe4f0;
+  border-radius: 6px;
+  padding: 12px;
+  background: #ffffff;
+  display: grid;
+  gap: 10px;
+}
+
+.pwpl-platform-order__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.pwpl-platform-order__default {
+  font-size: 13px;
+  color: #475569;
+}
+
+.pwpl-platform-order__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.pwpl-platform-order__list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  border: 1px solid #e5ecf6;
+  border-radius: 4px;
+  background: #f8fbff;
+}
+
+.pwpl-order-actions {
+  display: flex;
+  gap: 6px;
+}

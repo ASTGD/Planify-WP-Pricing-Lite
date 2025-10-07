@@ -299,5 +299,117 @@
       updateRangeDisplay($range);
       updateCardBadgeState($range);
     });
+
+    var $platformDimension = $('.pwpl-dimension[data-dimension="platform"]');
+    if ($platformDimension.length) {
+      var $orderWrapper = $platformDimension.find('[data-pwpl-platform-order]');
+      if ($orderWrapper.length) {
+        var $orderList = $orderWrapper.find('[data-pwpl-order-list]');
+        var $orderInput = $orderWrapper.find('[data-pwpl-order-input]');
+        var $defaultLabel = $orderWrapper.find('[data-pwpl-order-default]');
+        var emptyLabel = $defaultLabel.data('emptyLabel') || '—';
+        var labelMoveUp = $orderWrapper.data('labelMoveUp') || 'Move up';
+        var labelMoveDown = $orderWrapper.data('labelMoveDown') || 'Move down';
+        var $platformCheckboxes = $platformDimension.find('input[name="pwpl_table[allowed][platform][]"]');
+        var labelMap = {};
+
+        $platformCheckboxes.each(function(){
+          var $input = $(this);
+          var slug = $input.val();
+          var label = $input.data('pwplDimensionItemLabel') || $input.closest('label').text().trim();
+          labelMap[slug] = label;
+        });
+
+        function currentOrder() {
+          return $orderList.find('li').map(function(){
+            return $(this).data('value');
+          }).get();
+        }
+
+        function renderOrder(order) {
+          $orderList.empty();
+          order.forEach(function(slug){
+            if (!slug || !labelMap[slug]) {
+              return;
+            }
+            var $li = $('<li/>', { 'data-value': slug });
+            $li.append($('<span/>').text(labelMap[slug]));
+            var $actions = $('<div/>', { 'class': 'pwpl-order-actions' });
+            $actions.append(
+              $('<button/>', {
+                'type': 'button',
+                'class': 'button button-small',
+                'data-pwpl-move': 'up',
+                'aria-label': labelMoveUp
+              }).html('&#8593;'),
+              $('<button/>', {
+                'type': 'button',
+                'class': 'button button-small',
+                'data-pwpl-move': 'down',
+                'aria-label': labelMoveDown
+              }).html('&#8595;')
+            );
+            $li.append($actions);
+            $orderList.append($li);
+          });
+          syncOrderInput();
+        }
+
+        function syncOrderInput() {
+          var order = currentOrder();
+          $orderInput.val(order.join(','));
+          var first = order[0] || '';
+          if (first && labelMap[first]) {
+            $defaultLabel.text(labelMap[first]);
+          } else {
+            $defaultLabel.text(emptyLabel);
+          }
+        }
+
+        function rebuildOrderFromSelection() {
+          var selected = $platformCheckboxes.filter(':checked').map(function(){
+            return $(this).val();
+          }).get();
+          var newOrder = [];
+          currentOrder().forEach(function(slug){
+            if (selected.indexOf(slug) !== -1 && newOrder.indexOf(slug) === -1) {
+              newOrder.push(slug);
+            }
+          });
+          selected.forEach(function(slug){
+            if (newOrder.indexOf(slug) === -1) {
+              newOrder.push(slug);
+            }
+          });
+          renderOrder(newOrder);
+        }
+
+        $orderList.on('click', '[data-pwpl-move]', function(){
+          var $button = $(this);
+          var direction = $button.data('pwplMove');
+          var $item = $button.closest('li');
+          if (!$item.length) {
+            return;
+          }
+          if (direction === 'up') {
+            var $prev = $item.prev('li');
+            if ($prev.length) {
+              $item.insertBefore($prev);
+            }
+          } else if (direction === 'down') {
+            var $next = $item.next('li');
+            if ($next.length) {
+              $item.insertAfter($next);
+            }
+          }
+          syncOrderInput();
+        });
+
+        $platformDimension.on('change', 'input[name="pwpl_table[allowed][platform][]"]', rebuildOrderFromSelection);
+
+        syncOrderInput();
+        rebuildOrderFromSelection();
+      }
+    }
   });
 })(jQuery);
