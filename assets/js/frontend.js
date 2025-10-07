@@ -157,6 +157,52 @@
         });
     }
 
+    // Apply availability filtering to period tabs and return the active period slug.
+    function filterPeriodsByPlatform(table, platform) {
+        const nav = table.querySelector('.pwpl-dimension-nav[data-dimension="period"]');
+        if (!nav) {
+            return '';
+        }
+        const availability = table.dataset.availability ? safeParseJSON(table.dataset.availability, {}) : {};
+        const periodsByPlatform = availability.periodsByPlatform || {};
+        const allowedPeriods = platform && periodsByPlatform[platform] ? periodsByPlatform[platform] : [];
+        const tabs = nav.querySelectorAll('.pwpl-tab');
+        let activeSlug = table.dataset.activePeriod || '';
+        tabs.forEach(function(tab){
+            const slug = tab.dataset.value || '';
+            const allowed = !allowedPeriods.length || allowedPeriods.indexOf(slug) !== -1;
+            tab.classList.toggle('pwpl-hidden', !allowed);
+            if (!allowed && tab.classList.contains('is-active')) {
+                tab.classList.remove('is-active');
+                tab.setAttribute('aria-pressed', 'false');
+                activeSlug = '';
+            }
+        });
+
+        // Ensure there is an active period; fall back to first visible.
+        if (!activeSlug) {
+            const firstVisible = nav.querySelector('.pwpl-tab:not(.pwpl-hidden)');
+            if (firstVisible) {
+                activeSlug = firstVisible.dataset.value || '';
+                setActive(table, 'period', activeSlug, firstVisible);
+            }
+        }
+
+        return activeSlug;
+    }
+
+    function safeParseJSON(raw, fallback) {
+        if (!raw) {
+            return fallback;
+        }
+        try {
+            const parsed = JSON.parse(raw);
+            return parsed || fallback;
+        } catch (err) {
+            return fallback;
+        }
+    }
+
     function ensurePlatformDefault(table) {
         const allowed = parseAllowedPlatforms(table);
         if (!allowed.length) {
@@ -544,6 +590,9 @@
 
     document.querySelectorAll('.pwpl-table').forEach(function(table){
         ensurePlatformDefault(table);
+        if (table.dataset.activePlatform) {
+            filterPeriodsByPlatform(table, table.dataset.activePlatform);
+        }
         enhanceRail(table);
         updateTable(table);
     });
