@@ -369,6 +369,19 @@ class PWPL_Admin_Meta {
         return $options;
     }
 
+    private function find_dimension_item_label( array $items, $slug ) {
+        if ( ! $slug ) {
+            return '';
+        }
+        foreach ( $items as $item ) {
+            if ( ! isset( $item['slug'] ) || $item['slug'] !== $slug ) {
+                continue;
+            }
+            return isset( $item['label'] ) ? (string) $item['label'] : (string) $slug;
+        }
+        return '';
+    }
+
     private function render_badge_priority_controls( $context, $selected ) {
         $field_prefix = $context === 'table' ? 'pwpl_table_badges' : 'pwpl_plan_badges_override';
         $dimensions   = [ 'period', 'location', 'platform' ];
@@ -579,12 +592,42 @@ class PWPL_Admin_Meta {
                                 $name  = sprintf( 'pwpl_table[allowed][%s][]', $key );
                                 ?>
                                 <label class="pwpl-dimension-option">
-                                    <input type="checkbox" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $slug ); ?>" <?php checked( in_array( $slug, $config['allowed'], true ) ); ?> />
+                                    <input type="checkbox" name="<?php echo esc_attr( $name ); ?>" value="<?php echo esc_attr( $slug ); ?>" data-pwpl-dimension-item-label="<?php echo esc_attr( $label ); ?>" <?php checked( in_array( $slug, $config['allowed'], true ) ); ?> />
                                     <?php echo esc_html( $label ); ?>
                                 </label>
                             <?php endforeach; ?>
                         <?php else : ?>
                             <p class="description"><?php esc_html_e( 'No values defined. Add options in Settings → Dimensions & Variants.', 'planify-wp-pricing-lite' ); ?></p>
+                        <?php endif; ?>
+                        <?php if ( 'platform' === $key ) :
+                            $order_value = implode( ',', array_map( 'sanitize_title', (array) $config['allowed'] ) );
+                            $default_platform_slug = $config['allowed'][0] ?? '';
+                            $default_platform_label = $this->find_dimension_item_label( $platforms, $default_platform_slug );
+                            ?>
+                            <div class="pwpl-platform-order" data-pwpl-platform-order data-label-move-up="<?php esc_attr_e( 'Move up', 'planify-wp-pricing-lite' ); ?>" data-label-move-down="<?php esc_attr_e( 'Move down', 'planify-wp-pricing-lite' ); ?>">
+                                <input type="hidden" name="pwpl_table[allowed_order][platform]" value="<?php echo esc_attr( $order_value ); ?>" data-pwpl-order-input />
+                                <div class="pwpl-platform-order__header">
+                                    <strong><?php esc_html_e( 'Tab order', 'planify-wp-pricing-lite' ); ?></strong>
+                                    <span class="pwpl-platform-order__default" data-pwpl-order-default data-empty-label="<?php esc_attr_e( 'None selected', 'planify-wp-pricing-lite' ); ?>"><?php echo $default_platform_label ? esc_html( $default_platform_label ) : esc_html__( 'None selected', 'planify-wp-pricing-lite' ); ?></span>
+                                </div>
+                                <ol class="pwpl-platform-order__list" data-pwpl-order-list>
+                                    <?php foreach ( (array) $config['allowed'] as $ordered_slug ) :
+                                        $ordered_label = $this->find_dimension_item_label( $platforms, $ordered_slug );
+                                        if ( ! $ordered_label ) {
+                                            continue;
+                                        }
+                                        ?>
+                                        <li data-value="<?php echo esc_attr( $ordered_slug ); ?>">
+                                            <span><?php echo esc_html( $ordered_label ); ?></span>
+                                            <div class="pwpl-order-actions">
+                                                <button type="button" class="button button-small" data-pwpl-move="up" aria-label="<?php esc_attr_e( 'Move up', 'planify-wp-pricing-lite' ); ?>">&#8593;</button>
+                                                <button type="button" class="button button-small" data-pwpl-move="down" aria-label="<?php esc_attr_e( 'Move down', 'planify-wp-pricing-lite' ); ?>">&#8595;</button>
+                                            </div>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ol>
+                                <p class="description"><?php esc_html_e( 'The first platform determines the initially active tab.', 'planify-wp-pricing-lite' ); ?></p>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -941,10 +984,29 @@ class PWPL_Admin_Meta {
         update_post_meta( $post_id, PWPL_Meta::DIMENSION_META, $dimensions );
 
         $allowed = $input['allowed'] ?? [];
+        $allowed_order_input = isset( $input['allowed_order'] ) && is_array( $input['allowed_order'] ) ? $input['allowed_order'] : [];
 
         $platforms = isset( $allowed['platform'] ) ? (array) $allowed['platform'] : [];
         $platform_slugs = wp_list_pluck( (array) $settings->get( 'platforms' ), 'slug' );
         $platforms = array_values( array_intersect( array_map( 'sanitize_title', $platforms ), $platform_slugs ) );
+
+        if ( ! empty( $allowed_order_input['platform'] ) ) {
+            $order = array_filter( array_map( 'sanitize_title', explode( ',', $allowed_order_input['platform'] ) ) );
+            if ( $order ) {
+                $ordered = [];
+                foreach ( $order as $slug ) {
+                    if ( in_array( $slug, $platforms, true ) && ! in_array( $slug, $ordered, true ) ) {
+                        $ordered[] = $slug;
+                    }
+                }
+                foreach ( $platforms as $slug ) {
+                    if ( ! in_array( $slug, $ordered, true ) ) {
+                        $ordered[] = $slug;
+                    }
+                }
+                $platforms = $ordered;
+            }
+        }
         update_post_meta( $post_id, PWPL_Meta::ALLOWED_PLATFORMS, $platforms );
 
         $periods = isset( $allowed['period'] ) ? (array) $allowed['period'] : [];

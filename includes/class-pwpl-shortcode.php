@@ -135,6 +135,22 @@ class PWPL_Shortcode {
         $table_theme = get_post_meta( $table_id, PWPL_Meta::TABLE_THEME, true );
         $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
 
+        $platform_allowed_order = [];
+        $initial_platform = '';
+        $platform_filtering_enabled = isset( $dimension_values['platform'] );
+        if ( $platform_filtering_enabled ) {
+            foreach ( (array) $dimension_values['platform'] as $platform_item ) {
+                if ( empty( $platform_item['slug'] ) ) {
+                    continue;
+                }
+                $platform_allowed_order[] = sanitize_title( $platform_item['slug'] );
+            }
+            $platform_allowed_order = array_values( array_unique( array_filter( $platform_allowed_order ) ) );
+            if ( $platform_allowed_order ) {
+                $initial_platform = $platform_allowed_order[0];
+            }
+        }
+
         $size_meta  = get_post_meta( $table_id, PWPL_Meta::TABLE_SIZE, true );
         $size_values = $meta_helper->sanitize_table_size( is_array( $size_meta ) ? $size_meta : [] );
 
@@ -236,6 +252,14 @@ class PWPL_Shortcode {
         }
 
         $style_inline = '';
+        $table_attr_extras = '';
+        if ( $platform_filtering_enabled && $platform_allowed_order ) {
+            $table_attr_extras .= ' data-allowed-platforms="' . esc_attr( implode( ',', $platform_allowed_order ) ) . '"';
+            if ( $initial_platform ) {
+                $table_attr_extras .= ' data-initial-platform="' . esc_attr( $initial_platform ) . '"';
+            }
+        }
+
         foreach ( $style_vars as $var => $value ) {
             if ( '' === $value && '0' !== $value ) {
                 continue;
@@ -247,7 +271,7 @@ class PWPL_Shortcode {
 
         ob_start();
         ?>
-        <div class="pwpl-table pwpl-table--theme-<?php echo esc_attr( $table_theme ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } echo $table_style_attr; ?>>
+        <div class="pwpl-table pwpl-table--theme-<?php echo esc_attr( $table_theme ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php echo $table_attr_extras; foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } echo $table_style_attr; ?>>
             <div class="pwpl-table__header">
                 <h3 class="pwpl-table__title"><?php echo $table_title; ?></h3>
             </div>
@@ -332,7 +356,32 @@ class PWPL_Shortcode {
                         $variants_json = '[]';
                     }
                     ?>
-                    <article class="pwpl-plan pwpl-theme--<?php echo esc_attr( $theme ); ?><?php echo $is_featured ? ' pwpl-plan--featured' : ''; ?>" data-plan-id="<?php echo esc_attr( $plan->ID ); ?>" data-variants="<?php echo esc_attr( $variants_json ); ?>" data-badges-override="<?php echo esc_attr( $override_json ); ?>">
+                    <?php
+                    $plan_platforms = [];
+                    $supports_all_platforms = false;
+                    foreach ( (array) $variants as $variant_entry ) {
+                        if ( ! is_array( $variant_entry ) ) {
+                            continue;
+                        }
+                        $variant_platform = isset( $variant_entry['platform'] ) ? sanitize_title( $variant_entry['platform'] ) : '';
+                        if ( $variant_platform ) {
+                            $plan_platforms[] = $variant_platform;
+                        } else {
+                            $supports_all_platforms = true;
+                        }
+                    }
+                    $plan_platforms = array_values( array_unique( array_filter( $plan_platforms ) ) );
+                    $plan_platform_attr = ( $supports_all_platforms || ! $plan_platforms ) ? '*' : implode( ',', $plan_platforms );
+                    $plan_classes = [ 'pwpl-plan', 'pwpl-theme--' . $theme ];
+                    if ( $is_featured ) {
+                        $plan_classes[] = 'pwpl-plan--featured';
+                    }
+                    if ( $platform_filtering_enabled && $initial_platform && '*' !== $plan_platform_attr && ! in_array( $initial_platform, $plan_platforms, true ) ) {
+                        $plan_classes[] = 'pwpl-hidden';
+                    }
+                    $plan_class_attr = implode( ' ', array_map( 'sanitize_html_class', $plan_classes ) );
+                    ?>
+                    <article class="<?php echo esc_attr( $plan_class_attr ); ?>" data-plan-id="<?php echo esc_attr( $plan->ID ); ?>" data-platforms="<?php echo esc_attr( $plan_platform_attr ); ?>" data-variants="<?php echo esc_attr( $variants_json ); ?>" data-badges-override="<?php echo esc_attr( $override_json ); ?>">
                         <header class="pwpl-plan__header">
                             <div class="pwpl-plan__header-meta">
                                 <span class="pwpl-plan__location" data-pwpl-location <?php echo $location_label ? '' : 'hidden'; ?>><?php echo esc_html( $location_label ); ?></span>

@@ -122,6 +122,84 @@
         return selection;
     }
 
+    function parseAllowedPlatforms(table) {
+        if (!table) {
+            return [];
+        }
+        const raw = table.dataset.allowedPlatforms || '';
+        if (!raw) {
+            return [];
+        }
+        return raw.split(',').map(function(item){
+            return item.trim();
+        }).filter(function(item){ return !!item; });
+    }
+
+    function filterPlansByPlatform(table, platform) {
+        if (!table) {
+            return;
+        }
+        const plans = table.querySelectorAll('.pwpl-plan');
+        if (!plans.length) {
+            return;
+        }
+        const slug = platform || '';
+        table.dataset.activePlatform = slug;
+        plans.forEach(function(plan){
+            const data = (plan.dataset.platforms || '').trim();
+            if (!slug || !data || data === '*') {
+                plan.classList.remove('pwpl-hidden');
+                return;
+            }
+            const platforms = data.split(',').map(function(item){ return item.trim(); }).filter(function(item){ return !!item; });
+            const matches = platforms.indexOf(slug) !== -1;
+            plan.classList.toggle('pwpl-hidden', !matches);
+        });
+    }
+
+    function ensurePlatformDefault(table) {
+        const allowed = parseAllowedPlatforms(table);
+        if (!allowed.length) {
+            table.querySelectorAll('.pwpl-plan.pwpl-hidden').forEach(function(plan){
+                plan.classList.remove('pwpl-hidden');
+            });
+            return;
+        }
+
+        const nav = table.querySelector('.pwpl-dimension-nav[data-dimension="platform"]');
+        let active = table.dataset.activePlatform || table.dataset.initialPlatform || allowed[0];
+        if (allowed.indexOf(active) === -1) {
+            active = allowed[0];
+        }
+        table.dataset.initialPlatform = allowed[0];
+        table.dataset.activePlatform = active;
+
+        if (nav) {
+            const tabs = nav.querySelectorAll('.pwpl-tab');
+            let matched = false;
+            tabs.forEach(function(tab){
+                const value = tab.dataset.value || '';
+                if (value === active && !matched) {
+                    tab.classList.add('is-active');
+                    tab.setAttribute('aria-pressed', 'true');
+                    matched = true;
+                } else {
+                    tab.classList.remove('is-active');
+                    tab.setAttribute('aria-pressed', 'false');
+                }
+            });
+            if (!matched && tabs.length) {
+                const fallback = tabs[0];
+                fallback.classList.add('is-active');
+                fallback.setAttribute('aria-pressed', 'true');
+                active = fallback.dataset.value || allowed[0];
+                table.dataset.activePlatform = active;
+            }
+        }
+
+        filterPlansByPlatform(table, active);
+    }
+
     function parseJSONAttribute(element, attribute, fallback) {
         if (!element) {
             return fallback;
@@ -429,14 +507,18 @@
     function setActive(table, dimension, value, button) {
         table.dataset['active' + dimension.charAt(0).toUpperCase() + dimension.slice(1)] = value;
         const nav = table.querySelector('.pwpl-dimension-nav[data-dimension="' + dimension + '"]');
-        if (!nav) { return; }
-        nav.querySelectorAll('.pwpl-tab').forEach(function(tab){
-            tab.classList.remove('is-active');
-            tab.setAttribute('aria-pressed', 'false');
-        });
-        if (button) {
-            button.classList.add('is-active');
-            button.setAttribute('aria-pressed', 'true');
+        if (nav) {
+            nav.querySelectorAll('.pwpl-tab').forEach(function(tab){
+                tab.classList.remove('is-active');
+                tab.setAttribute('aria-pressed', 'false');
+            });
+            if (button) {
+                button.classList.add('is-active');
+                button.setAttribute('aria-pressed', 'true');
+            }
+        }
+        if (dimension === 'platform') {
+            filterPlansByPlatform(table, value);
         }
         updateTable(table);
     }
@@ -461,6 +543,7 @@
     });
 
     document.querySelectorAll('.pwpl-table').forEach(function(table){
+        ensurePlatformDefault(table);
         enhanceRail(table);
         updateTable(table);
     });
