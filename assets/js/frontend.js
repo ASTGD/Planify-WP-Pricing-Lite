@@ -203,6 +203,39 @@
         }
     }
 
+    // Mirror period filtering for location tabs.
+    function filterLocationsByPlatform(table, platform) {
+        const nav = table.querySelector('.pwpl-dimension-nav[data-dimension="location"]');
+        if (!nav) {
+            return '';
+        }
+        const availability = table.dataset.availability ? safeParseJSON(table.dataset.availability, {}) : {};
+        const locationsByPlatform = availability.locationsByPlatform || {};
+        const allowedLocations = platform && locationsByPlatform[platform] ? locationsByPlatform[platform] : [];
+        const tabs = nav.querySelectorAll('.pwpl-tab');
+        let activeSlug = table.dataset.activeLocation || '';
+        tabs.forEach(function(tab){
+            const slug = tab.dataset.value || '';
+            const allowed = !allowedLocations.length || allowedLocations.indexOf(slug) !== -1;
+            tab.classList.toggle('pwpl-hidden', !allowed);
+            if (!allowed && tab.classList.contains('is-active')) {
+                tab.classList.remove('is-active');
+                tab.setAttribute('aria-pressed', 'false');
+                activeSlug = '';
+            }
+        });
+
+        if (!activeSlug) {
+            const firstVisible = nav.querySelector('.pwpl-tab:not(.pwpl-hidden)');
+            if (firstVisible) {
+                activeSlug = firstVisible.dataset.value || '';
+                setActive(table, 'location', activeSlug, firstVisible);
+            }
+        }
+
+        return activeSlug;
+    }
+
     function ensurePlatformDefault(table) {
         const allowed = parseAllowedPlatforms(table);
         if (!allowed.length) {
@@ -565,6 +598,8 @@
         }
         if (dimension === 'platform') {
             filterPlansByPlatform(table, value);
+            filterPeriodsByPlatform(table, value);
+            filterLocationsByPlatform(table, value);
         }
         updateTable(table);
     }
@@ -592,6 +627,7 @@
         ensurePlatformDefault(table);
         if (table.dataset.activePlatform) {
             filterPeriodsByPlatform(table, table.dataset.activePlatform);
+            filterLocationsByPlatform(table, table.dataset.activePlatform);
         }
         enhanceRail(table);
         updateTable(table);
