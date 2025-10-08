@@ -235,7 +235,7 @@
 
         return activeSlug;
     }
-
+    
     function ensurePlatformDefault(table) {
         const allowed = parseAllowedPlatforms(table);
         if (!allowed.length) {
