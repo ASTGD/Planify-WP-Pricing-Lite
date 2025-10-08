@@ -3,9 +3,12 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class PWPL_Shortcode {
     private $settings;
+    private $theme_loader;
+    private $enqueued_themes = [];
 
     public function __construct() {
-        $this->settings = new PWPL_Settings();
+        $this->settings      = new PWPL_Settings();
+        $this->theme_loader  = new PWPL_Theme_Loader();
     }
 
     public function init(){
@@ -134,6 +137,22 @@ class PWPL_Shortcode {
 
         $table_theme = get_post_meta( $table_id, PWPL_Meta::TABLE_THEME, true );
         $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
+
+        $table_theme_package = $this->enqueue_theme_assets( $table_theme );
+        $table_manifest      = is_array( $table_theme_package['manifest'] ?? null ) ? $table_theme_package['manifest'] : [];
+
+        $table_classes = [
+            'pwpl-table',
+            'pwpl-table--theme-' . $table_theme,
+        ];
+
+        if ( ! empty( $table_manifest['containerClass'] ) ) {
+            $table_classes[] = $table_manifest['containerClass'];
+        }
+
+        $table_classes   = array_filter( array_unique( $table_classes ) );
+        $table_classes   = array_map( 'sanitize_html_class', $table_classes );
+        $table_class_attr = implode( ' ', array_filter( $table_classes ) );
 
         $platform_allowed_order = [];
         $initial_platform = '';
@@ -344,7 +363,7 @@ class PWPL_Shortcode {
 
         ob_start();
         ?>
-        <div class="pwpl-table pwpl-table--theme-<?php echo esc_attr( $table_theme ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php echo $table_attr_extras; foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } echo $table_style_attr; ?>>
+        <div class="<?php echo esc_attr( $table_class_attr ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php echo $table_attr_extras; foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } echo $table_style_attr; ?>>
             <div class="pwpl-table__header">
                 <h3 class="pwpl-table__title"><?php echo $table_title; ?></h3>
             </div>
@@ -392,6 +411,7 @@ class PWPL_Shortcode {
                     $plan_theme_meta = get_post_meta( $plan->ID, PWPL_Meta::PLAN_THEME, true );
                     $plan_theme_meta = $plan_theme_meta ? $meta_helper->sanitize_theme( $plan_theme_meta ) : '';
                     $theme = $table_theme === 'classic' && $plan_theme_meta ? $plan_theme_meta : $table_theme;
+                    $this->enqueue_theme_assets( $theme );
                     $specs = get_post_meta( $plan->ID, PWPL_Meta::PLAN_SPECS, true );
                     if ( ! is_array( $specs ) ) {
                         $specs = [];
@@ -495,6 +515,41 @@ class PWPL_Shortcode {
         </div>
         <?php
         return ob_get_clean();
+    }
+
+    private function enqueue_theme_assets( $slug ) {
+        if ( ! $slug || ! $this->theme_loader ) {
+            return null;
+        }
+
+        if ( array_key_exists( $slug, $this->enqueued_themes ) ) {
+            return $this->enqueued_themes[ $slug ];
+        }
+
+        $theme = $this->theme_loader->get_theme( $slug );
+        if ( ! $theme ) {
+            $this->enqueued_themes[ $slug ] = null;
+            return null;
+        }
+
+        $assets = $this->theme_loader->get_assets( $theme );
+
+        if ( ! empty( $assets['css'] ) ) {
+            foreach ( $assets['css'] as $style ) {
+                $version = file_exists( $style['path'] ) ? filemtime( $style['path'] ) : PWPL_VERSION;
+                wp_enqueue_style( $style['handle'], $style['url'], [], $version );
+            }
+        }
+
+        if ( ! empty( $assets['js'] ) ) {
+            foreach ( $assets['js'] as $script ) {
+                $version = file_exists( $script['path'] ) ? filemtime( $script['path'] ) : PWPL_VERSION;
+                wp_enqueue_script( $script['handle'], $script['url'], [], $version, true );
+            }
+        }
+
+        $this->enqueued_themes[ $slug ] = $theme;
+        return $theme;
     }
 
     private function index_by_slug( array $items ) {
