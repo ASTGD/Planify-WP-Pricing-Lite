@@ -626,8 +626,14 @@
     document.querySelectorAll('.pwpl-table').forEach(function(table){
         ensurePlatformDefault(table);
         if (table.dataset.activePlatform) {
-            filterPeriodsByPlatform(table, table.dataset.activePlatform);
-            filterLocationsByPlatform(table, table.dataset.activePlatform);
+            const normalizedPeriod = filterPeriodsByPlatform(table, table.dataset.activePlatform);
+            const normalizedLocation = filterLocationsByPlatform(table, table.dataset.activePlatform);
+            if (normalizedPeriod) {
+                table.dataset.activePeriod = normalizedPeriod;
+            }
+            if (normalizedLocation) {
+                table.dataset.activeLocation = normalizedLocation;
+            }
         }
         enhanceRail(table);
         updateTable(table);
