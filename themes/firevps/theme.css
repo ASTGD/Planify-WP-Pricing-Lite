@@ -273,3 +273,22 @@
   outline: 2px solid rgba(255, 255, 255, 0.65);
   outline-offset: 2px;
 }
+
+
+.pwpl-table.pwpl-table--theme-firevps .pwpl-plan__spec-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: var(--fvps-spacing-sm);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fvps-color-accent-strong);
+}
+
+.pwpl-table.pwpl-table--theme-firevps .fvps-spec-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+}

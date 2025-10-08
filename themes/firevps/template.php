@@ -129,18 +129,37 @@ if ( $availability_json ) {
                 <?php endif; ?>
                 <?php if ( $plan_specs ) : ?>
                     <ul class="pwpl-plan__specs">
-                        <?php foreach ( $plan_specs as $spec ) :
-                            if ( empty( $spec['label'] ) && empty( $spec['value'] ) ) {
+                        <?php
+                        $icon_map = [
+                            'cpu'       => 'fvps-icon-cpu',
+                            'processor' => 'fvps-icon-cpu',
+                            'ram'       => 'fvps-icon-ram',
+                            'memory'    => 'fvps-icon-ram',
+                            'storage'   => 'fvps-icon-ssd',
+                            'ssd'       => 'fvps-icon-ssd',
+                            'nvme'      => 'fvps-icon-ssd',
+                            'bandwidth' => 'fvps-icon-bandwidth',
+                            'traffic'   => 'fvps-icon-bandwidth',
+                            'port'      => 'fvps-icon-port',
+                            'location'  => 'fvps-icon-location',
+                        ];
+                        foreach ( $plan_specs as $spec ) :
+                            $label = trim( (string) ( $spec['label'] ?? '' ) );
+                            $value = trim( (string) ( $spec['value'] ?? '' ) );
+                            if ( '' === $label && '' === $value ) {
                                 continue;
                             }
+                            $key  = sanitize_title( $label );
+                            $icon = $icon_map[ $key ] ?? 'fvps-icon-generic';
                             ?>
                             <li>
-                                <?php if ( ! empty( $spec['label'] ) ) : ?>
-                                    <span class="pwpl-plan__spec-label"><?php echo esc_html( $spec['label'] ); ?></span>
-                                <?php endif; ?>
-                                <?php if ( ! empty( $spec['value'] ) ) : ?>
-                                    <span class="pwpl-plan__spec-value"><?php echo esc_html( $spec['value'] ); ?></span>
-                                <?php endif; ?>
+                                <span class="pwpl-plan__spec-icon" aria-hidden="true">
+                                    <svg class="fvps-spec-icon" viewBox="0 0 24 24" role="presentation">
+                                        <use href="#<?php echo esc_attr( $icon ); ?>"></use>
+                                    </svg>
+                                </span>
+                                <span class="pwpl-plan__spec-label"><?php echo esc_html( $label ); ?></span>
+                                <span class="pwpl-plan__spec-value"><?php echo esc_html( $value ); ?></span>
                             </li>
                         <?php endforeach; ?>
                     </ul>
