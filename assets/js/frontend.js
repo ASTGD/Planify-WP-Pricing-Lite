@@ -168,6 +168,11 @@
         const allowedPeriods = platform && periodsByPlatform[platform] ? periodsByPlatform[platform] : [];
         const tabs = nav.querySelectorAll('.pwpl-tab');
         let activeSlug = table.dataset.activePeriod || '';
+        if (!allowedPeriods.length && platform) {
+            console.warn('[PWPL] No period options available for platform:', platform);
+            tabs.forEach(function(tab){ tab.classList.remove('pwpl-hidden'); });
+            return activeSlug;
+        }
         tabs.forEach(function(tab){
             const slug = tab.dataset.value || '';
             const allowed = !allowedPeriods.length || allowedPeriods.indexOf(slug) !== -1;
@@ -214,6 +219,11 @@
         const allowedLocations = platform && locationsByPlatform[platform] ? locationsByPlatform[platform] : [];
         const tabs = nav.querySelectorAll('.pwpl-tab');
         let activeSlug = table.dataset.activeLocation || '';
+        if (!allowedLocations.length && platform) {
+            console.warn('[PWPL] No location options available for platform:', platform);
+            tabs.forEach(function(tab){ tab.classList.remove('pwpl-hidden'); });
+            return activeSlug;
+        }
         tabs.forEach(function(tab){
             const slug = tab.dataset.value || '';
             const allowed = !allowedLocations.length || allowedLocations.indexOf(slug) !== -1;
