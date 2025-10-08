@@ -88,7 +88,14 @@ if ( $availability_json ) {
         </div>
     <?php endforeach; ?>
 
-    <div class="pwpl-plans-rail">
+    <div class="pwpl-plan-rail-wrapper">
+        <div class="pwpl-plan-nav pwpl-plan-nav--prev" hidden>
+            <button type="button" class="pwpl-plan-nav__btn" data-direction="prev" aria-label="<?php esc_attr_e( 'Scroll previous plans', 'planify-wp-pricing-lite' ); ?>">&#10094;</button>
+        </div>
+        <div class="pwpl-plan-nav pwpl-plan-nav--next" hidden>
+            <button type="button" class="pwpl-plan-nav__btn" data-direction="next" aria-label="<?php esc_attr_e( 'Scroll next plans', 'planify-wp-pricing-lite' ); ?>">&#10095;</button>
+        </div>
+        <div class="pwpl-plans-rail pwpl-plan-grid" tabindex="0">
         <?php foreach ( $plans as $plan ) :
             $plan_id     = isset( $plan['id'] ) ? (int) $plan['id'] : 0;
             $plan_title  = isset( $plan['title'] ) ? $plan['title'] : sprintf( __( 'Plan #%d', 'planify-wp-pricing-lite' ), $plan_id );
@@ -173,5 +180,6 @@ if ( $availability_json ) {
                 </div>
             </article>
         <?php endforeach; ?>
+        </div>
     </div>
 </div>
