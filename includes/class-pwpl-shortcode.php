@@ -151,6 +151,73 @@ class PWPL_Shortcode {
             }
         }
 
+        $availability_periods   = [];
+        $availability_locations = [];
+        $plan_variants_cache    = [];
+
+        foreach ( $plans as $plan_item ) {
+            $variants = get_post_meta( $plan_item->ID, PWPL_Meta::PLAN_VARIANTS, true );
+            if ( ! is_array( $variants ) ) {
+                $variants = [];
+            }
+            $plan_variants_cache[ $plan_item->ID ] = $variants;
+
+            if ( ! $platform_filtering_enabled ) {
+                continue;
+            }
+
+            foreach ( (array) $variants as $variant_entry ) {
+                if ( ! is_array( $variant_entry ) ) {
+                    continue;
+                }
+                $variant_platform = isset( $variant_entry['platform'] ) ? sanitize_title( $variant_entry['platform'] ) : '';
+                $target_platforms = [];
+                if ( $variant_platform ) {
+                    $target_platforms = [ $variant_platform ];
+                } else {
+                    $target_platforms = $platform_allowed_order ? $platform_allowed_order : array_keys( $availability_periods );
+                }
+                if ( empty( $target_platforms ) ) {
+                    continue;
+                }
+
+                $variant_period   = isset( $variant_entry['period'] ) ? sanitize_title( $variant_entry['period'] ) : '';
+                $variant_location = isset( $variant_entry['location'] ) ? sanitize_title( $variant_entry['location'] ) : '';
+
+                foreach ( $target_platforms as $platform_slug ) {
+                    if ( ! $platform_slug ) {
+                        continue;
+                    }
+                    if ( ! isset( $availability_periods[ $platform_slug ] ) ) {
+                        $availability_periods[ $platform_slug ]   = [];
+                        $availability_locations[ $platform_slug ] = [];
+                    }
+                    if ( $variant_period && ! in_array( $variant_period, $availability_periods[ $platform_slug ], true ) ) {
+                        $availability_periods[ $platform_slug ][] = $variant_period;
+                    }
+                    if ( $variant_location && ! in_array( $variant_location, $availability_locations[ $platform_slug ], true ) ) {
+                        $availability_locations[ $platform_slug ][] = $variant_location;
+                    }
+                }
+            }
+        }
+
+        $availability_payload = [];
+        if ( $platform_filtering_enabled ) {
+            $availability_payload = [
+                'periodsByPlatform'   => [],
+                'locationsByPlatform' => [],
+            ];
+            $platform_keys_for_payload = $platform_allowed_order ? $platform_allowed_order : array_unique( array_merge( array_keys( $availability_periods ), array_keys( $availability_locations ) ) );
+            foreach ( $platform_keys_for_payload as $platform_key ) {
+                if ( ! $platform_key ) {
+                    continue;
+                }
+                $availability_payload['periodsByPlatform'][ $platform_key ]   = $availability_periods[ $platform_key ] ?? [];
+                $availability_payload['locationsByPlatform'][ $platform_key ] = $availability_locations[ $platform_key ] ?? [];
+            }
+        }
+
         $size_meta  = get_post_meta( $table_id, PWPL_Meta::TABLE_SIZE, true );
         $size_values = $meta_helper->sanitize_table_size( is_array( $size_meta ) ? $size_meta : [] );
 
@@ -258,6 +325,12 @@ class PWPL_Shortcode {
             if ( $initial_platform ) {
                 $table_attr_extras .= ' data-initial-platform="' . esc_attr( $initial_platform ) . '"';
             }
+            if ( ! empty( $availability_payload ) ) {
+                $availability_json = wp_json_encode( $availability_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+                if ( false !== $availability_json ) {
+                    $table_attr_extras .= ' data-availability="' . esc_attr( $availability_json ) . '"';
+                }
+            }
         }
 
         foreach ( $style_vars as $var => $value ) {
@@ -323,10 +396,7 @@ class PWPL_Shortcode {
                     if ( ! is_array( $specs ) ) {
                         $specs = [];
                     }
-                    $variants = get_post_meta( $plan->ID, PWPL_Meta::PLAN_VARIANTS, true );
-                    if ( ! is_array( $variants ) ) {
-                        $variants = [];
-                    }
+                    $variants = $plan_variants_cache[ $plan->ID ] ?? [];
 
                     $override_badges = get_post_meta( $plan->ID, PWPL_Meta::PLAN_BADGES_OVERRIDE, true );
                     if ( ! is_array( $override_badges ) ) {

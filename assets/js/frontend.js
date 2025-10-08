@@ -157,6 +157,85 @@
         });
     }
 
+    // Apply availability filtering to period tabs and return the active period slug.
+    function filterPeriodsByPlatform(table, platform) {
+        const nav = table.querySelector('.pwpl-dimension-nav[data-dimension="period"]');
+        if (!nav) {
+            return '';
+        }
+        const availability = table.dataset.availability ? safeParseJSON(table.dataset.availability, {}) : {};
+        const periodsByPlatform = availability.periodsByPlatform || {};
+        const allowedPeriods = platform && periodsByPlatform[platform] ? periodsByPlatform[platform] : [];
+        const tabs = nav.querySelectorAll('.pwpl-tab');
+        let activeSlug = table.dataset.activePeriod || '';
+        tabs.forEach(function(tab){
+            const slug = tab.dataset.value || '';
+            const allowed = !allowedPeriods.length || allowedPeriods.indexOf(slug) !== -1;
+            tab.classList.toggle('pwpl-hidden', !allowed);
+            if (!allowed && tab.classList.contains('is-active')) {
+                tab.classList.remove('is-active');
+                tab.setAttribute('aria-pressed', 'false');
+                activeSlug = '';
+            }
+        });
+
+        // Ensure there is an active period; fall back to first visible.
+        if (!activeSlug) {
+            const firstVisible = nav.querySelector('.pwpl-tab:not(.pwpl-hidden)');
+            if (firstVisible) {
+                activeSlug = firstVisible.dataset.value || '';
+                setActive(table, 'period', activeSlug, firstVisible);
+            }
+        }
+
+        return activeSlug;
+    }
+
+    function safeParseJSON(raw, fallback) {
+        if (!raw) {
+            return fallback;
+        }
+        try {
+            const parsed = JSON.parse(raw);
+            return parsed || fallback;
+        } catch (err) {
+            return fallback;
+        }
+    }
+
+    // Mirror period filtering for location tabs.
+    function filterLocationsByPlatform(table, platform) {
+        const nav = table.querySelector('.pwpl-dimension-nav[data-dimension="location"]');
+        if (!nav) {
+            return '';
+        }
+        const availability = table.dataset.availability ? safeParseJSON(table.dataset.availability, {}) : {};
+        const locationsByPlatform = availability.locationsByPlatform || {};
+        const allowedLocations = platform && locationsByPlatform[platform] ? locationsByPlatform[platform] : [];
+        const tabs = nav.querySelectorAll('.pwpl-tab');
+        let activeSlug = table.dataset.activeLocation || '';
+        tabs.forEach(function(tab){
+            const slug = tab.dataset.value || '';
+            const allowed = !allowedLocations.length || allowedLocations.indexOf(slug) !== -1;
+            tab.classList.toggle('pwpl-hidden', !allowed);
+            if (!allowed && tab.classList.contains('is-active')) {
+                tab.classList.remove('is-active');
+                tab.setAttribute('aria-pressed', 'false');
+                activeSlug = '';
+            }
+        });
+
+        if (!activeSlug) {
+            const firstVisible = nav.querySelector('.pwpl-tab:not(.pwpl-hidden)');
+            if (firstVisible) {
+                activeSlug = firstVisible.dataset.value || '';
+                setActive(table, 'location', activeSlug, firstVisible);
+            }
+        }
+
+        return activeSlug;
+    }
+
     function ensurePlatformDefault(table) {
         const allowed = parseAllowedPlatforms(table);
         if (!allowed.length) {
@@ -519,6 +598,8 @@
         }
         if (dimension === 'platform') {
             filterPlansByPlatform(table, value);
+            filterPeriodsByPlatform(table, value);
+            filterLocationsByPlatform(table, value);
         }
         updateTable(table);
     }
@@ -544,6 +625,16 @@
 
     document.querySelectorAll('.pwpl-table').forEach(function(table){
         ensurePlatformDefault(table);
+        if (table.dataset.activePlatform) {
+            const normalizedPeriod = filterPeriodsByPlatform(table, table.dataset.activePlatform);
+            const normalizedLocation = filterLocationsByPlatform(table, table.dataset.activePlatform);
+            if (normalizedPeriod) {
+                table.dataset.activePeriod = normalizedPeriod;
+            }
+            if (normalizedLocation) {
+                table.dataset.activeLocation = normalizedLocation;
+            }
+        }
         enhanceRail(table);
         updateTable(table);
     });
