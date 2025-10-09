@@ -127,4 +127,56 @@ class PWPL_Theme_Loader {
 
         return $assets;
     }
+
+    public function get_available_themes() {
+        $themes = [];
+
+        foreach ( $this->sources as $source ) {
+            $base_dir = trailingslashit( $source['dir'] );
+            $base_url = trailingslashit( $source['url'] );
+
+            if ( ! is_dir( $base_dir ) ) {
+                continue;
+            }
+
+            $entries = glob( $base_dir . '*', GLOB_ONLYDIR );
+            if ( empty( $entries ) ) {
+                continue;
+            }
+
+            foreach ( $entries as $dir ) {
+                $manifest = $this->load_manifest( $dir );
+                if ( empty( $manifest ) || empty( $manifest['slug'] ) ) {
+                    continue;
+                }
+
+                $slug = sanitize_key( $manifest['slug'] );
+                if ( ! $slug || isset( $themes[ $slug ] ) ) {
+                    continue;
+                }
+
+                $themes[ $slug ] = [
+                    'slug'     => $slug,
+                    'name'     => isset( $manifest['name'] ) ? (string) $manifest['name'] : ucwords( str_replace( [ '-', '_' ], ' ', $slug ) ),
+                    'manifest' => $manifest,
+                    'dir'      => untrailingslashit( $dir ),
+                    'url'      => $base_url . basename( $dir ),
+                    'source'   => $source['id'],
+                ];
+            }
+        }
+
+        if ( ! isset( $themes['classic'] ) ) {
+            $themes['classic'] = [
+                'slug'     => 'classic',
+                'name'     => __( 'Classic', 'planify-wp-pricing-lite' ),
+                'manifest' => [],
+                'dir'      => '',
+                'url'      => '',
+                'source'   => 'default',
+            ];
+        }
+
+        return array_values( $themes );
+    }
 }
