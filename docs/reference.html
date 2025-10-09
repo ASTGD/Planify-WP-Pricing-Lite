@@ -1,0 +1,3202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="All in One Pricing Table: Sleek, customizable tables with 10 styles, 100+ colors, and animations. JavaScript and JSON make updates and interactions easy and dynamic."
+    />
+    <title>TEST Pricing Table- Design 1</title>
+
+    <!-- CSS -->
+    <link
+      href="./css1/bootstrap.min.css"
+      rel="stylesheet"
+      class="ltr"
+      onload="if(media!='all')media='all'"
+    />
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <link href="./css1/main-style-bf.css" rel="stylesheet" />
+
+    <link
+      href="./css1/slick.css"
+      rel="stylesheet"
+      onload="if(media!='all')media='all'"
+    />
+    <style>
+      /* Critical CSS */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box-container limit-width">
+      <section
+        id="radioplans"
+        class="tabs pricing special d-none d-lg-block d-xl-block"
+      >
+        <div class="col-md-12 text-center mt-4" id="periodheader">
+          <ul class="btn-group">
+            <div class="period-div">
+              <li
+                class="btn btn-secondary active mb-2 me-3 periodheader1"
+                id="monthly"
+              >
+                <!-- Value will be added from json as name=class (periodheader1)  -->
+              </li>
+            </div>
+            <div class="period-div">
+              <li
+                class="btn btn-secondary mb-2 me-3 periodheader2"
+                id="quarterly"
+              >
+                <!-- Value will be added from json as name=class (periodheader2)  -->
+              </li>
+            </div>
+            <div class="period-div">
+              <li
+                class="btn btn-secondary mb-2 me-3 periodheader3"
+                id="halfyearly"
+              >
+                <!-- Value will be added from json as name=class (periodheader3)  -->
+              </li>
+            </div>
+            <div class="period-div">
+              <li class="btn btn-secondary mb-2 me-3 periodheader4" id="yearly">
+                <!-- Value will be added from json as name=class (periodheader4)  -->
+              </li>
+            </div>
+          </ul>
+        </div>
+        <div class="row">
+          <div class="tabs-header mt-4 d-flex" id="tabhead">
+            <ul
+              class="btn-group list-inline mx-auto justify-content-center"
+              id="headergroup"
+              style="padding: 0px"
+            >
+              <li
+                class="btn btn-secondary list-inline-item active mb-2 me-3"
+                id="header1"
+              >
+                <!-- Value will be added from json as name=id (header1)  -->
+              </li>
+              <li
+                class="btn btn-secondary list-inline-item mb-2 me-3"
+                id="header2"
+              >
+                <!-- Value will be added from json as name=id (header2)  -->
+              </li>
+              <li
+                class="btn btn-secondary list-inline-item mb-2 me-3"
+                id="header3"
+              >
+                <!-- Value will be added from json as name=id (header3)  -->
+              </li>
+              <li
+                class="btn btn-secondary list-inline-item mb-2 me-3"
+                id="header4"
+              >
+                <!-- Value will be added from json as name=id (header4)  -->
+              </li>
+              <li
+                class="btn btn-secondary list-inline-item mb-2 me-3"
+                id="header5"
+              >
+                <!-- Value will be added from json as name=id (header5)  -->
+              </li>
+              <li
+                class="btn btn-secondary list-inline-item mb-2 me-3"
+                id="header6"
+              >
+                <!-- Value will be added from json as name=id (header6)  -->
+              </li>
+              <li
+                class="btn btn-secondary list-inline-item mb-2 me-3"
+                id="header7"
+              >
+                <!-- Value will be added from json as name=id (header7)  -->
+              </li>
+              <li
+                class="btn btn-secondary list-inline-item mb-2 me-3"
+                id="header8"
+              >
+                <!-- Value will be added from json as name=id (header8)  -->
+              </li>
+              <li
+                class="btn btn-secondary list-inline-item mb-2 me-3"
+                id="header9"
+              >
+                <!-- Value will be added from json as name=id (header9)  -->
+              </li>
+              <li
+                class="btn btn-secondary list-inline-item mb-2 me-3"
+                id="header10"
+              >
+                <!-- Value will be added from json as name=id (header10)  -->
+              </li>
+            </ul>
+          </div>
+        </div>
+        <!-- Pricing Tabs  -->
+        <div class="tabs-content">
+          <div class="tabs-item active show">
+            <div class="slick pt-0 bg-seccolorstyle">
+              <div id="slider" class="my-slider">
+                <div class="plan-container" id="header1plan2">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab1"
+                        >USA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 4GB RDP plan"
+                      />
+                      <div class="title">4GB Remote Desktop</div>
+                      <div class="fromer seccolor">Best Value</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header1-baseprice2"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header1-price2">
+                          <sup>$</sup>20.99 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header1-link2"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>4GB DDR4 RAM</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>35 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header1plan3">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab1"
+                        >USA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 6GB RDP plan"
+                      />
+                      <div class="title">6GB Remote Desktop</div>
+                      <div class="fromer seccolor">Premium Quality</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header1-baseprice3"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header1-price3">
+                          <sup>$</sup>11.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header1-link3"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>6 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>40 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header1plan4">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab1"
+                        >USA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 8GB RDP plan"
+                      />
+                      <div class="title">8GB Remote Desktop</div>
+                      <div class="fromer seccolor">Memory Boost</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header1-baseprice4"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header1-price4">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header1-link4"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>8 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>4 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>50 GB SSD NVMe</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header1plan5">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab1"
+                        >USA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 16GB RDP plan"
+                      />
+                      <div class="title">16GB Remote Desktop</div>
+                      <div class="fromer seccolor">Big Box</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header1-baseprice5"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header1-price5">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header1-link5"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>16 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>6 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>100 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 10Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header1plan1">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab1"
+                        >USA</span
+                      >
+                      <div>
+                        <img
+                          class="svg mb-3"
+                          src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                          alt="Dedicated server image representing 2GB RDP plan"
+                        />
+                      </div>
+                      <div class="title">2GB Remote Desktop</div>
+                      <div class="fromer seccolor">Basic Needs</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header1-baseprice1"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header1-price1">
+                          <sup>$</sup>5.95<span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header1-link1"
+                      >
+                        Order Now
+                      </a>
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>2 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>1 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>25 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabs-item active redb">
+            <div class="slick pt-0 bg-seccolorstyle">
+              <div id="slider" class="my-slider">
+                <div class="plan-container" id="header2plan2">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab2"
+                        >CANADA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 4GB RDP plan"
+                      />
+                      <div class="title">4GB Remote Desktop</div>
+                      <div class="fromer seccolor">Best Value</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header2-baseprice2"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header2-price2">
+                          <sup>$</sup>20.99 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header2-link2"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>4GB DDR4 RAM</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>35 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header2plan3">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab2"
+                        >CANADA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 6GB RDP plan"
+                      />
+                      <div class="title">6GB Remote Desktop</div>
+                      <div class="fromer seccolor">Premium Quality</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header2-baseprice3"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header2-price3">
+                          <sup>$</sup>11.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header2-link3"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>6 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>40 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header2plan4">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab2"
+                        >CANADA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 8GB RDP plan"
+                      />
+                      <div class="title">8GB Remote Desktop</div>
+                      <div class="fromer seccolor">Memory Boost</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header2-baseprice4"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header2-price4">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header2-link4"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>8 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>4 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>50 GB SSD NVMe</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header2plan5">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab2"
+                        >CANADA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 16GB RDP plan"
+                      />
+                      <div class="title">16GB Remote Desktop</div>
+                      <div class="fromer seccolor">Big Box</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header2-baseprice5"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header2-price5">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header2-link5"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>16 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>6 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>100 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 10Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header2plan1">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab2"
+                        >CANADA</span
+                      >
+                      <div>
+                        <img
+                          class="svg mb-3"
+                          src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                          alt="Dedicated server image representing 2GB RDP plan"
+                        />
+                      </div>
+                      <div class="title">2GB Remote Desktop</div>
+                      <div class="fromer seccolor">Basic Needs</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header2-baseprice1"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header2-price1">
+                          <sup>$</sup>5.95<span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header2-link1"
+                      >
+                        Order Now
+                      </a>
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>2 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>1 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>25 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabs-item active redb">
+            <div class="slick pt-0 bg-seccolorstyle">
+              <div id="slider" class="my-slider">
+                <div class="plan-container" id="header3plan2">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab3"
+                        >GERMANY</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 4GB RDP plan"
+                      />
+                      <div class="title">4GB Remote Desktop</div>
+                      <div class="fromer seccolor">Best Value</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header3-baseprice2"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header3-price2">
+                          <sup>$</sup>20.99 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header3-link2"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>4GB DDR4 RAM</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>35 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header3plan3">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab3"
+                        >GERMANY</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 6GB RDP plan"
+                      />
+                      <div class="title">6GB Remote Desktop</div>
+                      <div class="fromer seccolor">Premium Quality</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header3-baseprice3"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header3-price3">
+                          <sup>$</sup>11.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header3-link3"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>6 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>40 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header3plan4">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab3"
+                        >GERMANY</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 8GB RDP plan"
+                      />
+                      <div class="title">8GB Remote Desktop</div>
+                      <div class="fromer seccolor">Memory Boost</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header3-baseprice4"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header3-price4">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header3-link4"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>8 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>4 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>50 GB SSD NVMe</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header3plan5">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab3"
+                        >GERMANY</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 16GB RDP plan"
+                      />
+                      <div class="title">16GB Remote Desktop</div>
+                      <div class="fromer seccolor">Big Box</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header3-baseprice5"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header3-price5">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header3-link5"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>16 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>6 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>100 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 10Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header3plan1">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab3"
+                        >GERMANY</span
+                      >
+                      <div>
+                        <img
+                          class="svg mb-3"
+                          src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                          alt="Dedicated server image representing 2GB RDP plan"
+                        />
+                      </div>
+                      <div class="title">2GB Remote Desktop</div>
+                      <div class="fromer seccolor">Basic Needs</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header3-baseprice1"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header3-price1">
+                          <sup>$</sup>5.95<span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header3-link1"
+                      >
+                        Order Now
+                      </a>
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>2 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>1 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>25 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabs-item active redb">
+            <div class="slick pt-0 bg-seccolorstyle">
+              <div id="slider" class="my-slider">
+                <div class="plan-container" id="header4plan2">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab4"
+                        >UK</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 4GB RDP plan"
+                      />
+                      <div class="title">4GB Remote Desktop</div>
+                      <div class="fromer seccolor">Best Value</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header4-baseprice2"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header4-price2">
+                          <sup>$</sup>20.99 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header4-link2"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>4GB DDR4 RAM</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>35 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header4plan3">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab4"
+                        >UK</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 6GB RDP plan"
+                      />
+                      <div class="title">6GB Remote Desktop</div>
+                      <div class="fromer seccolor">Premium Quality</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header4-baseprice3"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header4-price3">
+                          <sup>$</sup>11.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header4-link3"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>6 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>40 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header4plan4">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab4"
+                        >UK</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 8GB RDP plan"
+                      />
+                      <div class="title">8GB Remote Desktop</div>
+                      <div class="fromer seccolor">Memory Boost</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header4-baseprice4"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header4-price4">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header4-link4"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>8 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>4 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>50 GB SSD NVMe</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header4plan5">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab4"
+                        >UK</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 16GB RDP plan"
+                      />
+                      <div class="title">16GB Remote Desktop</div>
+                      <div class="fromer seccolor">Big Box</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header4-baseprice5"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header4-price5">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header4-link5"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>16 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>6 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>100 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 10Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header4plan1">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab4"
+                        >UK</span
+                      >
+                      <div>
+                        <img
+                          class="svg mb-3"
+                          src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                          alt="Dedicated server image representing 2GB RDP plan"
+                        />
+                      </div>
+                      <div class="title">2GB Remote Desktop</div>
+                      <div class="fromer seccolor">Basic Needs</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header4-baseprice1"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header4-price1">
+                          <sup>$</sup>5.95<span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header4-link1"
+                      >
+                        Order Now
+                      </a>
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>2 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>1 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>25 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabs-item active redb">
+            <div class="slick pt-0 bg-seccolorstyle">
+              <div id="slider" class="my-slider">
+                <div class="plan-container" id="header5plan2">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab5"
+                        >NETHERLANDS</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 4GB RDP plan"
+                      />
+                      <div class="title">4GB Remote Desktop</div>
+                      <div class="fromer seccolor">Best Value</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header5-baseprice2"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header5-price2">
+                          <sup>$</sup>20.99 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header5-link2"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>4GB DDR4 RAM</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>35 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header5plan3">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab5"
+                        >NETHERLANDS</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 6GB RDP plan"
+                      />
+                      <div class="title">6GB Remote Desktop</div>
+                      <div class="fromer seccolor">Premium Quality</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header5-baseprice3"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header5-price3">
+                          <sup>$</sup>11.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header5-link3"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>6 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>40 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header5plan4">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab5"
+                        >NETHERLANDS</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 8GB RDP plan"
+                      />
+                      <div class="title">8GB Remote Desktop</div>
+                      <div class="fromer seccolor">Memory Boost</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header5-baseprice4"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header5-price4">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header5-link4"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>8 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>4 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>50 GB SSD NVMe</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header5plan5">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab5"
+                        >NETHERLANDS</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 16GB RDP plan"
+                      />
+                      <div class="title">16GB Remote Desktop</div>
+                      <div class="fromer seccolor">Big Box</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header5-baseprice5"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header5-price5">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header5-link5"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>16 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>6 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>100 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 10Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header5plan1">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab5"
+                        >NETHERLANDS</span
+                      >
+                      <div>
+                        <img
+                          class="svg mb-3"
+                          src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                          alt="Dedicated server image representing 2GB RDP plan"
+                        />
+                      </div>
+                      <div class="title">2GB Remote Desktop</div>
+                      <div class="fromer seccolor">Basic Needs</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header5-baseprice1"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header5-price1">
+                          <sup>$</sup>5.95<span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header5-link1"
+                      >
+                        Order Now
+                      </a>
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>2 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>1 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>25 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabs-item active redb">
+            <div class="slick pt-0 bg-seccolorstyle">
+              <div id="slider" class="my-slider">
+                <div class="plan-container" id="header6plan2">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab6"
+                        >SINGAPORE</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 4GB RDP plan"
+                      />
+                      <div class="title">4GB Remote Desktop</div>
+                      <div class="fromer seccolor">Best Value</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header6-baseprice2"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header6-price2">
+                          <sup>$</sup>20.99 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header6-link2"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>4GB DDR4 RAM</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>35 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header6plan3">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab6"
+                        >SINGAPORE</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 6GB RDP plan"
+                      />
+                      <div class="title">6GB Remote Desktop</div>
+                      <div class="fromer seccolor">Premium Quality</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header6-baseprice3"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header6-price3">
+                          <sup>$</sup>11.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header6-link3"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>6 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>40 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header6plan4">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab6"
+                        >SINGAPORE</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 8GB RDP plan"
+                      />
+                      <div class="title">8GB Remote Desktop</div>
+                      <div class="fromer seccolor">Memory Boost</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header6-baseprice4"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header6-price4">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header6-link4"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>8 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>4 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>50 GB SSD NVMe</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header6plan5">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab6"
+                        >SINGAPORE</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 16GB RDP plan"
+                      />
+                      <div class="title">16GB Remote Desktop</div>
+                      <div class="fromer seccolor">Big Box</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header6-baseprice5"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header6-price5">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header6-link5"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>16 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>6 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>100 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 10Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header6plan1">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab6"
+                        >SINGAPORE</span
+                      >
+                      <div>
+                        <img
+                          class="svg mb-3"
+                          src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                          alt="Dedicated server image representing 2GB RDP plan"
+                        />
+                      </div>
+                      <div class="title">2GB Remote Desktop</div>
+                      <div class="fromer seccolor">Basic Needs</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header6-baseprice1"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header6-price1">
+                          <sup>$</sup>5.95<span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header6-link1"
+                      >
+                        Order Now
+                      </a>
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>2 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>1 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>25 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabs-item active redb">
+            <div class="slick pt-0 bg-seccolorstyle">
+              <div id="slider" class="my-slider">
+                <div class="plan-container" id="header7plan1">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab7"
+                        >AUSTRALIA</span
+                      >
+                      <div>
+                        <img
+                          class="svg mb-3"
+                          src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                          alt="Dedicated server image representing 2GB RDP plan"
+                        />
+                      </div>
+                      <div class="title">2GB Remote Desktop</div>
+                      <div class="fromer seccolor">Basic Needs</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header7-baseprice1"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header7-price1">
+                          <sup>$</sup>5.95<span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header7-link1"
+                      >
+                        Order Now
+                      </a>
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>2 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>1 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>25 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header7plan2">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab7"
+                        >AUSTRALIA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 4GB RDP plan"
+                      />
+                      <div class="title">4GB Remote Desktop</div>
+                      <div class="fromer seccolor">Best Value</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header7-baseprice2"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header7-price2">
+                          <sup>$</sup>20.99 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header7-link2"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>4GB DDR4 RAM</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>35 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header7plan3">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab7"
+                        >AUSTRALIA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 6GB RDP plan"
+                      />
+                      <div class="title">6GB Remote Desktop</div>
+                      <div class="fromer seccolor">Premium Quality</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header7-baseprice3"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header7-price3">
+                          <sup>$</sup>11.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header7-link3"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>6 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>40 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header7plan4">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab7"
+                        >AUSTRALIA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 8GB RDP plan"
+                      />
+                      <div class="title">8GB Remote Desktop</div>
+                      <div class="fromer seccolor">Memory Boost</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header7-baseprice4"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header7-price4">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header7-link4"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>8 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>4 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>50 GB SSD NVMe</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header7plan5">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab7"
+                        >AUSTRALIA</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 16GB RDP plan"
+                      />
+                      <div class="title">16GB Remote Desktop</div>
+                      <div class="fromer seccolor">Big Box</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header7-baseprice5"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header7-price5">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header7-link5"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>16 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>6 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>100 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 10Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabs-item active redb">
+            <div class="slick pt-0 bg-seccolorstyle">
+              <div id="slider" class="my-slider">
+                <div class="plan-container" id="header8plan2">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab8"
+                        >FRANCE</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 4GB RDP plan"
+                      />
+                      <div class="title">4GB Remote Desktop</div>
+                      <div class="fromer seccolor">Best Value</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header8-baseprice2"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header8-price2">
+                          <sup>$</sup>20.99 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header8-link2"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>4GB DDR4 RAM</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>35 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header8plan3">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab8"
+                        >FRANCE</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 6GB RDP plan"
+                      />
+                      <div class="title">6GB Remote Desktop</div>
+                      <div class="fromer seccolor">Premium Quality</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header8-baseprice3"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header8-price3">
+                          <sup>$</sup>11.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header8-link3"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>6 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>40 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header8plan4">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab8"
+                        >FRANCE</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 8GB RDP plan"
+                      />
+                      <div class="title">8GB Remote Desktop</div>
+                      <div class="fromer seccolor">Memory Boost</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header8-baseprice4"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header8-price4">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header8-link4"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>8 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>4 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>50 GB SSD NVMe</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header8plan5">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab8"
+                        >FRANCE</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 16GB RDP plan"
+                      />
+                      <div class="title">16GB Remote Desktop</div>
+                      <div class="fromer seccolor">Big Box</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header8-baseprice5"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header8-price5">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header8-link5"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>16 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>6 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>100 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 10Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header8plan1">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab8"
+                        >FRANCE</span
+                      >
+                      <div>
+                        <img
+                          class="svg mb-3"
+                          src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                          alt="Dedicated server image representing 2GB RDP plan"
+                        />
+                      </div>
+                      <div class="title">2GB Remote Desktop</div>
+                      <div class="fromer seccolor">Basic Needs</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header8-baseprice1"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header8-price1">
+                          <sup>$</sup>5.95<span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header8-link1"
+                      >
+                        Order Now
+                      </a>
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>2 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>1 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>25 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabs-item active redb">
+            <div class="slick pt-0 bg-seccolorstyle">
+              <div id="slider" class="my-slider">
+                <div class="plan-container" id="header9plan2">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab9"
+                        >POLAND</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 4GB RDP plan"
+                      />
+                      <div class="title">4GB Remote Desktop</div>
+                      <div class="fromer seccolor">Best Value</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header9-baseprice2"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header9-price2">
+                          <sup>$</sup>20.99 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header9-link2"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>4GB DDR4 RAM</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>35 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header9plan3">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab9"
+                        >POLAND</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 6GB RDP plan"
+                      />
+                      <div class="title">6GB Remote Desktop</div>
+                      <div class="fromer seccolor">Premium Quality</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header9-baseprice3"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header9-price3">
+                          <sup>$</sup>11.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header9-link3"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>6 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>40 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header9plan4">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab9"
+                        >POLAND</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 8GB RDP plan"
+                      />
+                      <div class="title">8GB Remote Desktop</div>
+                      <div class="fromer seccolor">Memory Boost</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header9-baseprice4"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header9-price4">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header9-link4"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>8 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>4 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>50 GB SSD NVMe</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header9plan5">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab9"
+                        >POLAND</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 16GB RDP plan"
+                      />
+                      <div class="title">16GB Remote Desktop</div>
+                      <div class="fromer seccolor">Big Box</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header9-baseprice5"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header9-price5">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header9-link5"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>16 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>6 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>100 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 10Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header9plan1">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab9"
+                        >POLAND</span
+                      >
+                      <div>
+                        <img
+                          class="svg mb-3"
+                          src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                          alt="Dedicated server image representing 2GB RDP plan"
+                        />
+                      </div>
+                      <div class="title">2GB Remote Desktop</div>
+                      <div class="fromer seccolor">Basic Needs</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header9-baseprice1"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header9-price1">
+                          <sup>$</sup>5.95<span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header9-link1"
+                      >
+                        Order Now
+                      </a>
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>2 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>1 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>25 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabs-item active redb">
+            <div class="slick pt-0 bg-seccolorstyle">
+              <div id="slider" class="my-slider">
+                <div class="plan-container" id="header10plan2">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab10"
+                        >JAPAN</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 4GB RDP plan"
+                      />
+                      <div class="title">4GB Remote Desktop</div>
+                      <div class="fromer seccolor">Best Value</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header10-baseprice2"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header10-price2">
+                          <sup>$</sup>20.99 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header10-link2"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>4GB DDR4 RAM</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>35 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header10plan3">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab10"
+                        >JAPAN</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 6GB RDP plan"
+                      />
+                      <div class="title">6GB Remote Desktop</div>
+                      <div class="fromer seccolor">Premium Quality</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header10-baseprice3"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header10-price3">
+                          <sup>$</sup>11.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header10-link3"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>6 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>2 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>40 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header10plan4">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab10"
+                        >JAPAN</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 8GB RDP plan"
+                      />
+                      <div class="title">8GB Remote Desktop</div>
+                      <div class="fromer seccolor">Memory Boost</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header10-baseprice4"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header10-price4">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header10-link4"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>8 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>4 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>50 GB SSD NVMe</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header10plan5">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab10"
+                        >JAPAN</span
+                      >
+                      <img
+                        class="svg mb-3"
+                        src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                        alt="Dedicated server image representing 16GB RDP plan"
+                      />
+                      <div class="title">16GB Remote Desktop</div>
+                      <div class="fromer seccolor">Big Box</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header10-baseprice5"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header10-price5">
+                          <sup>$</sup>15.95 <span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header10-link5"
+                        >Order Now</a
+                      >
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>16 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>6 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>100 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>5TB @ 10Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="plan-container" id="header10plan1">
+                  <div class="wrapper noshadow">
+                    <div class="top-content bg-colorstyle">
+                      <span class="anchor-slick-header headerlabeltab10"
+                        >JAPAN</span
+                      >
+                      <div>
+                        <img
+                          class="svg mb-3"
+                          src="https://firevps.net/wp-content/uploads/2024/03/dedicated.svg"
+                          alt="Dedicated server image representing 2GB RDP plan"
+                        />
+                      </div>
+                      <div class="title">2GB Remote Desktop</div>
+                      <div class="fromer seccolor">Basic Needs</div>
+                      <div class="firevps-offer-box">
+                        <div
+                          class="firevps-inline-block"
+                          id="header10-baseprice1"
+                        >
+                          13.9
+                        </div>
+                        <div class="firevps-plan-save">Save 50%</div>
+                      </div>
+                      <div class="offer-box-price">
+                        <p class="offer-box-price-p-s">Discount price</p>
+                        <div class="price mergecolor" id="header10-price1">
+                          <sup>$</sup>5.95<span class="period">/mo</span>
+                        </div>
+                      </div>
+                      <a
+                        href="https://clients.firevps.net/store/windows-rdp-vps"
+                        class="btn btn-default-yellow-fill"
+                        id="header10-link1"
+                      >
+                        Order Now
+                      </a>
+                    </div>
+                    <ul class="list-info bg-pink">
+                      <li>
+                        <i class="fa-solid fa-memory"></i>
+                        <span class="c-purple">Memory</span><br />
+                        <span>2 GB DDR4 RAM </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-microchip"></i>
+                        <span class="c-purple">Processor</span><br />
+                        <span>1 vCore CPU</span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-compact-disc"></i>
+                        <span class="c-purple">Storage</span><br />
+                        <span>25 GB SSD NVMe </span>
+                      </li>
+                      <li>
+                        <i class="fa-solid fa-gauge-simple-high"></i>
+                        <span class="c-purple">Network</span><br />
+                        <span>3TB @ 1Gbps</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <!-- Javascript -->
+    <script src="./js1/jquery.min.js"></script>
+    <script defer src="./js1/slick.min.js"></script>
+    <script defer src="./js1/pricetable.js"></script>
+  </body>
+</html>
