@@ -538,15 +538,17 @@ class PWPL_Admin_Meta {
         $periods   = (array) $settings->get( 'periods' );
         $locations = (array) $settings->get( 'locations' );
 
-        $meta_helper = new PWPL_Meta();
-        $table_theme = get_post_meta( $post->ID, PWPL_Meta::TABLE_THEME, true );
-        $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
-        $themes = [
-            'classic'         => __( 'Classic', 'planify-wp-pricing-lite' ),
-            'warm'            => __( 'Warm', 'planify-wp-pricing-lite' ),
-            'blue'            => __( 'Blue', 'planify-wp-pricing-lite' ),
-            'modern-discount' => __( 'Modern Discount', 'planify-wp-pricing-lite' ),
-        ];
+        $meta_helper   = new PWPL_Meta();
+        $table_theme   = get_post_meta( $post->ID, PWPL_Meta::TABLE_THEME, true );
+        $table_theme   = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
+        $theme_loader  = new PWPL_Theme_Loader();
+        $available_themes = $theme_loader->get_available_themes();
+        $themes = [];
+
+        foreach ( $available_themes as $theme ) {
+            $label = isset( $theme['name'] ) && $theme['name'] ? (string) $theme['name'] : ucwords( str_replace( '-', ' ', $theme['slug'] ) );
+            $themes[ $theme['slug'] ] = $label;
+        }
 
         $dimension_map = [
             'platform' => [

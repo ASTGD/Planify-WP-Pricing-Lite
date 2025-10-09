@@ -1,0 +1,21 @@
+{
+  "slug": "firevps",
+  "name": "FireVPS",
+  "containerClass": "pwpl-table--theme-firevps",
+  "version": "1.0.0",
+  "assets": {
+    "css": [
+      "theme.css"
+    ],
+    "js": [
+      "theme.js"
+    ]
+  },
+  "supports": [
+    "platform",
+    "period",
+    "location",
+    "badges",
+    "featuredPlan"
+  ]
+}

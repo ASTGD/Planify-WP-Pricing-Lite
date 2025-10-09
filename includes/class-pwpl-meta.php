@@ -226,6 +226,17 @@ class PWPL_Meta {
     public function sanitize_theme( $value ) {
         $value = sanitize_key( $value );
         $allowed = [ 'warm', 'blue', 'classic', 'modern-discount' ];
+
+        if ( class_exists( 'PWPL_Theme_Loader' ) ) {
+            $loader = new PWPL_Theme_Loader();
+            foreach ( $loader->get_available_themes() as $theme ) {
+                if ( ! empty( $theme['slug'] ) ) {
+                    $allowed[] = $theme['slug'];
+                }
+            }
+        }
+
+        $allowed = array_unique( $allowed );
         return in_array( $value, $allowed, true ) ? $value : 'classic';
     }
 

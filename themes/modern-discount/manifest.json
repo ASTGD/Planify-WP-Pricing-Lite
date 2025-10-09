@@ -1,0 +1,9 @@
+{
+  "slug": "modern-discount",
+  "name": "Modern Discount",
+  "version": "1.0.0",
+  "author": "Planify",
+  "template": "template.php",
+  "styles": ["theme.css"],
+  "scripts": []
+}

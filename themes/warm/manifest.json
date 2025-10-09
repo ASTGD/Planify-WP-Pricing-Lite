@@ -1,0 +1,9 @@
+{
+  "slug": "warm",
+  "name": "Warm",
+  "version": "1.0.0",
+  "author": "Planify",
+  "template": "template.php",
+  "styles": ["theme.css"],
+  "scripts": []
+}
