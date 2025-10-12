@@ -16,6 +16,8 @@ define( 'PWPL_FILE', __FILE__ );
 define( 'PWPL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PWPL_URL', plugin_dir_url( __FILE__ ) );
 
+require_once PWPL_DIR . 'includes/functions-theme.php';
+
 // Simple class autoloader for PWPL_ classes following includes/class-pwpl-*.php
 spl_autoload_register( function( $class ){
     if ( strpos( $class, 'PWPL_' ) !== 0 ) return;
@@ -37,4 +39,3 @@ register_activation_hook( __FILE__, function(){
 register_deactivation_hook( __FILE__, function(){
     flush_rewrite_rules();
 } );
-

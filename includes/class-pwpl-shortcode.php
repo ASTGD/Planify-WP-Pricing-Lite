@@ -361,6 +361,216 @@ class PWPL_Shortcode {
 
         $table_style_attr = $style_inline ? ' style="' . esc_attr( $style_inline ) . '"' : '';
 
+        $template_rel = 'template.php';
+        if ( ! empty( $table_manifest['template'] ) ) {
+            $template_rel_candidate = ltrim( (string) $table_manifest['template'], '/' );
+            if ( $template_rel_candidate ) {
+                $template_rel = $template_rel_candidate;
+            }
+        }
+
+        $template_path = function_exists( 'pwpl_locate_theme_file' ) ? pwpl_locate_theme_file( $table_theme, $template_rel ) : false;
+
+        if ( $template_path ) {
+            $table_subtitle_meta = get_post_meta( $table_id, '_pwpl_table_subtitle', true );
+            $table_subtitle_raw  = is_string( $table_subtitle_meta ) ? trim( wp_strip_all_tags( $table_subtitle_meta ) ) : '';
+            if ( '' === $table_subtitle_raw ) {
+                $table_excerpt = get_post_field( 'post_excerpt', $table_id );
+                if ( $table_excerpt ) {
+                    $table_subtitle_raw = trim( wp_strip_all_tags( $table_excerpt ) );
+                }
+            }
+
+            $allowed_context = [];
+            foreach ( [ 'platform', 'period', 'location' ] as $dimension_key ) {
+                $allowed_context[ $dimension_key ] = array_values( array_unique( array_filter( array_map(
+                    'sanitize_title',
+                    (array) ( $allowed[ $dimension_key ] ?? [] )
+                ) ) ) );
+            }
+
+            $tabs_context = [];
+            foreach ( [ 'platform', 'period', 'location' ] as $dimension_key ) {
+                if ( empty( $dimension_values[ $dimension_key ] ) ) {
+                    continue;
+                }
+                $tabs_context[ $dimension_key ] = [
+                    'values' => array_map( function( $item ) {
+                        $slug  = isset( $item['slug'] ) ? sanitize_title( $item['slug'] ) : '';
+                        $label = isset( $item['label'] ) ? (string) $item['label'] : $slug;
+                        return [
+                            'slug'  => $slug,
+                            'label' => $label,
+                        ];
+                    }, $dimension_values[ $dimension_key ] ),
+                ];
+            }
+
+            $table_title_raw = get_post_field( 'post_title', $table_id );
+            if ( '' === $table_title_raw ) {
+                $table_title_raw = __( 'Pricing Table', 'planify-wp-pricing-lite' );
+            }
+
+            $table_context = [
+                'id'               => $table_id,
+                'theme'            => $table_theme,
+                'title'            => $table_title_raw,
+                'subtitle'         => $table_subtitle_raw,
+                'manifest'         => $table_manifest,
+                'badges'           => $table_badges,
+                'dimension_labels' => $dimension_labels,
+                'active'           => $active_values,
+                'allowed'          => $allowed_context,
+                'tabs'             => $tabs_context,
+                'dimensions'       => $tabs_context,
+                'availability'     => $availability_payload,
+                'style'            => $style_inline,
+                'badge_shadow'     => $badge_shadow,
+            ];
+
+            $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );
+
+            $plan_entries = [];
+            foreach ( $plans as $plan_post ) {
+                $plan_id = (int) $plan_post->ID;
+
+                $plan_theme_meta = get_post_meta( $plan_id, PWPL_Meta::PLAN_THEME, true );
+                $plan_theme_meta = $plan_theme_meta ? $meta_helper->sanitize_theme( $plan_theme_meta ) : '';
+                $plan_theme_slug = ( 'classic' === $table_theme && $plan_theme_meta ) ? $plan_theme_meta : $table_theme;
+                $this->enqueue_theme_assets( $plan_theme_slug );
+
+                $variants = $plan_variants_cache[ $plan_id ] ?? [];
+                $best_variant = $this->resolve_variant( $variants, $active_values );
+                $price_html   = $this->build_price_html( $best_variant, $settings );
+
+                $override_badges = get_post_meta( $plan_id, PWPL_Meta::PLAN_BADGES_OVERRIDE, true );
+                if ( ! is_array( $override_badges ) ) {
+                    $override_badges = [];
+                }
+
+                $is_featured         = (bool) get_post_meta( $plan_id, PWPL_Meta::PLAN_FEATURED, true );
+                $plan_badge_shadow   = (int) get_post_meta( $plan_id, PWPL_Meta::PLAN_BADGE_SHADOW, true );
+                $badge               = $this->resolve_badge( $active_values, $override_badges, $table_badges );
+                $effective_shadow    = $plan_badge_shadow > 0 ? $plan_badge_shadow : $badge_shadow;
+                $badge_view          = $this->format_badge_for_output( $badge, $effective_shadow );
+                $cta_view            = $this->prepare_cta( $best_variant );
+                $cta_target          = '';
+                $cta_rel             = '';
+
+                if ( ! empty( $cta_view['target_attr'] ) && preg_match( '/target=\"([^\"]+)\"/i', $cta_view['target_attr'], $match_target ) ) {
+                    $cta_target = $match_target[1];
+                }
+                if ( ! empty( $cta_view['rel_attr'] ) && preg_match( '/rel=\"([^\"]+)\"/i', $cta_view['rel_attr'], $match_rel ) ) {
+                    $cta_rel = $match_rel[1];
+                }
+
+                $spec_meta  = get_post_meta( $plan_id, PWPL_Meta::PLAN_SPECS, true );
+                $spec_meta  = is_array( $spec_meta ) ? $spec_meta : [];
+                $spec_items = [];
+                foreach ( $spec_meta as $spec_entry ) {
+                    if ( ! is_array( $spec_entry ) ) {
+                        continue;
+                    }
+                    $label = isset( $spec_entry['label'] ) ? trim( (string) $spec_entry['label'] ) : '';
+                    $value = isset( $spec_entry['value'] ) ? trim( (string) $spec_entry['value'] ) : '';
+                    if ( '' === $label && '' === $value ) {
+                        continue;
+                    }
+                    $spec_items[] = [
+                        'label' => $label,
+                        'value' => $value,
+                        'slug'  => sanitize_title( $label ),
+                    ];
+                }
+
+                $plan_platforms = [];
+                $plan_periods   = [];
+                $plan_locations = [];
+                $supports_all_platforms = false;
+
+                foreach ( (array) $variants as $variant_entry ) {
+                    if ( ! is_array( $variant_entry ) ) {
+                        continue;
+                    }
+                    $variant_platform = isset( $variant_entry['platform'] ) ? sanitize_title( $variant_entry['platform'] ) : '';
+                    if ( $variant_platform ) {
+                        $plan_platforms[] = $variant_platform;
+                    } else {
+                        $supports_all_platforms = true;
+                    }
+
+                    $variant_period = isset( $variant_entry['period'] ) ? sanitize_title( $variant_entry['period'] ) : '';
+                    if ( $variant_period ) {
+                        $plan_periods[] = $variant_period;
+                    }
+
+                    $variant_location = isset( $variant_entry['location'] ) ? sanitize_title( $variant_entry['location'] ) : '';
+                    if ( $variant_location ) {
+                        $plan_locations[] = $variant_location;
+                    }
+                }
+
+                $plan_platforms = array_values( array_unique( array_filter( $plan_platforms ) ) );
+                $plan_periods   = array_values( array_unique( array_filter( $plan_periods ) ) );
+                $plan_locations = array_values( array_unique( array_filter( $plan_locations ) ) );
+
+                $plan_lead_meta = get_post_meta( $plan_id, '_pwpl_plan_subtitle', true );
+                $plan_lead      = is_string( $plan_lead_meta ) ? trim( wp_strip_all_tags( $plan_lead_meta ) ) : '';
+                if ( '' === $plan_lead && ! empty( $plan_post->post_excerpt ) ) {
+                    $plan_lead = trim( wp_strip_all_tags( $plan_post->post_excerpt ) );
+                }
+
+                $deal_label = '';
+                if ( is_array( $best_variant ) && ! empty( $best_variant['deal_label'] ) ) {
+                    $deal_label = (string) $best_variant['deal_label'];
+                }
+
+                $plan_title_raw = get_post_field( 'post_title', $plan_id );
+                if ( '' === $plan_title_raw ) {
+                    $plan_title_raw = sprintf( __( 'Plan #%d', 'planify-wp-pricing-lite' ), $plan_id );
+                }
+
+                $plan_entries[] = [
+                    'id'              => $plan_id,
+                    'theme'           => $plan_theme_slug,
+                    'title'           => $plan_title_raw,
+                    'subtitle'        => $plan_lead,
+                    'price_html'      => $price_html,
+                    'billing'         => $billing_copy,
+                    'cta'             => [
+                        'label'  => $cta_view['label'],
+                        'url'    => $cta_view['url'],
+                        'hidden' => $cta_view['hidden'],
+                        'target' => $cta_target,
+                        'rel'    => $cta_rel,
+                        'blank'  => ( '_blank' === $cta_target ),
+                    ],
+                    'badge'           => $badge_view,
+                    'badges_override' => $override_badges,
+                    'featured'        => $is_featured,
+                    'deal_label'      => $deal_label,
+                    'datasets'        => [
+                        'platforms' => $plan_platforms,
+                        'periods'   => $plan_periods,
+                        'locations' => $plan_locations,
+                    ],
+                    'platforms'       => $supports_all_platforms ? [] : $plan_platforms,
+                    'periods'         => $plan_periods,
+                    'locations'       => $plan_locations,
+                    'variants'        => array_values( $variants ),
+                    'specs'           => $spec_items,
+                    'badge_shadow'    => $effective_shadow,
+                ];
+            }
+
+            ob_start();
+            echo "\n<!-- PWPL template: " . esc_html( $template_path ) . " -->\n";
+            $table = $table_context;
+            $plans = $plan_entries;
+            include $template_path;
+            return ob_get_clean();
+        }
+
         ob_start();
         ?>
         <div class="<?php echo esc_attr( $table_class_attr ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php echo $table_attr_extras; foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } echo $table_style_attr; ?>>
