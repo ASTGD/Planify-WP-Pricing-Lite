@@ -19,7 +19,11 @@
   --fvps-spacing-xl: 44px;
   --fvps-font-base: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --fvps-font-heading: "Space Grotesk", "Inter", system-ui, sans-serif;
-  --fvps-card-min: var(--pwpl-card-min-global, 360px);
+  --fvps-plan-gap: clamp(16px, 2vw, 28px);
+  --fvps-card-min: var(--pwpl-card-min-active, var(--pwpl-card-min-global, 320px));
+  --fvps-card-max: max(var(--fvps-card-min), 520px);
+  --fvps-card-basis: clamp(var(--fvps-card-min), 28vw, var(--fvps-card-max));
+  --pwpl-gap: var(--fvps-plan-gap);
   position: relative;
   font-family: var(--fvps-font-base);
   color: var(--fvps-color-header);
@@ -29,7 +33,7 @@
   box-shadow: var(--fvps-shadow-outer);
   overflow: visible;
   box-sizing: border-box;
-  inline-size: min(var(--pwpl-table-max, var(--pwpl-width-global, 1200px)), 100%);
+  inline-size: min(var(--pwpl-width-global, 1200px), 100%);
   margin-inline: auto;
 }
 
@@ -136,6 +140,7 @@
 .pwpl-table--theme-firevps .pwpl-plan-rail-wrapper {
   position: relative;
   margin-top: var(--fvps-spacing-lg);
+  padding-bottom: clamp(40px, 5vw, 64px);
 }
 
 .pwpl-table--theme-firevps .pwpl-plan-nav[hidden] {
@@ -144,8 +149,9 @@
 
 .pwpl-table--theme-firevps .pwpl-plan-nav {
   position: absolute;
-  bottom: 8px;
+  bottom: clamp(8px, 2vw, 16px);
   z-index: 2;
+  pointer-events: none;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan-nav--prev {
@@ -168,6 +174,7 @@
   color: #ffffff;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan-nav__btn:focus-visible {
@@ -175,14 +182,24 @@
   outline-offset: 2px;
 }
 
+
 .pwpl-table--theme-firevps .pwpl-plan-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--fvps-card-min), 1fr));
-  gap: clamp(16px, 2vw, 28px);
+  display: flex;
+  gap: var(--fvps-plan-gap);
   align-items: stretch;
-  padding: 4px 4px 40px;
+  padding: 4px 4px clamp(40px, 6vw, 56px);
   scrollbar-width: thin;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+  touch-action: pan-x;
+}
+
+.pwpl-table--theme-firevps .pwpl-plan-grid:active {
+  cursor: grabbing;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan-grid::-webkit-scrollbar {
@@ -195,12 +212,12 @@
 }
 
 .pwpl-table--theme-firevps .pwpl-plan {
-  inline-size: auto;
-  min-inline-size: var(--fvps-card-min);
-  min-width: var(--fvps-card-min);
-  max-inline-size: 100%;
+  flex: 0 0 var(--fvps-card-basis);
+  min-inline-size: var(--fvps-card-basis);
+  min-width: var(--fvps-card-basis);
+  max-inline-size: min(100%, var(--fvps-card-max));
   width: auto;
-  max-width: 100%;
+  max-width: min(100%, var(--fvps-card-max));
   scroll-snap-align: start;
   opacity: 1 !important;
   filter: none !important;
@@ -208,24 +225,13 @@
 
 @media (max-width: 900px) {
   .pwpl-table--theme-firevps .pwpl-plan-grid {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: clamp(16px, 2vw, 28px);
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
-    cursor: grab;
+    gap: var(--fvps-spacing-md);
+    padding-bottom: var(--fvps-spacing-lg);
   }
 
   .pwpl-table--theme-firevps .pwpl-plan {
-    flex: 0 0 auto;
-    min-inline-size: var(--fvps-card-min);
-  }
-
-  .pwpl-table--theme-firevps .pwpl-plan-grid:active {
-    cursor: grabbing;
+    flex: 0 0 clamp(var(--fvps-card-min), 82vw, var(--fvps-card-max));
+    min-inline-size: clamp(var(--fvps-card-min), 82vw, var(--fvps-card-max));
   }
 }
 
@@ -574,20 +580,18 @@
 
 /* === FireVPS layout enforcers (scoped) === */
 .pwpl-table.pwpl-table--theme-firevps {
-  inline-size: min(var(--pwpl-table-max, var(--pwpl-width-global, 1200px)), 100%) !important;
-  margin-inline: auto !important;
+  inline-size: min(var(--pwpl-width-global, 1200px), 100%);
+  margin-inline: auto;
 }
 
 .pwpl-table.pwpl-table--theme-firevps .pwpl-plan-grid {
-  width: auto !important;
-  max-width: none !important;
+  max-width: 100%;
 }
 
 .pwpl-table.pwpl-table--theme-firevps .pwpl-plan {
-  width: auto !important;
-  max-width: none !important;
+  max-inline-size: min(100%, var(--fvps-card-max));
 }
 
 .pwpl-table.pwpl-table--theme-firevps .pwpl-plan > * {
-  max-width: none !important;
+  max-width: none;
 }

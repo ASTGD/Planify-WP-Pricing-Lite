@@ -22,11 +22,19 @@ $labels_json       = wp_json_encode( $table['dimension_labels'] ?? [] );
 $availability_json = wp_json_encode( $table['availability'] ?? [] );
 
 $wrapper_attrs = [
-	'data-table-id'         => (int) ( $table['id'] ?? 0 ),
-	'data-table-theme'      => $theme_slug,
-	'data-badges'           => $badges_json ?: '{}',
-	'data-dimension-labels' => $labels_json ?: '{}',
+        'data-table-id'         => (int) ( $table['id'] ?? 0 ),
+        'data-table-theme'      => $theme_slug,
+        'data-badges'           => $badges_json ?: '{}',
+        'data-dimension-labels' => $labels_json ?: '{}',
 ];
+
+$table_style = '';
+if ( isset( $table['style'] ) && is_string( $table['style'] ) ) {
+        $table_style = trim( $table['style'] );
+}
+if ( '' !== $table_style ) {
+        $wrapper_attrs['style'] = $table_style;
+}
 
 foreach ( [ 'platform', 'period', 'location' ] as $dimension ) {
 	$current = sanitize_title( $active[ $dimension ] ?? '' );
@@ -232,7 +240,10 @@ if ( ! function_exists( 'pwpl_fvps_parse_badge_date' ) ) {
 <div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 <?php
 foreach ( $wrapper_attrs as $attr => $value ) {
-	printf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
+        if ( '' === $value && '0' !== $value ) {
+                continue;
+        }
+        printf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
 }
 ?>
 >
