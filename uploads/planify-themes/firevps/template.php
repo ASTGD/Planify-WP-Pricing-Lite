@@ -324,8 +324,8 @@ foreach ( $wrapper_attrs as $attr => $value ) {
 					<button type="button" class="pwpl-plan-nav__btn" data-direction="next" aria-label="<?php esc_attr_e( 'Scroll next plans', 'planify-wp-pricing-lite' ); ?>">&#10095;</button>
 				</div>
 
-			<div class="pwpl-plan-grid fvps-plan-rail" tabindex="0">
-<?php foreach ( $plans as $plan ) :
+		<div class="pwpl-plan-grid fvps-plan-rail" tabindex="0">
+		<?php foreach ( $plans as $plan ) :
 	$plan_id    = (int) ( $plan['id'] ?? 0 );
 	$plan_theme = sanitize_key( $plan['theme'] ?? $theme_slug );
 	$title      = $plan['title'] ?? sprintf( __( 'Plan #%d', 'planify-wp-pricing-lite' ), $plan_id );
@@ -486,7 +486,7 @@ foreach ( $wrapper_attrs as $attr => $value ) {
 								</a>
 							</div>
 						</article>
-					<?php endforeach; ?>
-				</div>
-			</div>
+<?php endforeach; ?>
+		</div>
+	</div>
 </div>
