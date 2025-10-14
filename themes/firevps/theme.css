@@ -1,17 +1,18 @@
 .pwpl-table--theme-firevps {
   --fvps-color-surface: #ffffff;
-  --fvps-color-panel: #fffaf0;
+  --fvps-color-panel: #fff8e6;
   --fvps-color-dark: #1b1b1a;
-  --fvps-color-header: #181b22;
-  --fvps-color-muted: #4c4a4a;
-  --fvps-color-accent: #ffb758;
-  --fvps-color-accent-strong: #ffdb3d;
-  --fvps-color-highlight: #fdd700;
-  --fvps-color-button: #4c4a4a;
+  --fvps-color-header: #1c1a16;
+  --fvps-color-muted: #6c655c;
+  --fvps-color-accent: #f5a623;
+  --fvps-color-accent-strong: #d9790b;
+  --fvps-color-highlight: #ffcd30;
+  --fvps-color-button: #141414;
+  --fvps-color-button-text: #ffffff;
   --fvps-shadow-outer: 0 32px 48px rgba(15, 23, 42, 0.14);
-  --fvps-shadow-inner: 0 18px 36px rgba(15, 23, 42, 0.18);
+  --fvps-shadow-inner: 0 26px 46px rgba(15, 23, 42, 0.14);
   --fvps-radius-md: 16px;
-  --fvps-radius-lg: 20px;
+  --fvps-radius-lg: 24px;
   --fvps-spacing-xs: 6px;
   --fvps-spacing-sm: 12px;
   --fvps-spacing-md: 20px;
@@ -24,7 +25,7 @@
   position: relative;
   font-family: var(--fvps-font-base);
   color: var(--fvps-color-header);
-  background: linear-gradient(140deg, #f5f6fb 0%, #cdd4e3 100%);
+  background: linear-gradient(135deg, #f8f9ff 0%, #d9e4f5 100%);
   border-radius: var(--fvps-radius-lg);
   padding: var(--fvps-spacing-xl) var(--fvps-spacing-lg);
   box-shadow: var(--fvps-shadow-outer);
@@ -39,31 +40,37 @@
 
 .pwpl-table--theme-firevps .fvps-table-header {
   text-align: center;
-  margin-bottom: var(--fvps-spacing-lg);
+  margin-bottom: clamp(24px, 3.5vw, 44px);
+  display: grid;
+  gap: 8px;
 }
 
 .pwpl-table--theme-firevps .fvps-table-title {
   font-family: var(--fvps-font-heading);
-  font-size: clamp(2.1rem, 3vw, 2.8rem);
+  font-size: clamp(2rem, 3vw, 2.6rem);
   margin: 0;
   color: var(--fvps-color-header);
 }
 
 .pwpl-table--theme-firevps .fvps-table-subtitle {
-  margin: var(--fvps-spacing-xs) 0 0;
-  font-size: 1rem;
-  color: rgba(24, 27, 34, 0.68);
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(28, 26, 22, 0.72);
 }
 
 .pwpl-table--theme-firevps .fvps-dimension-nav {
   display: block;
   max-width: 100%;
   overflow-x: auto;
-  padding: var(--fvps-spacing-xs);
-  margin: 0 auto var(--fvps-spacing-sm);
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  border: 1px solid rgba(24, 27, 34, 0.12);
+  padding: 6px;
+  margin: 0 auto clamp(16px, 2vw, 24px);
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 40px;
+  border: 1px solid rgba(28, 26, 22, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
   scrollbar-width: thin;
 }
 
@@ -75,7 +82,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--fvps-spacing-sm);
+  gap: 10px;
   width: max-content;
   margin-inline: auto;
 }
@@ -91,40 +98,70 @@
 
 .pwpl-table--theme-firevps .fvps-tab {
   position: relative;
-  padding: 10px 18px;
+  padding: 12px 22px;
   border-radius: 999px;
-  border: 1px solid transparent;
-  background: transparent;
+  border: 1px solid rgba(28, 26, 22, 0.08);
+  background: rgba(255, 255, 255, 0.9);
   text-transform: uppercase;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
   font-weight: 600;
-  color: rgba(24, 27, 34, 0.65);
-  transition: color 0.24s ease, border 0.24s ease, background 0.24s ease, box-shadow 0.24s ease;
+  color: rgba(30, 28, 25, 0.7);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
   white-space: nowrap;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .pwpl-table--theme-firevps .fvps-tab:hover {
-  border-color: rgba(24, 27, 34, 0.16);
+  border-color: rgba(247, 166, 35, 0.45);
   color: var(--fvps-color-header);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 16px rgba(0, 0, 0, 0.12);
 }
 
 .pwpl-table--theme-firevps .fvps-tab.is-active {
-  background: linear-gradient(180deg, var(--fvps-color-accent) 0%, var(--fvps-color-accent-strong) 100%);
-  color: #0f172a;
-  border-color: rgba(255, 183, 88, 0.7);
-  box-shadow: 0 12px 22px rgba(255, 183, 88, 0.4);
+  background: linear-gradient(135deg, #f9c04a 0%, #d9790b 100%);
+  color: #1a1205;
+  border-color: rgba(247, 166, 35, 0.7);
+  box-shadow: 0 16px 24px rgba(217, 121, 11, 0.35);
 }
 
 .pwpl-table--theme-firevps .fvps-tab:focus-visible {
-  outline: 3px solid rgba(24, 27, 34, 0.55);
+  outline: 3px solid rgba(247, 166, 35, 0.65);
   outline-offset: 3px;
+}
+
+.pwpl-table--theme-firevps .pwpl-tab__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--pwpl-tab-badge-bg, rgba(30, 28, 24, 0.08));
+  color: var(--pwpl-tab-badge-color, rgba(30, 28, 24, 0.85));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.pwpl-table--theme-firevps .pwpl-tab__badge-icon {
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.pwpl-table--theme-firevps .pwpl-tab__badge-label {
+  display: inline-block;
 }
 
 .pwpl-table--theme-firevps .fvps-plan-rail-wrapper {
   position: relative;
-  margin-top: var(--fvps-spacing-lg);
-  padding-bottom: var(--fvps-spacing-md);
+  margin-top: clamp(24px, 3vw, 40px);
+  padding-bottom: calc(var(--fvps-spacing-md) + 20px);
 }
 
 .pwpl-table--theme-firevps .pwpl-plan-nav {
@@ -145,29 +182,29 @@
 
 .pwpl-table--theme-firevps .pwpl-plan-nav__btn {
   pointer-events: auto;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  border: 1px solid rgba(24, 27, 34, 0.18);
-  background: rgba(27, 27, 26, 0.9);
+  border: 1px solid rgba(26, 24, 20, 0.1);
+  background: linear-gradient(180deg, rgba(32, 30, 28, 0.92) 0%, rgba(20, 18, 16, 0.88) 100%);
   color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
-  transition: transform 0.24s ease, box-shadow 0.24s ease, background 0.24s ease;
+  font-size: 1.15rem;
+  box-shadow: 0 16px 28px rgba(33, 30, 28, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan-nav__btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 22px 36px rgba(15, 23, 42, 0.28);
-  background: linear-gradient(180deg, var(--fvps-color-accent) 0%, var(--fvps-color-accent-strong) 100%);
-  color: #0f172a;
+  transform: translateY(-4px);
+  box-shadow: 0 22px 36px rgba(217, 121, 11, 0.4);
+  background: linear-gradient(135deg, #f9c04a 0%, #d9790b 100%);
+  color: #1a1205;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan-nav__btn:focus-visible {
-  outline: 3px solid rgba(24, 27, 34, 0.65);
+  outline: 3px solid rgba(247, 166, 35, 0.65);
   outline-offset: 3px;
 }
 
@@ -226,7 +263,7 @@
   flex-direction: column;
   background: var(--fvps-color-surface);
   border-radius: var(--fvps-radius-lg);
-  border: 1px solid rgba(24, 27, 34, 0.08);
+  border: 1px solid rgba(40, 37, 33, 0.08);
   box-shadow: var(--fvps-shadow-inner);
   overflow: hidden;
   min-height: 100%;
@@ -235,36 +272,41 @@
 
 .pwpl-table--theme-firevps .fvps-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 28px 48px rgba(15, 23, 42, 0.22);
+  box-shadow: 0 32px 54px rgba(217, 121, 11, 0.28);
 }
 
 .pwpl-table--theme-firevps .fvps-card__top {
-  background: var(--fvps-color-panel);
-  padding: var(--fvps-spacing-lg) var(--fvps-spacing-lg) var(--fvps-spacing-md);
+  background: linear-gradient(180deg, rgba(255, 253, 245, 0.98) 0%, rgba(255, 240, 205, 0.98) 100%);
+  padding: clamp(18px, 2.6vw, 26px) clamp(18px, 2.4vw, 28px) 0;
   display: flex;
   flex-direction: column;
-  gap: var(--fvps-spacing-md);
+  gap: clamp(10px, 2.2vw, 16px);
+  border-top-left-radius: var(--fvps-radius-lg);
+  border-top-right-radius: var(--fvps-radius-lg);
+  position: relative;
 }
 
 .pwpl-table--theme-firevps .fvps-card__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--fvps-spacing-sm);
+  gap: 10px;
   min-height: 28px;
+  align-items: center;
 }
 
 .pwpl-table--theme-firevps .fvps-plan-badge {
   display: inline-flex;
   align-items: center;
-  padding: 6px 14px;
+  gap: 6px;
+  padding: 6px 16px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  background: linear-gradient(180deg, #1b1b1a 0%, #343434 100%);
+  background: linear-gradient(135deg, #111111 0%, #2a2a2a 100%);
   color: #ffffff;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .pwpl-table--theme-firevps .fvps-plan-badge[style*="--fvps-badge-bg"] {
@@ -272,76 +314,105 @@
   color: var(--fvps-badge-color, #ffffff);
 }
 
+/* When Planify JS sets --pwpl-badge-* variables, map them to FireVPS */
+.pwpl-table--theme-firevps [data-pwpl-badge][style*="--pwpl-badge-bg"] {
+  background: var(--pwpl-badge-bg);
+  color: var(--pwpl-badge-color, #ffffff);
+  box-shadow: 0 0 calc(var(--pwpl-badge-shadow-strength, 8) * 1px) calc(var(--pwpl-badge-shadow-strength, 8) * 0.5px) var(--pwpl-badge-shadow-color, rgba(0,0,0,0.18));
+}
+
 .pwpl-table--theme-firevps .fvps-plan-featured {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffef74 0%, #f9c04a 100%);
+  color: #1a1205;
+}
+
+.pwpl-table--theme-firevps .fvps-plan-location {
+  position: absolute;
+  top: 10px;
+  right: 12px;
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
   border-radius: 999px;
   font-size: 0.72rem;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  background: var(--fvps-color-highlight);
-  color: var(--fvps-color-header);
+  background: rgba(28, 26, 22, 0.08);
+  color: #1a1205;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .pwpl-table--theme-firevps .fvps-card__heading {
   display: flex;
   flex-direction: column;
-  gap: var(--fvps-spacing-xs);
+  gap: 6px;
 }
+
+.pwpl-table--theme-firevps .fvps-plan-heading-icon { display: flex; align-items: center; }
+.pwpl-table--theme-firevps .fvps-icon--plan { width: 40px; height: 40px; color: #c76706; background: rgba(247, 166, 35, 0.18); border-radius: 12px; padding: 8px; }
 
 .pwpl-table--theme-firevps .pwpl-plan__title {
   font-family: var(--fvps-font-heading);
-  font-size: clamp(1.6rem, 2.2vw, 1.9rem);
+  font-size: clamp(1.55rem, 2.4vw, 1.95rem);
   margin: 0;
-  color: var(--fvps-color-header);
+  color: #1d1a15;
+  letter-spacing: 0.02em;
 }
 
 .pwpl-table--theme-firevps .fvps-plan-lead {
   margin: 0;
-  color: var(--fvps-color-muted);
-  font-size: 0.96rem;
+  color: rgba(28, 26, 22, 0.75);
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .pwpl-table--theme-firevps .fvps-plan-deal {
   display: inline-flex;
   align-items: center;
-  padding: 6px 12px;
+  padding: 5px 12px;
   border-radius: 10px;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  background: rgba(24, 27, 34, 0.08);
-  color: var(--fvps-color-header);
+  letter-spacing: 0.08em;
+  background: rgba(28, 26, 22, 0.08);
+  color: rgba(30, 28, 24, 0.86);
   max-width: max-content;
 }
 
 .pwpl-table--theme-firevps .fvps-card__price {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--fvps-spacing-sm);
+  gap: 6px;
   align-items: baseline;
   font-family: var(--fvps-font-heading);
-  font-size: clamp(2.4rem, 3.2vw, 2.9rem);
+  font-size: clamp(2rem, 3vw, 2.6rem);
   font-weight: 700;
-  color: #b2542a;
-  letter-spacing: 0.12em;
-  min-height: 2.8rem;
+  color: #20160a;
+  letter-spacing: 0.05em;
+  min-height: 2.4rem;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-sale {
-  font-size: clamp(1.6rem, 2.4vw, 1.9rem);
-  color: #b2542a;
-  letter-spacing: 0.06em;
+  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
+  color: #1d1207;
+  letter-spacing: 0.04em;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-original {
   position: relative;
-  font-size: 1rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   padding-inline: 4px;
-  color: rgba(24, 27, 34, 0.65);
+  color: rgba(28, 26, 22, 0.6);
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-original::after {
@@ -351,26 +422,42 @@
   right: 0;
   top: 50%;
   height: 2px;
-  background: rgba(255, 99, 71, 0.85);
+  background: rgba(217, 121, 11, 0.85);
   transform: translateY(-50%);
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__billing {
-  margin: -4px 0 0;
-  font-size: 0.86rem;
-  font-style: italic;
-  color: rgba(24, 27, 34, 0.75);
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(32, 30, 28, 0.65);
+}
+
+.pwpl-table--theme-firevps .fvps-card__cta-inline {
+  margin-top: clamp(10px, 1.5vw, 14px);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.pwpl-table--theme-firevps .fvps-button--inline {
+  width: auto;
+  min-width: 180px;
+  padding: 12px 22px;
+  box-shadow: 0 16px 28px rgba(217, 121, 11, 0.28);
+  align-self: flex-start;
 }
 
 .pwpl-table--theme-firevps .fvps-card__specs {
   list-style: none;
   margin: 0;
-  padding: var(--fvps-spacing-md) var(--fvps-spacing-lg) var(--fvps-spacing-lg);
-  background: var(--fvps-color-dark);
+  padding: clamp(18px, 2.2vw, 24px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.6vw, 28px);
+  background: linear-gradient(180deg, #cf7a1a 0%, #8a3f00 100%);
   display: flex;
   flex-direction: column;
-  gap: var(--fvps-spacing-sm);
+  gap: 12px;
   color: rgba(255, 255, 255, 0.95);
+  position: relative;
 }
 
 .pwpl-table--theme-firevps .fvps-card__specs,
@@ -380,10 +467,10 @@
 
 .pwpl-table--theme-firevps .fvps-spec {
   display: grid;
-  grid-template-columns: 44px 1fr;
+  grid-template-columns: 40px 1fr;
   align-items: center;
-  gap: var(--fvps-spacing-sm);
-  padding: 12px 0;
+  gap: 12px;
+  padding: 2px 0;
 }
 
 .pwpl-table--theme-firevps .fvps-icon {
@@ -391,31 +478,30 @@
   height: 34px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.18);
-  padding: 8px;
+  padding: 6px;
   stroke: currentColor;
   stroke-width: 1.8;
   fill: none;
+  color: rgba(255,255,255,0.95);
 }
 
-.pwpl-table--theme-firevps .fvps-spec__text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/* Ensure plan heading icon overrides the base color */
+.pwpl-table--theme-firevps .fvps-icon--plan {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(247, 166, 35, 0.18);
+  color: #c76706; /* overrides base white */
 }
 
-.pwpl-table--theme-firevps .fvps-spec__label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.pwpl-table--theme-firevps .fvps-spec__value {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #ffffff;
-}
+.pwpl-table--theme-firevps .fvps-spec__text { display: flex; flex-direction: row; gap: 8px; align-items: baseline; }
+.pwpl-table--theme-firevps .fvps-spec__label { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.03em; text-transform: none; color: rgba(255,255,255,0.82); }
+.pwpl-table--theme-firevps .fvps-spec__label::after { content: ':'; margin-left: 4px; opacity: 0.8; }
+.pwpl-table--theme-firevps .fvps-spec__value { font-size: 0.95rem; font-weight: 700; color: #ffffff; }
 
 .pwpl-table--theme-firevps .fvps-spec--ram .fvps-icon,
 .pwpl-table--theme-firevps .fvps-spec--memory .fvps-icon {
@@ -461,46 +547,51 @@
 }
 
 .pwpl-table--theme-firevps .fvps-card__cta {
-  background: var(--fvps-color-surface);
-  padding: var(--fvps-spacing-md) var(--fvps-spacing-lg) var(--fvps-spacing-lg);
+  background: linear-gradient(180deg, rgba(255, 242, 214, 1) 0%, rgba(255, 229, 185, 0.95) 100%);
+  padding: clamp(16px, 2.2vw, 22px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 24px);
   display: flex;
-  justify-content: center;
+  justify-content: stretch;
+  align-items: center;
+  border-top: none;
+  border-bottom-left-radius: var(--fvps-radius-lg);
+  border-bottom-right-radius: var(--fvps-radius-lg);
+  position: relative;
+  margin-top: 0;
 }
 
 .pwpl-table--theme-firevps .fvps-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 220px;
-  width: min(260px, 100%);
-  padding: 14px 28px;
+  width: 100%;
+  padding: 14px 24px;
   border-radius: 999px;
   border: none;
-  background: var(--fvps-color-button);
-  color: #ffffff;
+  background: linear-gradient(135deg, #f9c04a 0%, #d9790b 100%);
+  color: #1a1205;
   font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.08em;
+  font-size: 0.92rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   text-decoration: none;
-  box-shadow: 0 22px 32px rgba(0, 0, 0, 0.26);
+  box-shadow: 0 20px 32px rgba(217, 121, 11, 0.35);
   transition: transform 0.24s ease, box-shadow 0.24s ease, background 0.24s ease, color 0.24s ease;
 }
 
 .pwpl-table--theme-firevps .fvps-button:hover {
   transform: translateY(-4px);
-  box-shadow: 0 32px 42px rgba(0, 0, 0, 0.28);
-  background: var(--fvps-color-accent-strong);
-  color: #000000;
+  box-shadow: 0 24px 40px rgba(217, 121, 11, 0.45);
+  background: linear-gradient(135deg, #ffd76a 0%, #f9c04a 100%);
+  color: #1a1205;
 }
 
 .pwpl-table--theme-firevps .fvps-button:active {
   transform: translateY(-1px);
-  box-shadow: 0 18px 28px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 16px 28px rgba(217, 121, 11, 0.35);
 }
 
 .pwpl-table--theme-firevps .fvps-button:focus-visible {
-  outline: 3px solid rgba(24, 27, 34, 0.6);
+  outline: 3px solid rgba(247, 166, 35, 0.6);
   outline-offset: 4px;
 }
 

@@ -46,6 +46,8 @@ if ( $availability_json ) {
 $table_title    = $table['title'] ?? '';
 $table_subtitle = $table['subtitle'] ?? '';
 $table_style    = trim( (string) ( $table['style'] ?? '' ) );
+$table_badges   = is_array( $table['badges'] ?? null ) ? $table['badges'] : [];
+$badge_shadow   = (int) ( $table['badge_shadow'] ?? 0 );
 
 $icon_map = [
 	'ram'          => 'ram',
@@ -119,25 +121,51 @@ if ( $table_style ) {
 		}
 		$current_value = $wrapper_attrs[ 'data-active-' . $dimension ] ?? '';
 		?>
-		<div class="pwpl-dimension-nav fvps-dimension-nav" data-dimension="<?php echo esc_attr( $dimension ); ?>">
-			<div class="fvps-tablist" data-fvps-tablist>
-			<?php foreach ( $items as $item ) :
-				$slug = sanitize_title( $item['slug'] ?? '' );
-				if ( ! $slug ) {
-					continue;
-				}
-				$label = $item['label'] ?? $slug;
-				$is_active = $current_value === $slug;
-				?>
-				<button type="button"
-					class="pwpl-tab fvps-tab<?php echo $is_active ? ' is-active' : ''; ?>"
-					data-value="<?php echo esc_attr( $slug ); ?>"
-					aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>">
-					<span class="pwpl-tab__label"><?php echo esc_html( $label ); ?></span>
-				</button>
-			<?php endforeach; ?>
-			</div>
-		</div>
+        <div class="pwpl-dimension-nav fvps-dimension-nav" data-dimension="<?php echo esc_attr( $dimension ); ?>">
+            <div class="fvps-tablist" data-fvps-tablist>
+            <?php foreach ( $items as $item ) :
+                $slug = sanitize_title( $item['slug'] ?? '' );
+                if ( ! $slug ) {
+                    continue;
+                }
+                $label = $item['label'] ?? $slug;
+                $is_active = $current_value === $slug;
+                // Resolve a promo badge for this tab (if configured)
+                $tab_badge_raw = null;
+                $tab_badge_list = is_array( $table_badges[ $dimension ] ?? null ) ? $table_badges[ $dimension ] : [];
+                foreach ( $tab_badge_list as $candidate ) {
+                    $cslug = sanitize_title( $candidate['slug'] ?? '' );
+                    if ( $cslug && $cslug === $slug ) { $tab_badge_raw = $candidate; break; }
+                }
+                $tab_badge_hidden = ! empty( $tab_badge_raw['hidden'] );
+                $tab_badge_label  = trim( (string) ( $tab_badge_raw['label'] ?? '' ) );
+                $tab_badge_icon   = (string) ( $tab_badge_raw['icon'] ?? '' );
+                $tab_badge_style  = '';
+                if ( ! empty( $tab_badge_raw['color'] ) ) {
+                    $tab_badge_style .= '--pwpl-tab-badge-bg:' . $tab_badge_raw['color'] . ';';
+                }
+                if ( ! empty( $tab_badge_raw['text_color'] ) ) {
+                    $tab_badge_style .= '--pwpl-tab-badge-color:' . $tab_badge_raw['text_color'] . ';';
+                }
+                if ( $badge_shadow > 0 ) {
+                    $tab_badge_style .= '--pwpl-badge-shadow-strength:' . (int) $badge_shadow . ';';
+                }
+                ?>
+                <button type="button"
+                    class="pwpl-tab fvps-tab<?php echo $is_active ? ' is-active' : ''; ?>"
+                    data-value="<?php echo esc_attr( $slug ); ?>"
+                    aria-pressed="<?php echo $is_active ? 'true' : 'false'; ?>">
+                    <span class="pwpl-tab__label"><?php echo esc_html( $label ); ?></span>
+                    <?php if ( $tab_badge_label && ! $tab_badge_hidden ) : ?>
+                        <span class="pwpl-tab__badge" style="<?php echo esc_attr( $tab_badge_style ); ?>">
+                            <?php if ( $tab_badge_icon ) : ?><span class="pwpl-tab__badge-icon" aria-hidden="true"><?php echo esc_html( $tab_badge_icon ); ?></span><?php endif; ?>
+                            <span class="pwpl-tab__badge-label"><?php echo esc_html( $tab_badge_label ); ?></span>
+                        </span>
+                    <?php endif; ?>
+                </button>
+            <?php endforeach; ?>
+            </div>
+        </div>
 	<?php endforeach; ?>
 
 	<div class="pwpl-plan-rail-wrapper fvps-plan-rail-wrapper">
@@ -226,25 +254,31 @@ if ( $table_style ) {
 					data-badge="<?php echo esc_attr( $badge_attr ?: '{}' ); ?>">
 					<div class="fvps-card__top">
 						<div class="fvps-card__badges">
-							<?php if ( $badge_label ) : ?>
-								<span class="fvps-plan-badge" style="<?php
-									if ( $badge_color ) {
-										printf( '--fvps-badge-bg:%s;', esc_attr( $badge_color ) );
-									}
-									if ( $badge_text ) {
-										printf( '--fvps-badge-color:%s;', esc_attr( $badge_text ) );
-									}
-								?>">
-									<?php echo esc_html( $badge_label ); ?>
-								</span>
-							<?php endif; ?>
+                        <span class="fvps-plan-badge" data-pwpl-badge style="<?php
+                            if ( $badge_color ) {
+                                printf( '--pwpl-badge-bg:%s;--pwpl-badge-shadow-color:%s;', esc_attr( $badge_color ), esc_attr( $badge_color ) );
+                            }
+                            if ( $badge_text ) {
+                                printf( '--pwpl-badge-color:%s;', esc_attr( $badge_text ) );
+                            }
+                        ?>" <?php echo $badge_label ? '' : 'hidden'; ?>>
+                            <span class="fvps-plan-badge__icon" data-pwpl-badge-icon aria-hidden="true"></span>
+                            <span class="fvps-plan-badge__label" data-pwpl-badge-label><?php echo esc_html( $badge_label ); ?></span>
+                        </span>
+
+                        <span class="fvps-plan-location" data-pwpl-location hidden></span>
 							<?php if ( $is_featured ) : ?>
 								<span class="fvps-plan-featured" data-pwpl-featured-label><?php esc_html_e( 'Featured', 'planify-wp-pricing-lite' ); ?></span>
 							<?php endif; ?>
 						</div>
 
-						<div class="fvps-card__heading">
-							<h3 class="pwpl-plan__title"><?php echo esc_html( $title ); ?></h3>
+                        <div class="fvps-card__heading">
+                            <div class="fvps-plan-heading-icon" aria-hidden="true">
+                                <svg class="fvps-icon fvps-icon--plan" focusable="false">
+                                    <use href="#ram" xlink:href="#ram"></use>
+                                </svg>
+                            </div>
+                            <h3 class="pwpl-plan__title"><?php echo esc_html( $title ); ?></h3>
 							<?php if ( $lead ) : ?>
 								<p class="fvps-plan-lead"><?php echo esc_html( $lead ); ?></p>
 							<?php endif; ?>
@@ -253,11 +287,22 @@ if ( $table_style ) {
 							<?php endif; ?>
 						</div>
 
-						<div class="fvps-card__price" data-pwpl-price><?php echo wp_kses_post( $price_html ); ?></div>
-						<?php if ( $billing ) : ?>
-							<p class="pwpl-plan__billing" data-pwpl-billing><?php echo esc_html( $billing ); ?></p>
-						<?php endif; ?>
-					</div>
+							<div class="fvps-card__price" data-pwpl-price><?php echo wp_kses_post( $price_html ); ?></div>
+							<?php if ( $billing ) : ?>
+								<p class="pwpl-plan__billing" data-pwpl-billing><?php echo esc_html( $billing ); ?></p>
+							<?php endif; ?>
+
+							<div class="fvps-card__cta-inline"<?php echo $cta_hidden ? ' hidden' : ''; ?>>
+								<a class="fvps-button fvps-button--inline"
+									href="<?php echo esc_url( $cta_url ); ?>"<?php
+										if ( ! empty( $cta['blank'] ) ) {
+											echo ' target="_blank" rel="noopener noreferrer"';
+										}
+									?>>
+									<span><?php echo esc_html( $cta_label ); ?></span>
+								</a>
+							</div>
+						</div>
 
 					<?php if ( $ordered_specs ) : ?>
 						<ul class="pwpl-plan__specs fvps-card__specs">
