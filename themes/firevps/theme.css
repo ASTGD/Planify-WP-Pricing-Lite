@@ -19,6 +19,8 @@
   --fvps-spacing-xl: 44px;
   --fvps-font-base: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --fvps-font-heading: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --fvps-card-min-fallback: 280px;
+  --fvps-card-max-inline: 520px;
   position: relative;
   font-family: var(--fvps-font-base);
   color: var(--fvps-color-header);
@@ -27,6 +29,8 @@
   padding: var(--fvps-spacing-xl) var(--fvps-spacing-lg);
   box-shadow: var(--fvps-shadow-outer);
   overflow: visible;
+  inline-size: min(var(--pwpl-width-global), 100%);
+  margin-inline: auto;
 }
 
 .pwpl-table--theme-firevps[data-debug="on"] {
@@ -52,22 +56,37 @@
 }
 
 .pwpl-table--theme-firevps .fvps-dimension-nav {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--fvps-spacing-sm);
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
   padding: var(--fvps-spacing-xs);
   margin: 0 auto var(--fvps-spacing-sm);
   background: rgba(255, 255, 255, 0.8);
   border-radius: 12px;
   border: 1px solid rgba(24, 27, 34, 0.12);
-  max-width: 100%;
-  overflow-x: auto;
   scrollbar-width: thin;
 }
 
 .pwpl-table--theme-firevps .fvps-dimension-nav::-webkit-scrollbar {
   height: 6px;
+}
+
+.pwpl-table--theme-firevps .fvps-tablist {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fvps-spacing-sm);
+  width: max-content;
+  margin-inline: auto;
+}
+
+.pwpl-table--theme-firevps .fvps-dimension-nav.is-overflowing .fvps-tablist {
+  margin-inline: 0;
+  justify-content: flex-start;
+}
+
+.pwpl-table--theme-firevps .fvps-tablist .fvps-tab {
+  flex: 0 0 auto;
 }
 
 .pwpl-table--theme-firevps .fvps-tab {
@@ -111,9 +130,9 @@
 .pwpl-table--theme-firevps .pwpl-plan-nav {
   position: absolute;
   top: auto;
-  bottom: var(--fvps-spacing-sm);
+  bottom: calc(var(--fvps-spacing-sm) + 12px);
   pointer-events: none;
-  z-index: 3;
+  z-index: 8;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan-nav--prev {
@@ -156,29 +175,48 @@
   transform: translateY(1px);
 }
 
+.pwpl-table--theme-firevps .pwpl-plan-grid,
 .pwpl-table--theme-firevps .fvps-plan-rail {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(320px, 1fr);
+  display: flex;
+  align-items: stretch;
   gap: var(--fvps-spacing-lg);
   padding: var(--fvps-spacing-md) 4px var(--fvps-spacing-lg);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: thin;
-  touch-action: pan-y;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
+.pwpl-table--theme-firevps .pwpl-plan-grid {
+  scroll-snap-stop: always;
+}
+
+.pwpl-table--theme-firevps .pwpl-plan-grid > *,
+.pwpl-table--theme-firevps .fvps-plan-rail > * {
+  flex-shrink: 0;
+}
+
+.pwpl-table--theme-firevps .pwpl-plan-grid::-webkit-scrollbar,
 .pwpl-table--theme-firevps .fvps-plan-rail::-webkit-scrollbar {
   height: 6px;
 }
 
+.pwpl-table--theme-firevps .pwpl-plan-grid::-webkit-scrollbar-thumb,
 .pwpl-table--theme-firevps .fvps-plan-rail::-webkit-scrollbar-thumb {
   background: rgba(24, 27, 34, 0.25);
   border-radius: 999px;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan {
+  --fvps-card-min-size: var(--pwpl-card-min-active, var(--pwpl-card-min-global, var(--fvps-card-min-fallback, 280px)));
+  --fvps-card-width: clamp(var(--fvps-card-min-fallback, 280px), var(--fvps-card-min-size), var(--fvps-card-max-inline, 520px));
   scroll-snap-align: start;
+  flex: 0 0 var(--fvps-card-width);
+  inline-size: var(--fvps-card-width);
+  min-inline-size: var(--pwpl-card-min-active, var(--pwpl-card-min-global));
+  max-inline-size: var(--fvps-card-max-inline, 520px);
   opacity: 1 !important;
   filter: none !important;
 }
@@ -476,8 +514,9 @@
   .pwpl-table--theme-firevps .pwpl-plan-nav--next {
     right: -12px;
   }
+  .pwpl-table--theme-firevps .pwpl-plan-grid,
   .pwpl-table--theme-firevps .fvps-plan-rail {
-    grid-auto-columns: minmax(280px, 85%);
+    gap: var(--fvps-spacing-md);
   }
 }
 
@@ -494,9 +533,15 @@
   .pwpl-table--theme-firevps .pwpl-plan-nav {
     display: none;
   }
+  .pwpl-table--theme-firevps .pwpl-plan-grid,
   .pwpl-table--theme-firevps .fvps-plan-rail {
-    grid-auto-columns: 100%;
     gap: var(--fvps-spacing-md);
+    scroll-snap-type: x proximity;
+  }
+  .pwpl-table--theme-firevps .pwpl-plan {
+    --fvps-card-width: min(100%, clamp(var(--fvps-card-min-fallback, 280px), var(--fvps-card-min-size), var(--fvps-card-max-inline, 520px)));
+    flex: 0 0 var(--fvps-card-width);
+    inline-size: var(--fvps-card-width);
   }
   .pwpl-table--theme-firevps .fvps-button {
     min-width: 0;
@@ -517,6 +562,7 @@
   .pwpl-table--theme-firevps .fvps-dimension-nav,
   .pwpl-table--theme-firevps .fvps-tab,
   .pwpl-table--theme-firevps .pwpl-plan-nav__btn,
+  .pwpl-table--theme-firevps .pwpl-plan-grid,
   .pwpl-table--theme-firevps .fvps-plan-rail,
   .pwpl-table--theme-firevps .fvps-card,
   .pwpl-table--theme-firevps .fvps-button {
