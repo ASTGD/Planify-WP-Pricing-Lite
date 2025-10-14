@@ -45,6 +45,7 @@ if ( $availability_json ) {
 
 $table_title    = $table['title'] ?? '';
 $table_subtitle = $table['subtitle'] ?? '';
+$table_style    = trim( (string) ( $table['style'] ?? '' ) );
 
 $icon_map = [
 	'ram'          => 'ram',
@@ -86,6 +87,9 @@ $spec_priority = [
 foreach ( $wrapper_attrs as $attr => $value ) {
 	printf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
 }
+if ( $table_style ) {
+	echo ' style="' . esc_attr( $table_style ) . '"';
+}
 ?>
 >
 	<?php
@@ -116,6 +120,7 @@ foreach ( $wrapper_attrs as $attr => $value ) {
 		$current_value = $wrapper_attrs[ 'data-active-' . $dimension ] ?? '';
 		?>
 		<div class="pwpl-dimension-nav fvps-dimension-nav" data-dimension="<?php echo esc_attr( $dimension ); ?>">
+			<div class="fvps-tablist" data-fvps-tablist>
 			<?php foreach ( $items as $item ) :
 				$slug = sanitize_title( $item['slug'] ?? '' );
 				if ( ! $slug ) {
@@ -131,6 +136,7 @@ foreach ( $wrapper_attrs as $attr => $value ) {
 					<span class="pwpl-tab__label"><?php echo esc_html( $label ); ?></span>
 				</button>
 			<?php endforeach; ?>
+			</div>
 		</div>
 	<?php endforeach; ?>
 
@@ -142,7 +148,7 @@ foreach ( $wrapper_attrs as $attr => $value ) {
 			<button type="button" class="pwpl-plan-nav__btn" data-direction="next" aria-label="<?php esc_attr_e( 'Scroll next plans', 'planify-wp-pricing-lite' ); ?>">&#10095;</button>
 		</div>
 
-		<div class="pwpl-plans-rail fvps-plan-rail" tabindex="0">
+		<div class="pwpl-plan-grid pwpl-plan-rail fvps-plan-rail" tabindex="0">
 			<?php foreach ( $plans as $plan ) :
 				$plan_id    = (int) ( $plan['id'] ?? 0 );
 				$plan_theme = sanitize_key( $plan['theme'] ?? $theme_slug );
