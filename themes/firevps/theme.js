@@ -26,6 +26,7 @@
 			nav.classList.toggle('is-scrollable', isOverflowing);
 		}
 	}
+}
 
 	function setupResizeObserver(nav) {
 		var tablist = nav.querySelector('[data-fvps-tablist]');
