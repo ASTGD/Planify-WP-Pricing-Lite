@@ -65,18 +65,21 @@
   display: block;
   max-width: 100%;
   overflow-x: auto;
+  overflow-y: visible;
   padding: 6px;
   margin: 0 auto clamp(16px, 2vw, 24px);
   background: rgba(255, 255, 255, 0.75);
   border-radius: 40px;
   border: 1px solid rgba(28, 26, 22, 0.08);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  scrollbar-width: thin;
+  /* Hide native scrollbar; replace with custom rail */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+  position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
-.pwpl-table--theme-firevps .fvps-dimension-nav::-webkit-scrollbar {
-  height: 6px;
-}
+.pwpl-table--theme-firevps .fvps-dimension-nav::-webkit-scrollbar { display: none; width: 0; height: 0; background: transparent; }
 
 .pwpl-table--theme-firevps .fvps-tablist {
   display: flex;
@@ -85,6 +88,57 @@
   gap: 10px;
   width: max-content;
   margin-inline: auto;
+}
+
+/* Custom scroll rail for the tab list */
+.pwpl-table--theme-firevps .fvps-tabs-rail {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 0;
+  height: 4px;
+  transform: translateY(50%);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.pwpl-table--theme-firevps .fvps-tabs-rail__track {
+  width: 100%;
+  height: 100%;
+  background: rgba(28, 26, 22, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pwpl-table--theme-firevps .fvps-tabs-rail__thumb {
+  height: 100%;
+  width: 32px;
+  background: linear-gradient(135deg, #f9c04a 0%, #d9790b 100%);
+  border-radius: inherit;
+  transform: translateX(0);
+  pointer-events: auto;
+  cursor: grab;
+  box-shadow: 0 4px 10px rgba(217, 121, 11, 0.3);
+  touch-action: none;
+}
+
+.pwpl-table--theme-firevps .fvps-dimension-nav.is-dragging .fvps-tabs-rail__thumb {
+  cursor: grabbing;
+}
+
+.pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-dragging .fvps-tabs-rail,
+.pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail,
+.pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:focus-within .fvps-tabs-rail {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:hover .fvps-tabs-rail {
+    opacity: 1;
+  }
 }
 
 .pwpl-table--theme-firevps .fvps-dimension-nav.is-overflowing .fvps-tablist {
