@@ -826,6 +826,285 @@ function initPlanRails() {
 	}
 }
 
+	function requestUpdate() {
+		if (ctx.rafPending) {
+			return;
+		}
+		ctx.rafPending = true;
+		window.requestAnimationFrame(function () {
+			ctx.rafPending = false;
+			updateMetrics();
+		});
+	}
+
+	function cancelSnap() {
+		if (ctx.snapTimer) {
+			clearTimeout(ctx.snapTimer);
+			ctx.snapTimer = null;
+		}
+	}
+
+	function snapToNearest(forceInstant) {
+		if (!ctx.options.snap) {
+			return;
+		}
+		var items = getItems();
+		if (!items.length || ctx.maxScroll <= 0) {
+			return;
+		}
+		var current = scroller.scrollLeft;
+		var target = current;
+		var bestDelta = Infinity;
+		for (var i = 0; i < items.length; i++) {
+			var item = items[i];
+			var left = item.offsetLeft;
+			var delta = Math.abs(current - left);
+			if (delta < bestDelta) {
+				bestDelta = delta;
+				target = left;
+			}
+		}
+		target = Math.max(0, Math.min(ctx.maxScroll, target));
+		if (Math.abs(target - current) < 1) {
+			return;
+		}
+		scrollTo(target, { behavior: forceInstant ? 'auto' : 'smooth' });
+	}
+
+	function scheduleSnap() {
+		if (!ctx.options.snap) {
+			return;
+		}
+		if (ctx.isDragging || ctx.isProgrammatic) {
+			return;
+		}
+		cancelSnap();
+		ctx.snapTimer = setTimeout(function () {
+			ctx.snapTimer = null;
+			snapToNearest();
+		}, ctx.options.snapDelay || 180);
+	}
+
+	function scheduleHide() {
+		container.classList.add('is-user-scrolling');
+		if (ctx.hideTimer) {
+			clearTimeout(ctx.hideTimer);
+		}
+		ctx.hideTimer = setTimeout(function () {
+			container.classList.remove('is-user-scrolling');
+			ctx.hideTimer = null;
+		}, 600);
+	}
+
+	function scrollTo(target, opts) {
+		opts = opts || {};
+		target = Math.max(0, Math.min(ctx.maxScroll, target));
+		if (ctx.maxScroll <= 0) {
+			scroller.scrollLeft = target;
+			ctx.isProgrammatic = false;
+			requestUpdate();
+			return;
+		}
+		cancelSnap();
+		ctx.isProgrammatic = true;
+		scheduleHide();
+		var behavior = opts.behavior || 'smooth';
+		if (ctx.prefersReducedMotion) {
+			behavior = 'auto';
+		}
+		var usedNative = false;
+		if (typeof scroller.scrollTo === 'function') {
+			try {
+				scroller.scrollTo({ left: target, behavior: behavior });
+				usedNative = true;
+			} catch (err) {
+				usedNative = false;
+			}
+		}
+		if (!usedNative) {
+			var start = scroller.scrollLeft;
+			var distance = target - start;
+			if (Math.abs(distance) < 1) {
+				scroller.scrollLeft = target;
+				ctx.isProgrammatic = false;
+				requestUpdate();
+				scheduleSnap();
+				return;
+			}
+			var duration = ctx.prefersReducedMotion ? 0 : (opts.duration || ctx.options.animationDuration || 320);
+			var startTime = null;
+			var easeOut = function (t) { return t * (2 - t); };
+			window.requestAnimationFrame(function step(ts) {
+				if (!startTime) {
+					startTime = ts;
+				}
+				var progress = duration ? Math.min((ts - startTime) / duration, 1) : 1;
+				var eased = duration ? easeOut(progress) : 1;
+				scroller.scrollLeft = start + distance * eased;
+				if (progress < 1) {
+					window.requestAnimationFrame(step);
+				} else {
+					ctx.isProgrammatic = false;
+					requestUpdate();
+					scheduleSnap();
+				}
+			});
+			return;
+		}
+		if (behavior === 'auto') {
+			ctx.isProgrammatic = false;
+			requestUpdate();
+			scheduleSnap();
+			return;
+		}
+		var durationEstimate = opts.duration || ctx.options.animationDuration || 320;
+		window.setTimeout(function () {
+			ctx.isProgrammatic = false;
+			requestUpdate();
+			scheduleSnap();
+		}, durationEstimate + (ctx.options.snapDelay || 180));
+	}
+
+	ctx.updateThumb = updateThumb;
+	ctx.updateMetrics = updateMetrics;
+	ctx.requestUpdate = requestUpdate;
+	ctx.scrollTo = scrollTo;
+	ctx.scheduleSnap = scheduleSnap;
+	ctx.snapToNearest = snapToNearest;
+	ctx.cancelSnap = cancelSnap;
+
+	function onScroll() {
+		updateThumb();
+		scheduleHide();
+		if (!ctx.isDragging && !ctx.isProgrammatic) {
+			scheduleSnap();
+		}
+	}
+	scroller.addEventListener('scroll', onScroll, { passive: true });
+	ctx.cleanupCallbacks.push(function () {
+		scroller.removeEventListener('scroll', onScroll);
+	});
+
+    function onWheel(event) {
+        if (!container.classList.contains('is-scrollable')) {
+            return;
+        }
+        var dx = event.deltaX || 0;
+        var dy = event.deltaY || 0;
+        // Only react to true horizontal wheel/trackpad gestures.
+        // Vertical wheel should scroll the page normally.
+        if (Math.abs(dx) <= Math.abs(dy) || Math.abs(dx) < 1) {
+            return; // let default vertical scroll pass through
+        }
+        event.preventDefault();
+        ctx.isProgrammatic = false;
+        cancelSnap();
+        scroller.scrollLeft += dx;
+        requestUpdate();
+        scheduleHide();
+        scheduleSnap();
+    }
+	scroller.addEventListener('wheel', onWheel, { passive: false });
+	ctx.cleanupCallbacks.push(function () {
+		scroller.removeEventListener('wheel', onWheel);
+	});
+
+	function onPointerDown(event) {
+		if (!container.classList.contains('is-scrollable')) {
+			return;
+		}
+		ctx.isDragging = true;
+		ctx.isProgrammatic = false;
+		cancelSnap();
+		ctx.dragStartX = event.clientX;
+		ctx.dragThumbStart = ctx.lastThumbLeft || 0;
+		container.classList.add('is-dragging');
+		ctx.thumb.classList.add('is-active');
+		try {
+			ctx.thumb.setPointerCapture(event.pointerId);
+		} catch (err) {}
+		event.preventDefault();
+	}
+
+	function onPointerMove(event) {
+		if (!ctx.isDragging) {
+			return;
+		}
+		var delta = event.clientX - ctx.dragStartX;
+		var newLeft = Math.max(0, Math.min(ctx.maxThumbLeft, ctx.dragThumbStart + delta));
+		ctx.lastThumbLeft = newLeft;
+		ctx.thumb.style.transform = 'translateX(' + newLeft + 'px)';
+		var ratio = ctx.maxThumbLeft ? newLeft / ctx.maxThumbLeft : 0;
+		scroller.scrollLeft = ratio * ctx.maxScroll;
+	}
+
+	function onPointerEnd(event) {
+		if (!ctx.isDragging) {
+			return;
+		}
+		ctx.isDragging = false;
+		container.classList.remove('is-dragging');
+		ctx.thumb.classList.remove('is-active');
+		if (event && event.pointerId != null) {
+			try {
+				ctx.thumb.releasePointerCapture(event.pointerId);
+			} catch (err) {}
+		}
+		updateThumb();
+		scheduleSnap();
+	}
+
+	ctx.thumb.addEventListener('pointerdown', onPointerDown);
+	ctx.thumb.addEventListener('pointermove', onPointerMove);
+	ctx.thumb.addEventListener('pointerup', onPointerEnd);
+	ctx.thumb.addEventListener('pointercancel', onPointerEnd);
+	ctx.cleanupCallbacks.push(function () {
+		ctx.thumb.removeEventListener('pointerdown', onPointerDown);
+		ctx.thumb.removeEventListener('pointermove', onPointerMove);
+		ctx.thumb.removeEventListener('pointerup', onPointerEnd);
+		ctx.thumb.removeEventListener('pointercancel', onPointerEnd);
+	});
+
+	if ('MutationObserver' in window) {
+		var observer = new MutationObserver(function () {
+			requestUpdate();
+		});
+		observer.observe(scroller, { childList: true, subtree: true, attributes: true, characterData: false });
+		ctx.cleanupCallbacks.push(function () {
+			observer.disconnect();
+		});
+	}
+
+	function onResize() {
+		requestUpdate();
+	}
+	window.addEventListener('resize', onResize);
+	window.addEventListener('orientationchange', onResize);
+	window.addEventListener('load', onResize);
+	ctx.cleanupCallbacks.push(function () {
+		window.removeEventListener('resize', onResize);
+		window.removeEventListener('orientationchange', onResize);
+		window.removeEventListener('load', onResize);
+	});
+
+	container._fvpsUpdateRail = requestUpdate;
+
+	external.scrollTo = function (left, opts) {
+		scrollTo(left, opts);
+	};
+	external.requestUpdate = requestUpdate;
+	external.syncRail = requestUpdate;
+	external.scheduleSnap = scheduleSnap;
+	external.getScroller = function () {
+		return scroller;
+	};
+
+	requestUpdate();
+	if (typeof external.updateNavVisibility === 'function') {
+		window.requestAnimationFrame(external.updateNavVisibility);
+	}
+}
+
 	function syncCtaState(plan, topContainer, topButton, bottomButton) {
 		if (!plan || !topContainer || !topButton || !bottomButton) {
 			return;
