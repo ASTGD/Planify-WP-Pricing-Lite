@@ -4,67 +4,279 @@
 		return;
 	}
 
-	var ROOT_SELECTOR = '.pwpl-table--theme-firevps';
-	var navRegistry = [];
-	var ctaPlans = [];
+var ROOT_SELECTOR = '.pwpl-table--theme-firevps';
+var navRegistry = [];
+var ctaPlans = [];
 
-	function updateOverflowState(nav) {
-		if (!nav || !nav.parentNode) {
+function getTabScroller(nav) {
+	if (!nav) {
+		return null;
+	}
+	return nav.querySelector('[data-fvps-tab-viewport]') || nav;
+}
+
+function updateOverflowState(nav) {
+	if (!nav || !nav.parentNode) {
+		return;
+	}
+	var tablist = nav.querySelector('[data-fvps-tablist]') || nav.querySelector('.fvps-tablist');
+	if (!tablist) {
+		return;
+	}
+	var scroller = getTabScroller(nav);
+	var navWidth = scroller ? scroller.clientWidth : nav.clientWidth;
+	var tabsWidth = tablist.scrollWidth;
+	var isOverflowing = tabsWidth > navWidth + 1;
+	nav.classList.toggle('is-overflowing', isOverflowing);
+	if (nav._fvpsRailCtx && typeof nav._fvpsRailCtx.requestUpdate === 'function') {
+		nav._fvpsRailCtx.requestUpdate();
+	} else {
+		nav.classList.toggle('is-scrollable', isOverflowing);
+	}
+}
+
+function setupResizeObserver(nav) {
+	var tablist = nav.querySelector('[data-fvps-tablist]') || nav.querySelector('.fvps-tablist');
+	if (!tablist) {
+		return;
+	}
+	var scroller = getTabScroller(nav);
+
+	if ('ResizeObserver' in window) {
+		var observer = new ResizeObserver(function () {
+			updateOverflowState(nav);
+		});
+		observer.observe(nav);
+		if (scroller && scroller !== nav) {
+			observer.observe(scroller);
+		}
+		observer.observe(tablist);
+		nav._fvpsResizeObserver = observer;
+	} else {
+		navRegistry.push(nav);
+	}
+
+	updateOverflowState(nav);
+}
+
+function initNavs() {
+	var navs = document.querySelectorAll(ROOT_SELECTOR + ' .fvps-dimension-nav');
+	if (!navs.length) {
+		return;
+	}
+	navs.forEach(function (nav) {
+		if (nav._fvpsTabsInitialized) {
 			return;
 		}
-		var tablist = nav.querySelector('[data-fvps-tablist]');
-		if (!tablist) {
+		nav._fvpsTabsInitialized = true;
+		setupResizeObserver(nav);
+		var scroller = getTabScroller(nav);
+		ensureScrollRail(nav, scroller, { railClass: 'fvps-tabs-rail', minThumb: 32 });
+		var arrows = ensureTabArrows(nav);
+		var ctx = nav._fvpsRailCtx;
+		if (ctx && arrows) {
+			ctx.setControls(arrows.prevButton, arrows.nextButton, arrows.prevWrapper, arrows.nextWrapper);
+			ctx.requestUpdate();
+		}
+
+		// Auto-center the active/selected tab on load
+		centerActiveTab(nav, { behavior: 'auto' });
+
+		// Center the clicked tab (anticipate activation)
+		nav.addEventListener('click', function (evt) {
+			var btn = evt.target && evt.target.closest ? evt.target.closest('.pwpl-tab') : null;
+			if (!btn || !nav.contains(btn)) { return; }
+			if (typeof window.requestAnimationFrame === 'function') {
+				window.requestAnimationFrame(function(){ centerTab(nav, btn, { behavior: 'smooth' }); });
+			} else {
+				centerTab(nav, btn, { behavior: 'smooth' });
+			}
+		});
+	});
+}
+
+function ensureTabArrows(nav) {
+	if (!nav) {
+		return null;
+	}
+	if (nav._fvpsTabsArrows) {
+		return nav._fvpsTabsArrows;
+	}
+	var prevWrapper = document.createElement('div');
+	prevWrapper.className = 'fvps-tabs-nav fvps-tabs-nav--prev';
+	var prevBtn = document.createElement('button');
+	prevBtn.type = 'button';
+	prevBtn.className = 'fvps-tabs-nav__btn';
+	prevBtn.setAttribute('aria-label', 'Scroll previous');
+	prevBtn.innerHTML = '&#10094;';
+	prevBtn.disabled = true;
+	prevBtn.setAttribute('aria-disabled', 'true');
+	prevWrapper.hidden = true;
+	prevWrapper.appendChild(prevBtn);
+
+	var nextWrapper = document.createElement('div');
+	nextWrapper.className = 'fvps-tabs-nav fvps-tabs-nav--next';
+	var nextBtn = document.createElement('button');
+	nextBtn.type = 'button';
+	nextBtn.className = 'fvps-tabs-nav__btn';
+	nextBtn.setAttribute('aria-label', 'Scroll next');
+	nextBtn.innerHTML = '&#10095;';
+	nextBtn.disabled = true;
+	nextBtn.setAttribute('aria-disabled', 'true');
+	nextWrapper.hidden = true;
+	nextWrapper.appendChild(nextBtn);
+
+	nav.appendChild(prevWrapper);
+	nav.appendChild(nextWrapper);
+
+	var scroller = getTabScroller(nav);
+	function handle(direction) {
+		var ctx = nav._fvpsRailCtx;
+		var targetScroller = ctx && ctx.scroller ? ctx.scroller : (scroller || nav);
+		if (!targetScroller) {
 			return;
 		}
-		var navWidth = nav.clientWidth;
-		var tabsWidth = tablist.scrollWidth;
-		var isOverflowing = tabsWidth > navWidth + 1;
-		nav.classList.toggle('is-overflowing', isOverflowing);
-		if (nav._fvpsRailCtx && typeof nav._fvpsRailCtx.requestUpdate === 'function') {
-			nav._fvpsRailCtx.requestUpdate();
+		var viewportWidth = targetScroller.clientWidth || nav.clientWidth || 0;
+		var step = Math.max(viewportWidth * 0.65, 96);
+		var current = targetScroller.scrollLeft;
+		var target = direction === 'next' ? current + step : current - step;
+		if (ctx && typeof ctx.scrollTo === 'function') {
+			ctx.scrollTo(target, { behavior: 'smooth' });
+		} else if (typeof targetScroller.scrollTo === 'function') {
+			try {
+				targetScroller.scrollTo({ left: target, behavior: 'smooth' });
+			} catch (err) {
+				targetScroller.scrollLeft = target;
+			}
 		} else {
-			nav.classList.toggle('is-scrollable', isOverflowing);
+			targetScroller.scrollLeft = target;
+		}
+	}
+
+	prevBtn.addEventListener('click', function () { handle('prev'); });
+	nextBtn.addEventListener('click', function () { handle('next'); });
+
+	var arrows = {
+		prevWrapper: prevWrapper,
+		nextWrapper: nextWrapper,
+		prevButton: prevBtn,
+		nextButton: nextBtn
+	};
+	nav._fvpsTabsArrows = arrows;
+	return arrows;
+}
+
+	function centerActiveTab(nav, opts) {
+		var active = nav.querySelector('.pwpl-tab.is-active') || nav.querySelector('.pwpl-tab[aria-pressed="true"]');
+		if (!active) { return; }
+		centerTab(nav, active, opts);
+	}
+
+function centerTab(nav, tab, opts) {
+	if (!nav || !tab) { return; }
+	var behavior = (opts && opts.behavior) || 'smooth';
+
+	var ctx = nav._fvpsRailCtx || null;
+	var scroller = ctx && ctx.scroller ? ctx.scroller : getTabScroller(nav);
+	var targetNode = scroller || nav;
+	if (!targetNode) { return; }
+
+	// Prefer geometry-based centering for accuracy
+	var rectNav = targetNode.getBoundingClientRect();
+	var rectTab = tab.getBoundingClientRect();
+	var delta = (rectTab.left - rectNav.left) - (rectNav.width - rectTab.width) / 2;
+	var target = (targetNode.scrollLeft || 0) + delta;
+	var maxScroll = Math.max(targetNode.scrollWidth - targetNode.clientWidth, 0);
+	target = Math.max(0, Math.min(maxScroll, target));
+
+	// If the tab supports scrollIntoView with inline:center, try it first
+	var used = false;
+	try {
+		if (typeof tab.scrollIntoView === 'function' && behavior !== 'auto') {
+			tab.scrollIntoView({ behavior: behavior, inline: 'center', block: 'nearest' });
+			used = true;
+		}
+	} catch (e) {
+		used = false;
+	}
+
+	if (!used) {
+		if (ctx && typeof ctx.scrollTo === 'function') {
+			ctx.scrollTo(target, { behavior: behavior });
+			return;
+		}
+		var enh = nav._pwplScrollEnhancer || (scroller && scroller._pwplScrollEnhancer);
+		if (enh && typeof enh.scrollTo === 'function') {
+			enh.scrollTo(target, { behavior: behavior });
+		} else if (typeof targetNode.scrollTo === 'function') {
+			try {
+				targetNode.scrollTo({ left: target, behavior: behavior });
+			} catch (err) {
+				targetNode.scrollLeft = target;
+			}
+		} else {
+			targetNode.scrollLeft = target;
 		}
 	}
 }
 
-	function setupResizeObserver(nav) {
-		var tablist = nav.querySelector('[data-fvps-tablist]');
-		if (!tablist) {
-			return;
-		}
+function ensurePlanNavControls(wrapper) {
+	if (!wrapper) {
+		return null;
+	}
+	var prevWrapper = wrapper.querySelector('.pwpl-plan-nav--prev') || null;
+	var nextWrapper = wrapper.querySelector('.pwpl-plan-nav--next') || null;
+	var prevButton = prevWrapper ? prevWrapper.querySelector('.pwpl-plan-nav__btn') : null;
+	var nextButton = nextWrapper ? nextWrapper.querySelector('.pwpl-plan-nav__btn') : null;
 
-		if ('ResizeObserver' in window) {
-			var observer = new ResizeObserver(function () {
-				updateOverflowState(nav);
-			});
-			observer.observe(nav);
-			observer.observe(tablist);
-			nav._fvpsResizeObserver = observer;
-		} else {
-			navRegistry.push(nav);
-		}
-
-		updateOverflowState(nav);
-		ensureScrollRail(nav, nav, { railClass: 'fvps-tabs-rail', minThumb: 32 });
+	if (prevWrapper && !prevWrapper._fvpsNavPrepared) {
+		prevWrapper.hidden = true;
+		prevWrapper._fvpsNavPrepared = true;
+	}
+	if (nextWrapper && !nextWrapper._fvpsNavPrepared) {
+		nextWrapper.hidden = true;
+		nextWrapper._fvpsNavPrepared = true;
 	}
 
-	function initNavs() {
-		var navs = document.querySelectorAll(ROOT_SELECTOR + ' .fvps-dimension-nav');
-		if (!navs.length) {
-			return;
-		}
-		navs.forEach(function (nav) {
-			if (nav._fvpsTabsInitialized) {
-				return;
-			}
-			nav._fvpsTabsInitialized = true;
-			setupResizeObserver(nav);
-			ensureScrollRail(nav, nav, { railClass: 'fvps-tabs-rail', minThumb: 32 });
+	if (prevButton && !prevButton._fvpsBound) {
+		prevButton._fvpsBound = true;
+		prevButton.disabled = true;
+		prevButton.setAttribute('aria-disabled', 'true');
+		prevButton.addEventListener('click', function () {
+			var ctx = wrapper._fvpsRailCtx;
+			if (!ctx || !ctx.scroller) { return; }
+			var scroller = ctx.scroller;
+			var step = Math.max(scroller.clientWidth * 0.8, 160);
+			ctx.scrollTo(scroller.scrollLeft - step, { behavior: 'smooth' });
 		});
 	}
 
-	function initPlanRails() {
+	if (nextButton && !nextButton._fvpsBound) {
+		nextButton._fvpsBound = true;
+		nextButton.disabled = true;
+		nextButton.setAttribute('aria-disabled', 'true');
+		nextButton.addEventListener('click', function () {
+			var ctx = wrapper._fvpsRailCtx;
+			if (!ctx || !ctx.scroller) { return; }
+			var scroller = ctx.scroller;
+			var step = Math.max(scroller.clientWidth * 0.8, 160);
+			ctx.scrollTo(scroller.scrollLeft + step, { behavior: 'smooth' });
+		});
+	}
+
+	if (!prevButton && !nextButton) {
+		return null;
+	}
+
+	return {
+		prevWrapper: prevWrapper,
+		nextWrapper: nextWrapper,
+		prevButton: prevButton,
+		nextButton: nextButton
+	};
+}
+
+function initPlanRails() {
 		var wrappers = document.querySelectorAll(ROOT_SELECTOR + ' .fvps-plan-rail-wrapper');
 		if (!wrappers.length) {
 			return;
@@ -77,7 +289,7 @@
 			ensureScrollRail(wrapper, scroller, {
 				railClass: 'fvps-plans-rail',
 				minThumb: 48,
-				snap: true,
+				snap: false,
 				snapDelay: 180,
 				itemsProvider: function (node) {
 					return Array.from(node.querySelectorAll('.pwpl-plan')).filter(function (item) {
@@ -85,10 +297,28 @@
 					});
 				}
 			});
+			var planControls = ensurePlanNavControls(wrapper);
+			var ctx = wrapper._fvpsRailCtx;
+			if (ctx && planControls) {
+				ctx.setControls(planControls.prevButton, planControls.nextButton, planControls.prevWrapper, planControls.nextWrapper);
+				ctx.requestUpdate();
+			}
+
+			// One-time rail hint on first view
+			try {
+				var seenKey = 'fvpsPlansRailHintSeen';
+				if (!localStorage.getItem(seenKey)) {
+					wrapper.classList.add('is-user-scrolling');
+					setTimeout(function(){
+						wrapper.classList.remove('is-user-scrolling');
+						localStorage.setItem(seenKey, '1');
+					}, 1500);
+				}
+			} catch (e) {}
 		});
 	}
 
-function ensureScrollRail(container, scroller, options) {
+	function ensureScrollRail(container, scroller, options) {
 	scroller = scroller || container;
 	options = Object.assign({
 		railClass: 'fvps-tabs-rail',
@@ -105,6 +335,7 @@ function ensureScrollRail(container, scroller, options) {
 	}
 
 	var external = scroller._pwplScrollEnhancer = scroller._pwplScrollEnhancer || {};
+	container._pwplScrollEnhancer = external;
 
 	var rail = container.querySelector('.' + options.railClass);
 	if (!rail) {
@@ -139,8 +370,53 @@ function ensureScrollRail(container, scroller, options) {
 		maxThumbLeft: 0,
 		thumbWidth: 0,
 		lastThumbLeft: 0,
+		prevButton: options.prevButton || null,
+		nextButton: options.nextButton || null,
+		prevWrapper: options.prevWrapper || null,
+		nextWrapper: options.nextWrapper || null,
 		cleanupCallbacks: []
 	};
+
+	function applyControlState() {
+		var isScrollable = ctx.maxScroll > 1;
+		var atStart = scroller.scrollLeft <= 1;
+		var atEnd = (ctx.maxScroll - scroller.scrollLeft) <= 1;
+		container.classList.toggle('at-start', atStart);
+		container.classList.toggle('at-end', atEnd);
+		if (ctx.prevWrapper) {
+			ctx.prevWrapper.hidden = !isScrollable;
+		}
+		if (ctx.nextWrapper) {
+			ctx.nextWrapper.hidden = !isScrollable;
+		}
+		if (ctx.prevButton) {
+			var disablePrev = !isScrollable || atStart;
+			ctx.prevButton.disabled = disablePrev;
+			ctx.prevButton.setAttribute('aria-disabled', disablePrev ? 'true' : 'false');
+			ctx.prevButton.classList.toggle('is-disabled', disablePrev);
+		}
+		if (ctx.nextButton) {
+			var disableNext = !isScrollable || atEnd;
+			ctx.nextButton.disabled = disableNext;
+			ctx.nextButton.setAttribute('aria-disabled', disableNext ? 'true' : 'false');
+			ctx.nextButton.classList.toggle('is-disabled', disableNext);
+		}
+		return { isScrollable: isScrollable, atStart: atStart, atEnd: atEnd };
+	}
+
+	function setControls(prevButton, nextButton, prevWrapper, nextWrapper) {
+		ctx.prevButton = prevButton || null;
+		ctx.nextButton = nextButton || null;
+		ctx.prevWrapper = prevWrapper || (ctx.prevButton && ctx.prevButton.closest ? ctx.prevButton.closest('.fvps-tabs-nav, .pwpl-plan-nav') : ctx.prevWrapper) || null;
+		ctx.nextWrapper = nextWrapper || (ctx.nextButton && ctx.nextButton.closest ? ctx.nextButton.closest('.fvps-tabs-nav, .pwpl-plan-nav') : ctx.nextWrapper) || null;
+		if (ctx.prevButton) {
+			ctx.prevButton.setAttribute('aria-disabled', ctx.prevButton.disabled ? 'true' : 'false');
+		}
+		if (ctx.nextButton) {
+			ctx.nextButton.setAttribute('aria-disabled', ctx.nextButton.disabled ? 'true' : 'false');
+		}
+		applyControlState();
+	}
 
 	var reduceMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
 	ctx.prefersReducedMotion = reduceMotionQuery ? reduceMotionQuery.matches : false;
@@ -189,7 +465,17 @@ function ensureScrollRail(container, scroller, options) {
 			if (ctx.external.scheduleSnap === ctx.scheduleSnap) {
 				delete ctx.external.scheduleSnap;
 			}
+			if (ctx.external.setControls === setControls) {
+				delete ctx.external.setControls;
+			}
+			if (ctx.external.applyControlState === applyControlState) {
+				delete ctx.external.applyControlState;
+			}
 		}
+		ctx.prevButton = null;
+		ctx.nextButton = null;
+		ctx.prevWrapper = null;
+		ctx.nextWrapper = null;
 	}
 	ctx.cleanup = cleanup;
 
@@ -228,6 +514,7 @@ function ensureScrollRail(container, scroller, options) {
 			container.classList.remove('is-user-scrolling');
 			container.classList.remove('is-dragging');
 			cancelSnap();
+			applyControlState();
 			return;
 		}
 		var trackWidth = ctx.track.clientWidth;
@@ -240,7 +527,304 @@ function ensureScrollRail(container, scroller, options) {
 		ctx.thumbWidth = Math.min(trackWidth, Math.max(minThumb, trackWidth * ratio));
 		ctx.maxThumbLeft = Math.max(trackWidth - ctx.thumbWidth, 0);
 		updateThumb();
+		applyControlState();
 	}
+
+	function requestUpdate() {
+		if (ctx.rafPending) {
+			return;
+		}
+		ctx.rafPending = true;
+		window.requestAnimationFrame(function () {
+			ctx.rafPending = false;
+			updateMetrics();
+		});
+	}
+
+	function cancelSnap() {
+		if (ctx.snapTimer) {
+			clearTimeout(ctx.snapTimer);
+			ctx.snapTimer = null;
+		}
+	}
+
+	function snapToNearest(forceInstant) {
+		if (!ctx.options.snap) {
+			return;
+		}
+		var items = getItems();
+		if (!items.length || ctx.maxScroll <= 0) {
+			return;
+		}
+		var current = scroller.scrollLeft;
+		var target = current;
+		var bestDelta = Infinity;
+		for (var i = 0; i < items.length; i++) {
+			var item = items[i];
+			var left = item.offsetLeft;
+			var delta = Math.abs(current - left);
+			if (delta < bestDelta) {
+				bestDelta = delta;
+				target = left;
+			}
+		}
+		target = Math.max(0, Math.min(ctx.maxScroll, target));
+		if (Math.abs(target - current) < 1) {
+			return;
+		}
+		scrollTo(target, { behavior: forceInstant ? 'auto' : 'smooth' });
+	}
+
+	function scheduleSnap() {
+		if (!ctx.options.snap) {
+			return;
+		}
+		if (ctx.isDragging || ctx.isProgrammatic) {
+			return;
+		}
+		cancelSnap();
+		ctx.snapTimer = setTimeout(function () {
+			ctx.snapTimer = null;
+			snapToNearest();
+		}, ctx.options.snapDelay || 180);
+	}
+
+	function scheduleHide() {
+		container.classList.add('is-user-scrolling');
+		if (ctx.hideTimer) {
+			clearTimeout(ctx.hideTimer);
+		}
+		ctx.hideTimer = setTimeout(function () {
+			container.classList.remove('is-user-scrolling');
+			ctx.hideTimer = null;
+		}, 600);
+	}
+
+	function scrollTo(target, opts) {
+		opts = opts || {};
+		target = Math.max(0, Math.min(ctx.maxScroll, target));
+	if (ctx.maxScroll <= 0) {
+		scroller.scrollLeft = target;
+		ctx.isProgrammatic = false;
+		requestUpdate();
+		applyControlState();
+		return;
+	}
+		cancelSnap();
+		ctx.isProgrammatic = true;
+		scheduleHide();
+		var behavior = opts.behavior || 'smooth';
+		if (ctx.prefersReducedMotion) {
+			behavior = 'auto';
+		}
+		var usedNative = false;
+		if (typeof scroller.scrollTo === 'function') {
+			try {
+				scroller.scrollTo({ left: target, behavior: behavior });
+				usedNative = true;
+			} catch (err) {
+				usedNative = false;
+			}
+		}
+		if (!usedNative) {
+			var start = scroller.scrollLeft;
+			var distance = target - start;
+			if (Math.abs(distance) < 1) {
+				scroller.scrollLeft = target;
+				ctx.isProgrammatic = false;
+				requestUpdate();
+				scheduleSnap();
+				applyControlState();
+				return;
+			}
+			var duration = ctx.prefersReducedMotion ? 0 : (opts.duration || ctx.options.animationDuration || 320);
+			var startTime = null;
+			var easeOut = function (t) { return t * (2 - t); };
+			window.requestAnimationFrame(function step(ts) {
+				if (!startTime) {
+					startTime = ts;
+				}
+				var progress = duration ? Math.min((ts - startTime) / duration, 1) : 1;
+				var eased = duration ? easeOut(progress) : 1;
+				scroller.scrollLeft = start + distance * eased;
+				if (progress < 1) {
+					window.requestAnimationFrame(step);
+				} else {
+					ctx.isProgrammatic = false;
+					requestUpdate();
+					scheduleSnap();
+					applyControlState();
+				}
+			});
+			return;
+		}
+	if (behavior === 'auto') {
+		ctx.isProgrammatic = false;
+		requestUpdate();
+		scheduleSnap();
+		applyControlState();
+		return;
+	}
+		var durationEstimate = opts.duration || ctx.options.animationDuration || 320;
+	window.setTimeout(function () {
+		ctx.isProgrammatic = false;
+		requestUpdate();
+		scheduleSnap();
+		applyControlState();
+	}, durationEstimate + (ctx.options.snapDelay || 180));
+}
+
+	ctx.updateThumb = updateThumb;
+	ctx.updateMetrics = updateMetrics;
+	ctx.requestUpdate = requestUpdate;
+	ctx.scrollTo = scrollTo;
+	ctx.scheduleSnap = scheduleSnap;
+	ctx.snapToNearest = snapToNearest;
+	ctx.cancelSnap = cancelSnap;
+	ctx.applyControlState = applyControlState;
+	ctx.setControls = setControls;
+	setControls(ctx.prevButton, ctx.nextButton, ctx.prevWrapper, ctx.nextWrapper);
+
+	function onScroll() {
+		updateThumb();
+		applyControlState();
+		scheduleHide();
+		if (!ctx.isDragging && !ctx.isProgrammatic) {
+			scheduleSnap();
+		}
+	}
+	scroller.addEventListener('scroll', onScroll, { passive: true });
+	ctx.cleanupCallbacks.push(function () {
+		scroller.removeEventListener('scroll', onScroll);
+	});
+
+    function onWheel(event) {
+        if (!container.classList.contains('is-scrollable')) {
+            return;
+        }
+        var dx = event.deltaX || 0;
+        var dy = event.deltaY || 0;
+        // Only react to true horizontal wheel/trackpad gestures.
+        // Vertical wheel should scroll the page normally.
+        if (Math.abs(dx) <= Math.abs(dy) || Math.abs(dx) < 1) {
+            return; // let default vertical scroll pass through
+        }
+        event.preventDefault();
+        ctx.isProgrammatic = false;
+        cancelSnap();
+        scroller.scrollLeft += dx;
+        requestUpdate();
+        applyControlState();
+        scheduleHide();
+        scheduleSnap();
+    }
+	scroller.addEventListener('wheel', onWheel, { passive: false });
+	ctx.cleanupCallbacks.push(function () {
+		scroller.removeEventListener('wheel', onWheel);
+	});
+
+	function onPointerDown(event) {
+		if (!container.classList.contains('is-scrollable')) {
+			return;
+		}
+		ctx.isDragging = true;
+		ctx.isProgrammatic = false;
+		cancelSnap();
+		ctx.dragStartX = event.clientX;
+		ctx.dragThumbStart = ctx.lastThumbLeft || 0;
+		container.classList.add('is-dragging');
+		ctx.thumb.classList.add('is-active');
+		try {
+			ctx.thumb.setPointerCapture(event.pointerId);
+		} catch (err) {}
+		event.preventDefault();
+	}
+
+	function onPointerMove(event) {
+		if (!ctx.isDragging) {
+			return;
+		}
+		var delta = event.clientX - ctx.dragStartX;
+		var newLeft = Math.max(0, Math.min(ctx.maxThumbLeft, ctx.dragThumbStart + delta));
+		ctx.lastThumbLeft = newLeft;
+		ctx.thumb.style.transform = 'translateX(' + newLeft + 'px)';
+		var ratio = ctx.maxThumbLeft ? newLeft / ctx.maxThumbLeft : 0;
+		scroller.scrollLeft = ratio * ctx.maxScroll;
+	}
+
+	function onPointerEnd(event) {
+		if (!ctx.isDragging) {
+			return;
+		}
+		ctx.isDragging = false;
+		container.classList.remove('is-dragging');
+		ctx.thumb.classList.remove('is-active');
+		if (event && event.pointerId != null) {
+			try {
+				ctx.thumb.releasePointerCapture(event.pointerId);
+			} catch (err) {}
+		}
+		updateThumb();
+		scheduleSnap();
+		applyControlState();
+	}
+
+	ctx.thumb.addEventListener('pointerdown', onPointerDown);
+	ctx.thumb.addEventListener('pointermove', onPointerMove);
+	ctx.thumb.addEventListener('pointerup', onPointerEnd);
+	ctx.thumb.addEventListener('pointercancel', onPointerEnd);
+	ctx.cleanupCallbacks.push(function () {
+		ctx.thumb.removeEventListener('pointerdown', onPointerDown);
+		ctx.thumb.removeEventListener('pointermove', onPointerMove);
+		ctx.thumb.removeEventListener('pointerup', onPointerEnd);
+		ctx.thumb.removeEventListener('pointercancel', onPointerEnd);
+	});
+
+	if ('MutationObserver' in window) {
+		var observer = new MutationObserver(function () {
+			requestUpdate();
+		});
+		observer.observe(scroller, { childList: true, subtree: true, attributes: true, characterData: false });
+		ctx.cleanupCallbacks.push(function () {
+			observer.disconnect();
+		});
+	}
+
+	function onResize() {
+		requestUpdate();
+	}
+	window.addEventListener('resize', onResize);
+	window.addEventListener('orientationchange', onResize);
+	window.addEventListener('load', onResize);
+	ctx.cleanupCallbacks.push(function () {
+		window.removeEventListener('resize', onResize);
+		window.removeEventListener('orientationchange', onResize);
+		window.removeEventListener('load', onResize);
+	});
+
+	container._fvpsUpdateRail = requestUpdate;
+
+	external.scrollTo = function (left, opts) {
+		scrollTo(left, opts);
+	};
+	external.requestUpdate = requestUpdate;
+	external.syncRail = requestUpdate;
+	external.scheduleSnap = scheduleSnap;
+	external.setControls = setControls;
+	external.applyControlState = applyControlState;
+	external.getScroller = function () {
+		return scroller;
+	};
+	if (typeof external.updateNavVisibility !== 'function') {
+		external.updateNavVisibility = applyControlState;
+	}
+
+	requestUpdate();
+	applyControlState();
+	if (typeof external.updateNavVisibility === 'function') {
+		window.requestAnimationFrame(external.updateNavVisibility);
+	}
+}
 
 	function requestUpdate() {
 		if (ctx.rafPending) {
@@ -633,6 +1217,20 @@ function ensureScrollRail(container, scroller, options) {
 		document.addEventListener('click', applyFallback);
 	}
 	document.addEventListener('pwpl:updated', initPlanRails);
+
+// Re-center tabs on Planify updates (e.g., when active pill changes)
+document.addEventListener('pwpl:updated', function(){
+	var navs = document.querySelectorAll(ROOT_SELECTOR + ' .fvps-dimension-nav');
+	navs.forEach(function(nav){
+		var arrows = ensureTabArrows(nav);
+		var ctx = nav._fvpsRailCtx;
+		if (ctx && arrows) {
+			ctx.setControls(arrows.prevButton, arrows.nextButton, arrows.prevWrapper, arrows.nextWrapper);
+			ctx.requestUpdate();
+		}
+		centerActiveTab(nav, { behavior: 'smooth' });
+	});
+});
 
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', function () {

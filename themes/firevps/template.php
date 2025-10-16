@@ -122,7 +122,8 @@ if ( $table_style ) {
 		$current_value = $wrapper_attrs[ 'data-active-' . $dimension ] ?? '';
 		?>
         <div class="pwpl-dimension-nav fvps-dimension-nav" data-dimension="<?php echo esc_attr( $dimension ); ?>">
-            <div class="fvps-tablist" data-fvps-tablist>
+            <div class="fvps-dimension-nav__viewport" data-fvps-tab-viewport>
+                <div class="fvps-tablist" data-fvps-tablist>
             <?php foreach ( $items as $item ) :
                 $slug = sanitize_title( $item['slug'] ?? '' );
                 if ( ! $slug ) {
@@ -164,6 +165,7 @@ if ( $table_style ) {
                     <?php endif; ?>
                 </button>
             <?php endforeach; ?>
+                </div>
             </div>
         </div>
 	<?php endforeach; ?>
