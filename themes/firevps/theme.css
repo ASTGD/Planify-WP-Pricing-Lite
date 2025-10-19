@@ -163,7 +163,7 @@
 
 /* On touch devices: keep arrows subtle but visible when overflow exists */
 @media (hover: none), (pointer: coarse) {
-  .pwpl-table--theme-firevps .fvps-dimension-nav { --fvps-tabs-nav-offset: 24px; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav { --fvps-tabs-nav-offset: 16px; }
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-nav { opacity: .65; }
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-nav,
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:focus-within .fvps-tabs-nav { opacity: 1; }
@@ -779,6 +779,13 @@
     margin-bottom: var(--fvps-spacing-md);
   }
   .pwpl-table--theme-firevps .fvps-dimension-nav { width: calc(100% - 4px); }
+  /* Mobile: make tab wrapper visually minimal (free-floating pills) */
+  .pwpl-table--theme-firevps .fvps-dimension-nav__viewport {
+    padding: 0;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
   .pwpl-table--theme-firevps .pwpl-plan-nav { display: none; }
   /* Mobile: stack plans vertically for natural page scroll */
   .pwpl-table--theme-firevps .pwpl-plan-grid,
