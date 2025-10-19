@@ -194,6 +194,14 @@
   touch-action: none;
 }
 
+/* Desktop: make the tabs rail thumb neutral so it doesn't look like a pill shadow */
+@media (min-width: 769px) {
+  .pwpl-table--theme-firevps .fvps-tabs-rail__thumb {
+    background: rgba(28, 26, 22, 0.18);
+    box-shadow: none;
+  }
+}
+
 .pwpl-table--theme-firevps .fvps-dimension-nav.is-dragging .fvps-tabs-rail__thumb {
   cursor: grabbing;
 }
