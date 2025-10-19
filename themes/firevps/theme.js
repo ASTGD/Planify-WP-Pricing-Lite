@@ -8,6 +8,15 @@ var ROOT_SELECTOR = '.pwpl-table--theme-firevps';
 var navRegistry = [];
 var ctaPlans = [];
 
+function isTouchEnvironment() {
+    try {
+        if (window.matchMedia && (window.matchMedia('(hover: none)').matches || window.matchMedia('(pointer: coarse)').matches)) {
+            return true;
+        }
+    } catch (e) {}
+    return ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+}
+
 function getTabScroller(nav) {
 	if (!nav) {
 		return null;
@@ -79,8 +88,10 @@ function initNavs() {
 			ctx.requestUpdate();
 		}
 
-		// Auto-center the active/selected tab on load
-		centerActiveTab(nav, { behavior: 'auto' });
+		// Auto-center on load only for non-touch to keep mobile left-anchored
+		if (!isTouchEnvironment()) {
+			centerActiveTab(nav, { behavior: 'auto' });
+		}
 
 		// Center the clicked tab (anticipate activation)
 		nav.addEventListener('click', function (evt) {
@@ -949,7 +960,9 @@ document.addEventListener('pwpl:updated', function(){
 			ctx.setControls(arrows.prevButton, arrows.nextButton, arrows.prevWrapper, arrows.nextWrapper);
 			ctx.requestUpdate();
 		}
-		centerActiveTab(nav, { behavior: 'smooth' });
+		if (!isTouchEnvironment()) {
+			centerActiveTab(nav, { behavior: 'smooth' });
+		}
 	});
 });
 
