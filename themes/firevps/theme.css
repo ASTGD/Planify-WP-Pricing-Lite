@@ -104,7 +104,7 @@
   bottom: 0;
   height: 4px;
   transform: translateY(50%);
-  opacity: .25; /* visible by default so users notice the rail */
+  opacity: .35; /* subtle by default */
   transition: opacity 0.18s ease;
   pointer-events: none;
   z-index: 9;
@@ -778,13 +778,22 @@
   .pwpl-table--theme-firevps .fvps-table-header {
     margin-bottom: var(--fvps-spacing-md);
   }
-  .pwpl-table--theme-firevps .fvps-dimension-nav { width: calc(100% - 4px); }
+  .pwpl-table--theme-firevps .fvps-dimension-nav {
+    width: calc(100% - 4px);
+    /* remove any rounded clipping and visual chrome from the outer wrapper */
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: visible;
+  }
   /* Mobile: make tab wrapper visually minimal (free-floating pills) */
   .pwpl-table--theme-firevps .fvps-dimension-nav__viewport {
     padding: 0;
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
+    border-radius: 0 !important;
   }
   /* Leave space so tiny arrows never overlap the pills */
   .pwpl-table--theme-firevps .fvps-dimension-nav__viewport { padding-inline: 40px; padding-bottom: 14px; }
@@ -792,10 +801,14 @@
   .pwpl-table--theme-firevps .fvps-tabs-nav { top: auto; bottom: 0; transform: translateY(50%); }
   .pwpl-table--theme-firevps .fvps-tabs-nav--prev { left: 12px; right: auto; }
   .pwpl-table--theme-firevps .fvps-tabs-nav--next { right: 12px; left: auto; }
-  /* Ensure rails are hidden by default on small screens, show only during interaction */
-  .pwpl-table--theme-firevps .fvps-tabs-rail { opacity: 0; }
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-rail { opacity: 0 !important; }
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail { opacity: 1 !important; }
+  /* Ensure rail is always visible (light), stronger while interacting; align width between arrows */
+  .pwpl-table--theme-firevps .fvps-tabs-rail { left: 40px; right: 40px; bottom: 0; opacity: .35; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-rail { opacity: .35 !important; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail,
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:focus-within .fvps-tabs-rail { opacity: .9 !important; }
+
+  /* Center pills even when overflow class is present */
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-overflowing .fvps-tablist { justify-content: center; margin-inline: auto; }
 
   /* Remove drop shadows from tabs/pills on mobile for clarity */
   .pwpl-table--theme-firevps .fvps-tab {
