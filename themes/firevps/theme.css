@@ -196,9 +196,10 @@
 
 /* Desktop: make the tabs rail thumb neutral so it doesn't look like a pill shadow */
 @media (min-width: 769px) {
+  /* On desktop, hide the tabs rail thumb so it doesn't read as a shadow under active pill */
   .pwpl-table--theme-firevps .fvps-tabs-rail__thumb {
-    background: rgba(28, 26, 22, 0.18);
-    box-shadow: none;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 }
 
