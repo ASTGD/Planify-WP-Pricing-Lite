@@ -34,6 +34,16 @@
   margin-inline: auto;
 }
 
+/* Safety: ensure tab pills never regain shadows/filters in other stylesheets */
+.pwpl-table--theme-firevps .fvps-tab,
+.pwpl-table--theme-firevps .fvps-tab:hover,
+.pwpl-table--theme-firevps .fvps-tab.is-active {
+  box-shadow: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+
 .pwpl-table--theme-firevps[data-debug="on"] {
   outline: 2px dashed #ff00aa;
 }
@@ -194,6 +204,15 @@
   touch-action: none;
 }
 
+/* Desktop: make the tabs rail thumb neutral so it doesn't look like a pill shadow */
+@media (min-width: 769px) {
+  /* On desktop, hide the tabs rail thumb so it doesn't read as a shadow under active pill */
+  .pwpl-table--theme-firevps .fvps-tabs-rail__thumb {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
 .pwpl-table--theme-firevps .fvps-dimension-nav.is-dragging .fvps-tabs-rail__thumb {
   cursor: grabbing;
 }
@@ -236,6 +255,7 @@
   flex: 0 0 auto;
 }
 
+
 .pwpl-table--theme-firevps .fvps-tab {
   position: relative;
   padding: 12px 22px;
@@ -247,9 +267,10 @@
   letter-spacing: 0.14em;
   font-weight: 600;
   color: rgba(30, 28, 25, 0.7);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
   white-space: nowrap;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+  filter: none;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -258,15 +279,12 @@
 .pwpl-table--theme-firevps .fvps-tab:hover {
   border-color: rgba(247, 166, 35, 0.45);
   color: var(--fvps-color-header);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 16px rgba(0, 0, 0, 0.12);
 }
 
 .pwpl-table--theme-firevps .fvps-tab.is-active {
   background: linear-gradient(135deg, #f9c04a 0%, #d9790b 100%);
   color: #1a1205;
   border-color: rgba(247, 166, 35, 0.7);
-  box-shadow: 0 16px 24px rgba(217, 121, 11, 0.35);
 }
 
 .pwpl-table--theme-firevps .fvps-tab:focus-visible {
@@ -810,18 +828,6 @@
 
   /* On mobile, start pills from the left edge when overflowing */
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-overflowing .fvps-tablist { justify-content: flex-start; margin-inline: 0; }
-
-  /* Remove drop shadows from tabs/pills on mobile for clarity */
-  .pwpl-table--theme-firevps .fvps-tab {
-    box-shadow: none !important;
-  }
-  .pwpl-table--theme-firevps .fvps-tab:hover {
-    box-shadow: none !important;
-    transform: none;
-  }
-  .pwpl-table--theme-firevps .fvps-tab.is-active {
-    box-shadow: none !important;
-  }
   .pwpl-table--theme-firevps .pwpl-plan-nav { display: none; }
   /* Mobile: stack plans vertically for natural page scroll */
   .pwpl-table--theme-firevps .pwpl-plan-grid,
