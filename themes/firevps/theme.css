@@ -797,7 +797,7 @@
     border-radius: 0 !important;
   }
   /* Leave space so tiny arrows never overlap the pills */
-  .pwpl-table--theme-firevps .fvps-dimension-nav__viewport { padding-inline: 40px; padding-bottom: 14px; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav__viewport { padding-inline-start: 0; padding-inline-end: 40px; padding-bottom: 14px; }
   /* Place arrows just outside the content edge but inside the section visually */
   .pwpl-table--theme-firevps .fvps-tabs-nav { top: auto; bottom: 0; transform: translateY(50%); }
   .pwpl-table--theme-firevps .fvps-tabs-nav--prev { left: 12px; right: auto; }
@@ -808,8 +808,8 @@
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail,
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:focus-within .fvps-tabs-rail { opacity: .9 !important; }
 
-  /* Center pills even when overflow class is present */
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-overflowing .fvps-tablist { justify-content: center; margin-inline: auto; }
+  /* On mobile, start pills from the left edge when overflowing */
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-overflowing .fvps-tablist { justify-content: flex-start; margin-inline: 0; }
 
   /* Remove drop shadows from tabs/pills on mobile for clarity */
   .pwpl-table--theme-firevps .fvps-tab {
