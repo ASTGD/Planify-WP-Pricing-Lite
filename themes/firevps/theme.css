@@ -786,6 +786,14 @@
     border: 0 !important;
     box-shadow: none !important;
   }
+  /* Leave space so tiny arrows never overlap the pills */
+  .pwpl-table--theme-firevps .fvps-dimension-nav__viewport { padding-inline: 28px; }
+  /* Place arrows just outside the content edge but inside the section visually */
+  .pwpl-table--theme-firevps .fvps-tabs-nav--prev { left: 0; transform: translate(-50%, -50%); }
+  .pwpl-table--theme-firevps .fvps-tabs-nav--next { right: 0; transform: translate(50%, -50%); }
+  /* Ensure rails are hidden by default on small screens, show only during interaction */
+  .pwpl-table--theme-firevps .fvps-tabs-rail { opacity: 0; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail { opacity: 1; }
   .pwpl-table--theme-firevps .pwpl-plan-nav { display: none; }
   /* Mobile: stack plans vertically for natural page scroll */
   .pwpl-table--theme-firevps .pwpl-plan-grid,
