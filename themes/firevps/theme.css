@@ -110,7 +110,7 @@
   z-index: 9;
 }
 
-/* Tiny arrows for tabs (desktop only) */
+/* Tiny arrows for tabs */
 .pwpl-table--theme-firevps .fvps-tabs-nav {
   position: absolute;
   top: 50%;
@@ -161,8 +161,13 @@
 }
 .pwpl-table--theme-firevps .fvps-tabs-nav[hidden] { display: none !important; }
 
+/* On touch devices: keep arrows subtle but visible when overflow exists */
 @media (hover: none), (pointer: coarse) {
-  .pwpl-table--theme-firevps .fvps-tabs-nav { display: none !important; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav { --fvps-tabs-nav-offset: 24px; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-nav { opacity: .65; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-nav,
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:focus-within .fvps-tabs-nav { opacity: 1; }
+  .pwpl-table--theme-firevps .fvps-tabs-nav__btn { width: 24px; height: 24px; font-size: 11px; }
 }
 
 .pwpl-table--theme-firevps .fvps-tabs-rail__track,
@@ -214,14 +219,11 @@
 }
 
 @media (hover: none), (pointer: coarse) {
+  /* Hide rails by default on touch devices; show while interacting */
   .pwpl-table--theme-firevps .fvps-tabs-rail,
-  .pwpl-table--theme-firevps .fvps-plans-rail {
-    opacity: 0;
-  }
+  .pwpl-table--theme-firevps .fvps-plans-rail { opacity: 0; }
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail,
-  .pwpl-table--theme-firevps .fvps-plan-rail-wrapper.is-scrollable.is-user-scrolling .fvps-plans-rail {
-    opacity: 1;
-  }
+  .pwpl-table--theme-firevps .fvps-plan-rail-wrapper.is-scrollable.is-user-scrolling .fvps-plans-rail { opacity: 1; }
 }
 
 .pwpl-table--theme-firevps .fvps-dimension-nav.is-overflowing .fvps-tablist {
