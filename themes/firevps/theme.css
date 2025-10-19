@@ -789,6 +789,8 @@
     overflow-y: visible;
     scroll-snap-type: none;
     -webkit-overflow-scrolling: auto;
+    /* Allow natural page scrolling when touching cards */
+    touch-action: auto;
     padding-inline: 0;
   }
   .pwpl-table--theme-firevps .pwpl-plan {
