@@ -811,7 +811,7 @@
   /* On mobile, start pills from the left edge when overflowing */
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-overflowing .fvps-tablist { justify-content: flex-start; margin-inline: 0; }
 
-  /* Remove drop shadows from tabs/pills on mobile for clarity */
+/* Remove drop shadows from tabs/pills on mobile for clarity */
   .pwpl-table--theme-firevps .fvps-tab {
     box-shadow: none !important;
   }
@@ -822,6 +822,15 @@
   .pwpl-table--theme-firevps .fvps-tab.is-active {
     box-shadow: none !important;
   }
+
+/* Desktop: ensure tab pills have no shadows (active/inactive/hover) */
+@media (min-width: 769px) {
+  .pwpl-table--theme-firevps .fvps-tab,
+  .pwpl-table--theme-firevps .fvps-tab:hover,
+  .pwpl-table--theme-firevps .fvps-tab.is-active {
+    box-shadow: none !important;
+  }
+}
   .pwpl-table--theme-firevps .pwpl-plan-nav { display: none; }
   /* Mobile: stack plans vertically for natural page scroll */
   .pwpl-table--theme-firevps .pwpl-plan-grid,
