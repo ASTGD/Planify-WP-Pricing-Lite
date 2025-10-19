@@ -776,21 +776,26 @@
   .pwpl-table--theme-firevps .fvps-table-header {
     margin-bottom: var(--fvps-spacing-md);
   }
-  .pwpl-table--theme-firevps .fvps-dimension-nav {
-    width: calc(100% - 4px);
-  }
-  .pwpl-table--theme-firevps .pwpl-plan-nav {
-    display: none;
-  }
+  .pwpl-table--theme-firevps .fvps-dimension-nav { width: calc(100% - 4px); }
+  .pwpl-table--theme-firevps .pwpl-plan-nav { display: none; }
+  /* Mobile: stack plans vertically for natural page scroll */
   .pwpl-table--theme-firevps .pwpl-plan-grid,
   .pwpl-table--theme-firevps .fvps-plan-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     gap: var(--fvps-spacing-md);
-    scroll-snap-type: x proximity;
+    overflow-x: visible;
+    overflow-y: visible;
+    scroll-snap-type: none;
+    -webkit-overflow-scrolling: auto;
+    padding-inline: 0;
   }
   .pwpl-table--theme-firevps .pwpl-plan {
-    --fvps-card-width: min(100%, clamp(var(--fvps-card-min-fallback, 280px), var(--fvps-card-min-size), var(--fvps-card-max-inline, 520px)));
-    flex: 0 0 var(--fvps-card-width);
-    inline-size: var(--fvps-card-width);
+    --fvps-card-width: 100%;
+    flex: 1 1 auto;
+    inline-size: 100%;
+    max-inline-size: 100%;
   }
   .pwpl-table--theme-firevps .fvps-button {
     min-width: 0;
