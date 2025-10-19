@@ -75,10 +75,11 @@
   overflow-x: auto;
   overflow-y: visible;
   padding: 6px;
-  background: rgba(255, 255, 255, 0.75);
-  border-radius: 40px;
-  border: 1px solid rgba(28, 26, 22, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  /* Invisible wrapper on all viewports */
+  background: transparent;
+  border-radius: 0;
+  border: 0;
+  box-shadow: none;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge legacy */
   -webkit-overflow-scrolling: touch;
