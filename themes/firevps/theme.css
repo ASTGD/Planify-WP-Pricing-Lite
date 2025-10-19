@@ -787,14 +787,27 @@
     box-shadow: none !important;
   }
   /* Leave space so tiny arrows never overlap the pills */
-  .pwpl-table--theme-firevps .fvps-dimension-nav__viewport { padding-inline: 40px; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav__viewport { padding-inline: 40px; padding-bottom: 14px; }
   /* Place arrows just outside the content edge but inside the section visually */
-  .pwpl-table--theme-firevps .fvps-tabs-nav--prev { left: 6px; transform: translateY(-50%); }
-  .pwpl-table--theme-firevps .fvps-tabs-nav--next { right: 6px; transform: translateY(-50%); }
+  .pwpl-table--theme-firevps .fvps-tabs-nav { top: auto; bottom: 0; transform: translateY(50%); }
+  .pwpl-table--theme-firevps .fvps-tabs-nav--prev { left: 12px; right: auto; }
+  .pwpl-table--theme-firevps .fvps-tabs-nav--next { right: 12px; left: auto; }
   /* Ensure rails are hidden by default on small screens, show only during interaction */
   .pwpl-table--theme-firevps .fvps-tabs-rail { opacity: 0; }
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-rail { opacity: 0 !important; }
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail { opacity: 1 !important; }
+
+  /* Remove drop shadows from tabs/pills on mobile for clarity */
+  .pwpl-table--theme-firevps .fvps-tab {
+    box-shadow: none !important;
+  }
+  .pwpl-table--theme-firevps .fvps-tab:hover {
+    box-shadow: none !important;
+    transform: none;
+  }
+  .pwpl-table--theme-firevps .fvps-tab.is-active {
+    box-shadow: none !important;
+  }
   .pwpl-table--theme-firevps .pwpl-plan-nav { display: none; }
   /* Mobile: stack plans vertically for natural page scroll */
   .pwpl-table--theme-firevps .pwpl-plan-grid,
