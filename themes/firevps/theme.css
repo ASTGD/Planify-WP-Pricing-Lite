@@ -163,11 +163,11 @@
 
 /* On touch devices: keep arrows subtle but visible when overflow exists */
 @media (hover: none), (pointer: coarse) {
-  .pwpl-table--theme-firevps .fvps-dimension-nav { --fvps-tabs-nav-offset: 16px; }
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-nav { opacity: .65; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav { --fvps-tabs-nav-offset: 12px; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-nav { opacity: .55; }
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-nav,
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:focus-within .fvps-tabs-nav { opacity: 1; }
-  .pwpl-table--theme-firevps .fvps-tabs-nav__btn { width: 24px; height: 24px; font-size: 11px; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:focus-within .fvps-tabs-nav { opacity: .95; }
+  .pwpl-table--theme-firevps .fvps-tabs-nav__btn { width: 22px; height: 22px; font-size: 10px; }
 }
 
 .pwpl-table--theme-firevps .fvps-tabs-rail__track,
@@ -787,13 +787,14 @@
     box-shadow: none !important;
   }
   /* Leave space so tiny arrows never overlap the pills */
-  .pwpl-table--theme-firevps .fvps-dimension-nav__viewport { padding-inline: 28px; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav__viewport { padding-inline: 40px; }
   /* Place arrows just outside the content edge but inside the section visually */
-  .pwpl-table--theme-firevps .fvps-tabs-nav--prev { left: 0; transform: translate(-50%, -50%); }
-  .pwpl-table--theme-firevps .fvps-tabs-nav--next { right: 0; transform: translate(50%, -50%); }
+  .pwpl-table--theme-firevps .fvps-tabs-nav--prev { left: 6px; transform: translateY(-50%); }
+  .pwpl-table--theme-firevps .fvps-tabs-nav--next { right: 6px; transform: translateY(-50%); }
   /* Ensure rails are hidden by default on small screens, show only during interaction */
   .pwpl-table--theme-firevps .fvps-tabs-rail { opacity: 0; }
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail { opacity: 1; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-rail { opacity: 0 !important; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail { opacity: 1 !important; }
   .pwpl-table--theme-firevps .pwpl-plan-nav { display: none; }
   /* Mobile: stack plans vertically for natural page scroll */
   .pwpl-table--theme-firevps .pwpl-plan-grid,
