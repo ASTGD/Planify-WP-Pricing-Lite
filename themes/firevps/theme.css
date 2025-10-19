@@ -829,7 +829,15 @@
   .pwpl-table--theme-firevps .fvps-tab:hover,
   .pwpl-table--theme-firevps .fvps-tab.is-active {
     box-shadow: none !important;
+    transform: none !important;
   }
+}
+
+/* Fallback: enforce no-pill-shadows across all breakpoints (strongest at file end) */
+.pwpl-table--theme-firevps .fvps-tab,
+.pwpl-table--theme-firevps .fvps-tab:hover,
+.pwpl-table--theme-firevps .fvps-tab.is-active {
+  box-shadow: none !important;
 }
   .pwpl-table--theme-firevps .pwpl-plan-nav { display: none; }
   /* Mobile: stack plans vertically for natural page scroll */
