@@ -2,7 +2,7 @@
   "slug": "firevps",
   "name": "FireVPS",
   "containerClass": "pwpl-table--theme-firevps",
-  "version": "1.0.0",
+  "version":"1.0.1-1760619078",
   "assets": {
     "css": [
       "theme.css"
