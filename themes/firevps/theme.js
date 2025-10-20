@@ -837,15 +837,23 @@ function initPlanRails() {
 	}
 }
 
-	function syncCtaState(plan, topContainer, topButton, bottomButton) {
-		if (!plan || !topContainer || !topButton || !bottomButton) {
-			return;
-		}
-		if (bottomButton.hasAttribute('hidden')) {
-			topContainer.setAttribute('hidden', '');
-		} else {
-			topContainer.removeAttribute('hidden');
-		}
+function syncCtaState(plan, topContainer, topButton, bottomButton, bottomContainer) {
+    if (!plan || !topContainer || !topButton || !bottomButton) {
+        return;
+    }
+    if (bottomButton.hasAttribute('hidden')) {
+        topContainer.setAttribute('hidden', '');
+        plan.classList.remove('fvps-card--inline-cta');
+        if (bottomContainer) {
+            bottomContainer.removeAttribute('hidden');
+        }
+    } else {
+        topContainer.removeAttribute('hidden');
+        plan.classList.add('fvps-card--inline-cta');
+        if (bottomContainer) {
+            bottomContainer.setAttribute('hidden', '');
+        }
+    }
 
 		var href = bottomButton.getAttribute('href');
 		if (href) {
@@ -870,28 +878,29 @@ function initPlanRails() {
 		}
 	}
 
-	function setupCtaMirroring(plan) {
-		if (!plan || plan._fvpsCtaInitialized) {
-			return;
-		}
+function setupCtaMirroring(plan) {
+    if (!plan || plan._fvpsCtaInitialized) {
+        return;
+    }
 
-		var topContainer = plan.querySelector('.fvps-card__cta-inline');
-		var topButton = topContainer ? topContainer.querySelector('.fvps-button--inline') : null;
-		var bottomButton = plan.querySelector('[data-pwpl-cta-button]');
+    var topContainer = plan.querySelector('.fvps-card__cta-inline');
+    var topButton = topContainer ? topContainer.querySelector('.fvps-button--inline') : null;
+    var bottomContainer = plan.querySelector('.fvps-card__cta');
+    var bottomButton = plan.querySelector('[data-pwpl-cta-button]');
 
-		if (!topContainer || !topButton || !bottomButton) {
-			return;
-		}
+    if (!topContainer || !topButton || !bottomButton) {
+        return;
+    }
 
-		function apply() {
-			syncCtaState(plan, topContainer, topButton, bottomButton);
-		}
+    function apply() {
+        syncCtaState(plan, topContainer, topButton, bottomButton, bottomContainer);
+    }
 
 		apply();
 
 		if ('MutationObserver' in window) {
-			var observer = new MutationObserver(apply);
-			observer.observe(bottomButton, { attributes: true, attributeFilter: ['hidden', 'href', 'target', 'rel'] });
+            var observer = new MutationObserver(apply);
+            observer.observe(bottomButton, { attributes: true, attributeFilter: ['hidden', 'href', 'target', 'rel'] });
 			var labelNode = bottomButton.querySelector('[data-pwpl-cta-label]');
 			if (labelNode) {
 				observer.observe(labelNode, { childList: true, characterData: true, subtree: true });

@@ -437,6 +437,12 @@
   max-inline-size: var(--fvps-card-max-inline, 520px);
   opacity: 1 !important;
   filter: none !important;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: var(--fvps-radius-lg);
+  box-shadow: none;
+  gap: 0;
 }
 
 .pwpl-table--theme-firevps .fvps-card {
@@ -741,8 +747,8 @@
   margin-top: 0;
 }
 
-/* Prefer a single CTA: hide duplicated bottom CTA when top inline CTA exists */
-.pwpl-table--theme-firevps .fvps-card__cta-inline ~ .fvps-card__cta { display: none; }
+/* Prefer a single CTA: hide duplicated bottom CTA when inline CTA is visible */
+.pwpl-table--theme-firevps .fvps-card.fvps-card--inline-cta .fvps-card__cta { display: none; }
 
 .pwpl-table--theme-firevps .fvps-button {
   display: inline-flex;
