@@ -464,7 +464,8 @@
 
 .pwpl-table--theme-firevps .fvps-card__top {
   background: linear-gradient(180deg, rgba(255, 253, 245, 0.98) 0%, rgba(255, 240, 205, 0.98) 100%);
-  padding: clamp(20px, 2.4vw, 28px) clamp(20px, 2.6vw, 32px) 0;
+  /* Add bottom padding so CTA breathes above the specs block */
+  padding: clamp(20px, 2.4vw, 28px) clamp(20px, 2.6vw, 32px) clamp(16px, 2vw, 22px);
   display: flex;
   flex-direction: column;
   gap: clamp(10px, 1.5vw, 14px);
@@ -622,16 +623,16 @@
 }
 
 .pwpl-table--theme-firevps .fvps-card__cta-inline {
-  margin-top: clamp(10px, 1.5vw, 14px);
+  margin-top: clamp(14px, 2vw, 20px);
   display: flex;
-  justify-content: flex-start;
+  justify-content: center; /* center the CTA horizontally */
   align-items: center;
 }
 
 .pwpl-table--theme-firevps .fvps-button--inline {
   width: auto;
-  min-width: 0;
-  align-self: flex-start;
+  min-width: 200px;
+  align-self: center;
 }
 
 .pwpl-table--theme-firevps .fvps-card__specs {
