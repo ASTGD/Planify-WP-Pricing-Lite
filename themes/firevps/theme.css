@@ -444,7 +444,7 @@
   flex-direction: column;
   background: var(--fvps-color-surface);
   border-radius: var(--fvps-radius-lg);
-  border: 1px solid rgba(40, 37, 33, 0.08);
+  border: none; /* unibody: remove white edge */
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
   overflow: hidden;
   min-height: 100%;
@@ -740,6 +740,9 @@
   position: relative;
   margin-top: 0;
 }
+
+/* Prefer a single CTA: hide duplicated bottom CTA when top inline CTA exists */
+.pwpl-table--theme-firevps .fvps-card__cta-inline ~ .fvps-card__cta { display: none; }
 
 .pwpl-table--theme-firevps .fvps-button {
   display: inline-flex;
