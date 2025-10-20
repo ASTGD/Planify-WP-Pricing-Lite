@@ -437,6 +437,12 @@
   max-inline-size: var(--fvps-card-max-inline, 520px);
   opacity: 1 !important;
   filter: none !important;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: var(--fvps-radius-lg);
+  box-shadow: none;
+  gap: 0;
 }
 
 .pwpl-table--theme-firevps .fvps-card {
@@ -444,24 +450,25 @@
   flex-direction: column;
   background: var(--fvps-color-surface);
   border-radius: var(--fvps-radius-lg);
-  border: 1px solid rgba(40, 37, 33, 0.08);
-  box-shadow: var(--fvps-shadow-inner);
+  border: none; /* unibody: remove white edge */
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
   overflow: hidden;
   min-height: 100%;
   transition: transform 0.24s ease, box-shadow 0.24s ease;
 }
 
 .pwpl-table--theme-firevps .fvps-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 32px 54px rgba(217, 121, 11, 0.28);
+  transform: translateY(-4px);
+  box-shadow: 0 28px 52px rgba(15, 23, 42, 0.16);
 }
 
 .pwpl-table--theme-firevps .fvps-card__top {
   background: linear-gradient(180deg, rgba(255, 253, 245, 0.98) 0%, rgba(255, 240, 205, 0.98) 100%);
-  padding: clamp(18px, 2.6vw, 26px) clamp(18px, 2.4vw, 28px) 0;
+  /* Add bottom padding so CTA breathes above the specs block */
+  padding: clamp(20px, 2.4vw, 28px) clamp(20px, 2.6vw, 32px) clamp(16px, 2vw, 22px);
   display: flex;
   flex-direction: column;
-  gap: clamp(10px, 2.2vw, 16px);
+  gap: clamp(10px, 1.5vw, 14px);
   border-top-left-radius: var(--fvps-radius-lg);
   border-top-right-radius: var(--fvps-radius-lg);
   position: relative;
@@ -542,7 +549,7 @@
 
 .pwpl-table--theme-firevps .pwpl-plan__title {
   font-family: var(--fvps-font-heading);
-  font-size: clamp(1.55rem, 2.4vw, 1.95rem);
+  font-size: clamp(1.6rem, 2.2vw, 2rem);
   margin: 0;
   color: #1d1a15;
   letter-spacing: -0.01em;
@@ -574,10 +581,10 @@
   gap: 6px;
   align-items: baseline;
   font-family: var(--fvps-font-heading);
-  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-size: clamp(2rem, 2.6vw, 2.4rem);
   font-weight: 700;
   color: #20160a;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.01em;
   min-height: 2.4rem;
 }
 
@@ -609,25 +616,23 @@
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__billing {
-  margin: 2px 0 0;
-  font-size: 0.85rem;
+  margin: 4px 0 0;
+  font-size: 0.9rem;
   font-weight: 500;
   color: rgba(32, 30, 28, 0.65);
 }
 
 .pwpl-table--theme-firevps .fvps-card__cta-inline {
-  margin-top: clamp(10px, 1.5vw, 14px);
+  margin-top: clamp(14px, 2vw, 20px);
   display: flex;
-  justify-content: flex-start;
+  justify-content: center; /* center the CTA horizontally */
   align-items: center;
 }
 
 .pwpl-table--theme-firevps .fvps-button--inline {
   width: auto;
-  min-width: 180px;
-  padding: 12px 22px;
-  box-shadow: 0 16px 28px rgba(217, 121, 11, 0.28);
-  align-self: flex-start;
+  min-width: 200px;
+  align-self: center;
 }
 
 .pwpl-table--theme-firevps .fvps-card__specs {
@@ -730,7 +735,7 @@
 
 .pwpl-table--theme-firevps .fvps-card__cta {
   background: linear-gradient(180deg, rgba(255, 242, 214, 1) 0%, rgba(255, 229, 185, 0.95) 100%);
-  padding: clamp(16px, 2.2vw, 22px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 24px);
+  padding: clamp(16px, 2vw, 20px) clamp(20px, 2.6vw, 32px) clamp(20px, 2.4vw, 26px);
   display: flex;
   justify-content: stretch;
   align-items: center;
@@ -741,40 +746,51 @@
   margin-top: 0;
 }
 
-.pwpl-table--theme-firevps .fvps-button {
+/* Prefer a single CTA: hide duplicated bottom CTA when inline CTA is visible */
+.pwpl-table--theme-firevps .fvps-card.fvps-card--inline-cta .fvps-card__cta { display: none; }
+
+.pwpl-table--theme-firevps .fvps-button,
+.pwpl-table--theme-firevps .fvps-button--inline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 14px 24px;
+  padding: 15px 28px;
   border-radius: 999px;
-  border: none;
-  background: linear-gradient(135deg, #f9c04a 0%, #d9790b 100%);
-  color: #1a1205;
+  border: 1px solid rgba(252, 210, 106, 0.65);
+  background: linear-gradient(135deg, #fcd66b 0%, #f19a28 100%);
+  color: #1e1306;
   font-weight: 700;
-  font-size: 0.92rem;
-  letter-spacing: 0.12em;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   text-decoration: none;
-  box-shadow: 0 20px 32px rgba(217, 121, 11, 0.35);
-  transition: transform 0.24s ease, box-shadow 0.24s ease, background 0.24s ease, color 0.24s ease;
+  box-shadow: 0 12px 24px rgba(217, 145, 32, 0.26);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
-.pwpl-table--theme-firevps .fvps-button:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 24px 40px rgba(217, 121, 11, 0.45);
-  background: linear-gradient(135deg, #ffd76a 0%, #f9c04a 100%);
-  color: #1a1205;
+.pwpl-table--theme-firevps .fvps-button--inline {
+  width: auto;
+  min-width: 180px;
 }
 
-.pwpl-table--theme-firevps .fvps-button:active {
+.pwpl-table--theme-firevps .fvps-button:hover,
+.pwpl-table--theme-firevps .fvps-button--inline:hover {
   transform: translateY(-1px);
-  box-shadow: 0 16px 28px rgba(217, 121, 11, 0.35);
+  box-shadow: 0 16px 30px rgba(217, 145, 32, 0.32);
+  background: linear-gradient(135deg, #ffe089 0%, #f6a53c 100%);
 }
 
-.pwpl-table--theme-firevps .fvps-button:focus-visible {
-  outline: 3px solid rgba(247, 166, 35, 0.6);
-  outline-offset: 4px;
+.pwpl-table--theme-firevps .fvps-button:active,
+.pwpl-table--theme-firevps .fvps-button--inline:active {
+  transform: translateY(0);
+  box-shadow: 0 10px 20px rgba(217, 145, 32, 0.26);
+}
+
+.pwpl-table--theme-firevps .fvps-button:focus-visible,
+.pwpl-table--theme-firevps .fvps-button--inline:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(241, 154, 40, 0.28), 0 12px 24px rgba(217, 145, 32, 0.26);
 }
 
 @media (max-width: 1024px) {
