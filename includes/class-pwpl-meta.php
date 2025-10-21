@@ -22,6 +22,8 @@ class PWPL_Meta {
     const LAYOUT_COLUMNS          = '_pwpl_layout_columns';
     const LAYOUT_CARD_WIDTHS      = '_pwpl_layout_card_widths';
     const TABS_GLASS              = '_pwpl_tabs_glass';
+    const TABS_GLASS_TINT         = '_pwpl_tabs_glass_tint';
+    const TABS_GLASS_INTENSITY    = '_pwpl_tabs_glass_intensity';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -128,6 +130,27 @@ class PWPL_Meta {
             'type'              => 'integer',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => function( $value ) { return ! empty( $value ) ? 1 : 0; },
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::TABS_GLASS_TINT, [
+            'single'            => true,
+            'type'              => 'string',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) {
+                $value = is_string( $value ) ? trim( $value ) : '';
+                $hex   = sanitize_hex_color( $value );
+                return $hex ?: '';
+            },
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::TABS_GLASS_INTENSITY, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) {
+                $n = (int) $value; if ( $n < 0 ) $n = 0; if ( $n > 100 ) $n = 100; return $n; },
             'show_in_rest'      => false,
         ] );
 

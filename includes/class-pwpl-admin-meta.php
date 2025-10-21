@@ -584,7 +584,19 @@ class PWPL_Admin_Meta {
                     <input type="checkbox" name="pwpl_table[ui][tabs_glass]" value="1" <?php checked( $tabs_glass, 1 ); ?> />
                     <strong><?php esc_html_e( 'Enable glass tabs (iOS liquid glass)', 'planify-wp-pricing-lite' ); ?></strong>
                 </label>
-                <p class="description"><?php esc_html_e( 'Adds a tasteful translucent look to the tab pills with backdrop blur where supported. Falls back gracefully.', 'planify-wp-pricing-lite' ); ?></p>
+                <p class="description"><?php esc_html_e( 'Adds a translucent, depthy look to tab pills using backdrop blur when available.', 'planify-wp-pricing-lite' ); ?></p>
+                <div class="pwpl-field__row" style="display:flex; gap:12px; align-items:center; margin-top:8px;">
+                    <?php $glass_tint = get_post_meta( $post->ID, PWPL_Meta::TABS_GLASS_TINT, true ); ?>
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <span><?php esc_html_e( 'Tint', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="color" name="pwpl_table[ui][tabs_glass_tint]" value="<?php echo esc_attr( $glass_tint ?: '#a6c8ff' ); ?>" />
+                    </label>
+                    <?php $glass_intensity = (int) get_post_meta( $post->ID, PWPL_Meta::TABS_GLASS_INTENSITY, true ); if ( $glass_intensity <= 0 ) $glass_intensity = 60; ?>
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <span><?php esc_html_e( 'Intensity', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="range" min="10" max="100" step="1" name="pwpl_table[ui][tabs_glass_intensity]" value="<?php echo esc_attr( $glass_intensity ); ?>" />
+                    </label>
+                </div>
             </div>
             <?php foreach ( $dimension_map as $key => $config ) :
                 $enabled = in_array( $key, $dimensions, true );
@@ -977,6 +989,21 @@ class PWPL_Admin_Meta {
             update_post_meta( $post_id, PWPL_Meta::TABS_GLASS, 1 );
         } else {
             delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS );
+        }
+
+        // Tint & intensity
+        $tabs_glass_tint = isset( $ui_input['tabs_glass_tint'] ) ? sanitize_hex_color( $ui_input['tabs_glass_tint'] ) : '';
+        if ( $tabs_glass_tint ) {
+            update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_TINT, $tabs_glass_tint );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_TINT );
+        }
+        $tabs_glass_intensity = isset( $ui_input['tabs_glass_intensity'] ) ? (int) $ui_input['tabs_glass_intensity'] : 0;
+        $tabs_glass_intensity = max( 0, min( 100, $tabs_glass_intensity ) );
+        if ( $tabs_glass_intensity ) {
+            update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_INTENSITY, $tabs_glass_intensity );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_INTENSITY );
         }
 
         // Optional plan card size controls (legacy breakpoint container)

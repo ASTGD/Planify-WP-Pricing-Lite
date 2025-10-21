@@ -13,6 +13,11 @@ if ( ! empty( $manifest['containerClass'] ) ) {
 }
 $tabs_glass_enabled = ! empty( $table['tabs_glass'] );
 if ( $tabs_glass_enabled ) {
+    $glass_tint = (string) ( $table['tabs_glass_tint'] ?? '' );
+    $glass_intensity = isset( $table['tabs_glass_intensity'] ) ? (int) $table['tabs_glass_intensity'] : 60;
+    $glass_intensity = max( 10, min( 100, $glass_intensity ) );
+}
+if ( $tabs_glass_enabled ) {
 	$classes[] = 'pwpl-tabs-glass';
 }
 $classes = array_filter( array_unique( $classes ) );
@@ -95,6 +100,12 @@ foreach ( $wrapper_attrs as $attr => $value ) {
 }
 if ( $table_style ) {
 	echo ' style="' . esc_attr( $table_style ) . '"';
+}
+if ( $tabs_glass_enabled ) {
+    $style_vars = '';
+    if ( $glass_tint ) { $style_vars .= '--glass-tint:' . $glass_tint . ';'; }
+    $style_vars .= '--glass-intensity:' . ( $glass_intensity / 100 ) . ';';
+    echo ' style="' . esc_attr( $style_vars ) . '"';
 }
 ?>
 >

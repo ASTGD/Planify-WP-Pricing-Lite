@@ -41,6 +41,34 @@
   border-radius: 0 !important;
 }
 
+/* Ambient gradient backplate for refraction under tabs */
+.pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-dimension-nav {
+  position: relative;
+}
+.pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-dimension-nav::before {
+  content: '';
+  position: absolute; inset: -6px -8px -6px -8px; border-radius: 28px; z-index: 0; pointer-events: none;
+  opacity: var(--glass-intensity, .6);
+  background:
+    radial-gradient(70% 60% at 20% 30%, color-mix(in oklab, var(--glass-tint, #a6c8ff) 80%, white 20%) 0%, transparent 65%),
+    radial-gradient(60% 50% at 80% 25%, rgba(120, 190, 255, .22) 0%, transparent 70%),
+    radial-gradient(65% 55% at 30% 85%, rgba(110, 255, 200, .18) 0%, transparent 65%),
+    radial-gradient(55% 50% at 85% 85%, rgba(255, 120, 200, .16) 0%, transparent 75%);
+  filter: saturate(115%);
+}
+
+/* Refraction blob driven by CSS vars --glass-x/--glass-y */
+.pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-dimension-nav::after {
+  content: '';
+  position: absolute; inset: -6px -8px -6px -8px; border-radius: 28px; z-index: 0; pointer-events: none;
+  background: radial-gradient(220px 160px at var(--glass-x,50%) var(--glass-y,35%), rgba(255,255,255,.22), rgba(255,255,255,0) 65%);
+  opacity: calc(var(--glass-intensity, .6) * .9);
+  transition: opacity .2s ease;
+}
+
+/* Ensure pills sit above backplate */
+.pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tablist { position: relative; z-index: 1; }
+
 /* Safety: ensure tab pills never regain shadows/filters in other stylesheets */
 .pwpl-table--theme-firevps .fvps-tab,
 .pwpl-table--theme-firevps .fvps-tab:hover,

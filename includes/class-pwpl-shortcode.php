@@ -427,6 +427,8 @@ class PWPL_Shortcode {
                 'style'            => $style_inline,
                 'badge_shadow'     => $badge_shadow,
                 'tabs_glass'       => (bool) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS, true ),
+                'tabs_glass_tint'  => (string) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_TINT, true ),
+                'tabs_glass_intensity' => (int) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_INTENSITY, true ),
             ];
 
             $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );

@@ -69,7 +69,7 @@ function setupResizeObserver(nav) {
 }
 
 function initNavs() {
-	var navs = document.querySelectorAll(ROOT_SELECTOR + ' .fvps-dimension-nav');
+    var navs = document.querySelectorAll(ROOT_SELECTOR + ' .fvps-dimension-nav');
 	if (!navs.length) {
 		return;
 	}
@@ -81,12 +81,19 @@ function initNavs() {
 		setupResizeObserver(nav);
 		var scroller = getTabScroller(nav);
 		ensureScrollRail(nav, scroller, { railClass: 'fvps-tabs-rail', minThumb: 32 });
-		var arrows = ensureTabArrows(nav);
-		var ctx = nav._fvpsRailCtx;
-		if (ctx && arrows) {
-			ctx.setControls(arrows.prevButton, arrows.nextButton, arrows.prevWrapper, arrows.nextWrapper);
-			ctx.requestUpdate();
-		}
+        var arrows = ensureTabArrows(nav);
+        var ctx = nav._fvpsRailCtx;
+        if (ctx && arrows) {
+            ctx.setControls(arrows.prevButton, arrows.nextButton, arrows.prevWrapper, arrows.nextWrapper);
+            ctx.requestUpdate();
+        }
+
+        // Glass refraction blob (only if glass class present on table root)
+        var tableEl = nav.closest(ROOT_SELECTOR);
+        var enableGlass = tableEl && tableEl.classList.contains('pwpl-tabs-glass');
+        if (enableGlass) {
+            initGlassRefraction(nav);
+        }
 
 		// Auto-center on load only for non-touch to keep mobile left-anchored
 		if (!isTouchEnvironment()) {
@@ -104,6 +111,34 @@ function initNavs() {
 			}
 		});
 	});
+}
+
+function initGlassRefraction(nav){
+    var prefersReduced = false;
+    try { prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e){}
+    if (prefersReduced) { return; }
+    var scroller = getTabScroller(nav) || nav;
+    var raf = null;
+    function setFromEvent(e){
+        var rect = scroller.getBoundingClientRect();
+        var x = (e.clientX - rect.left) / Math.max(rect.width,1) * 100;
+        var y = (e.clientY - rect.top) / Math.max(rect.height,1) * 100;
+        y = Math.min(60, Math.max(20, y));
+        nav.style.setProperty('--glass-x', x + '%');
+        nav.style.setProperty('--glass-y', y + '%');
+    }
+    function onMove(e){
+        if (raf) return; raf = requestAnimationFrame(function(){ raf = null; setFromEvent(e); });
+    }
+    function onScroll(){
+        var rect = scroller.getBoundingClientRect();
+        var x = ( (rect.width/2) / Math.max(rect.width,1) ) * 100;
+        nav.style.setProperty('--glass-x', x + '%');
+    }
+    scroller.addEventListener('pointermove', onMove, { passive: true });
+    scroller.addEventListener('mousemove', onMove, { passive: true });
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
 }
 
 function ensureTabArrows(nav) {
