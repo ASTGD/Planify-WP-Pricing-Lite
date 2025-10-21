@@ -25,6 +25,7 @@ class PWPL_Meta {
     const TABS_GLASS_TINT         = '_pwpl_tabs_glass_tint';
     const TABS_GLASS_INTENSITY    = '_pwpl_tabs_glass_intensity';
     const TABS_GLASS_FROST        = '_pwpl_tabs_glass_frost';
+    const CARDS_GLASS             = '_pwpl_cards_glass';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -161,6 +162,15 @@ class PWPL_Meta {
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => function( $value ) {
                 $n = (int) $value; if ( $n < 0 ) $n = 0; if ( $n > 24 ) $n = 24; return $n; },
+            'show_in_rest'      => false,
+        ] );
+
+        // Enable glass treatment for plan cards container
+        register_post_meta( 'pwpl_table', self::CARDS_GLASS, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) { return ! empty( $value ) ? 1 : 0; },
             'show_in_rest'      => false,
         ] );
 

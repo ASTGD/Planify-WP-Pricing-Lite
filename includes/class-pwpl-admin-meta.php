@@ -603,6 +603,15 @@ class PWPL_Admin_Meta {
                     </label>
                 </div>
             </div>
+
+            <?php $cards_glass = (int) get_post_meta( $post->ID, PWPL_Meta::CARDS_GLASS, true ); ?>
+            <div class="pwpl-field">
+                <label>
+                    <input type="checkbox" name="pwpl_table[ui][cards_glass]" value="1" <?php checked( $cards_glass, 1 ); ?> />
+                    <strong><?php esc_html_e( 'Enable glass plan cards', 'planify-wp-pricing-lite' ); ?></strong>
+                </label>
+                <p class="description"><?php esc_html_e( 'Applies a frosted glass treatment to each plan card. Uses the same Tint and Frost values.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
             <?php foreach ( $dimension_map as $key => $config ) :
                 $enabled = in_array( $key, $dimensions, true );
                 ?>
@@ -1016,6 +1025,13 @@ class PWPL_Admin_Meta {
             update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_FROST, $tabs_glass_frost );
         } else {
             delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_FROST );
+        }
+
+        $cards_glass = ! empty( $ui_input['cards_glass'] ) ? 1 : 0;
+        if ( $cards_glass ) {
+            update_post_meta( $post_id, PWPL_Meta::CARDS_GLASS, 1 );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::CARDS_GLASS );
         }
 
         // Optional plan card size controls (legacy breakpoint container)

@@ -12,6 +12,7 @@ if ( ! empty( $manifest['containerClass'] ) ) {
 	$classes[] = sanitize_html_class( $manifest['containerClass'] );
 }
 $tabs_glass_enabled = ! empty( $table['tabs_glass'] );
+$cards_glass_enabled = ! empty( $table['cards_glass'] );
 if ( $tabs_glass_enabled ) {
     $glass_tint = (string) ( $table['tabs_glass_tint'] ?? '' );
     $glass_intensity = isset( $table['tabs_glass_intensity'] ) ? (int) $table['tabs_glass_intensity'] : 60;
@@ -20,7 +21,10 @@ if ( $tabs_glass_enabled ) {
     $glass_frost = max( 0, min( 24, $glass_frost ) );
 }
 if ( $tabs_glass_enabled ) {
-	$classes[] = 'pwpl-tabs-glass';
+    $classes[] = 'pwpl-tabs-glass';
+}
+if ( $cards_glass_enabled ) {
+    $classes[] = 'pwpl-cards-glass';
 }
 $classes = array_filter( array_unique( $classes ) );
 
