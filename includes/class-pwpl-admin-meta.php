@@ -585,7 +585,7 @@ class PWPL_Admin_Meta {
                     <strong><?php esc_html_e( 'Enable glass tabs (iOS liquid glass)', 'planify-wp-pricing-lite' ); ?></strong>
                 </label>
                 <p class="description"><?php esc_html_e( 'Adds a translucent, depthy look to tab pills using backdrop blur when available.', 'planify-wp-pricing-lite' ); ?></p>
-                <div class="pwpl-field__row" style="display:flex; gap:12px; align-items:center; margin-top:8px;">
+                <div class="pwpl-field__row" style="display:flex; gap:12px; align-items:center; margin-top:8px; flex-wrap: wrap;">
                     <?php $glass_tint = get_post_meta( $post->ID, PWPL_Meta::TABS_GLASS_TINT, true ); ?>
                     <label style="display:flex; align-items:center; gap:8px;">
                         <span><?php esc_html_e( 'Tint', 'planify-wp-pricing-lite' ); ?></span>
@@ -595,6 +595,11 @@ class PWPL_Admin_Meta {
                     <label style="display:flex; align-items:center; gap:8px;">
                         <span><?php esc_html_e( 'Intensity', 'planify-wp-pricing-lite' ); ?></span>
                         <input type="range" min="10" max="100" step="1" name="pwpl_table[ui][tabs_glass_intensity]" value="<?php echo esc_attr( $glass_intensity ); ?>" />
+                    </label>
+                    <?php $glass_frost = (int) get_post_meta( $post->ID, PWPL_Meta::TABS_GLASS_FROST, true ); if ( $glass_frost < 0 ) $glass_frost = 6; ?>
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <span><?php esc_html_e( 'Frost (blur px)', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="range" min="0" max="16" step="1" name="pwpl_table[ui][tabs_glass_frost]" value="<?php echo esc_attr( $glass_frost ?: 6 ); ?>" />
                     </label>
                 </div>
             </div>
@@ -1004,6 +1009,13 @@ class PWPL_Admin_Meta {
             update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_INTENSITY, $tabs_glass_intensity );
         } else {
             delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_INTENSITY );
+        }
+        $tabs_glass_frost = isset( $ui_input['tabs_glass_frost'] ) ? (int) $ui_input['tabs_glass_frost'] : 0;
+        $tabs_glass_frost = max( 0, min( 24, $tabs_glass_frost ) );
+        if ( $tabs_glass_frost ) {
+            update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_FROST, $tabs_glass_frost );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_FROST );
         }
 
         // Optional plan card size controls (legacy breakpoint container)

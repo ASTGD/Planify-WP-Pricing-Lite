@@ -16,6 +16,8 @@ if ( $tabs_glass_enabled ) {
     $glass_tint = (string) ( $table['tabs_glass_tint'] ?? '' );
     $glass_intensity = isset( $table['tabs_glass_intensity'] ) ? (int) $table['tabs_glass_intensity'] : 60;
     $glass_intensity = max( 10, min( 100, $glass_intensity ) );
+    $glass_frost = isset( $table['tabs_glass_frost'] ) ? (int) $table['tabs_glass_frost'] : 6;
+    $glass_frost = max( 0, min( 24, $glass_frost ) );
 }
 if ( $tabs_glass_enabled ) {
 	$classes[] = 'pwpl-tabs-glass';
@@ -100,6 +102,7 @@ if ( $tabs_glass_enabled ) {
     $style_vars = '';
     if ( $glass_tint ) { $style_vars .= '--glass-tint:' . $glass_tint . ';'; }
     $style_vars .= '--glass-intensity:' . ( $glass_intensity / 100 ) . ';';
+    $style_vars .= '--glass-frost:' . $glass_frost . ';';
     if ( $style_combined ) { $style_combined .= ';'; }
     $style_combined .= $style_vars;
 }
