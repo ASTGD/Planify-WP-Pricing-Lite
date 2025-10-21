@@ -93,22 +93,25 @@ $spec_priority = [
 ];
 
 ?>
-<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 <?php
-foreach ( $wrapper_attrs as $attr => $value ) {
-	printf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
-}
-if ( $table_style ) {
-	echo ' style="' . esc_attr( $table_style ) . '"';
-}
+$style_combined = '';
+if ( $table_style ) { $style_combined .= trim( (string) $table_style ); }
 if ( $tabs_glass_enabled ) {
     $style_vars = '';
     if ( $glass_tint ) { $style_vars .= '--glass-tint:' . $glass_tint . ';'; }
     $style_vars .= '--glass-intensity:' . ( $glass_intensity / 100 ) . ';';
-    echo ' style="' . esc_attr( $style_vars ) . '"';
+    if ( $style_combined ) { $style_combined .= ';'; }
+    $style_combined .= $style_vars;
 }
 ?>
->
+<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"<?php
+foreach ( $wrapper_attrs as $attr => $value ) {
+    printf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
+}
+if ( $style_combined ) {
+    echo ' style="' . esc_attr( $style_combined ) . '"';
+}
+?>>
 	<?php
 	static $fvps_sprite_inlined = false;
 	if ( ! $fvps_sprite_inlined ) {
