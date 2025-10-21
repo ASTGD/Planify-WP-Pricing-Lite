@@ -53,7 +53,7 @@
   content: '';
   position: absolute; inset: -6px -8px -6px -8px; border-radius: 28px; z-index: 0; pointer-events: none;
   background: radial-gradient(220px 160px at var(--glass-x,50%) var(--glass-y,35%), rgba(255,255,255,.22), rgba(255,255,255,0) 65%);
-  opacity: calc(var(--glass-intensity, .6) * .9);
+  opacity: .25; /* keep very subtle so tint appears uniform */
   transition: opacity .2s ease;
 }
 
@@ -186,16 +186,15 @@
 /* inner LED glow on hover */
 .pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab::after {
   content: '';
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-  width: 38%; aspect-ratio: 1/1; border-radius: 999px;
+  position: absolute; inset: 0; border-radius: inherit; transform: none;
   pointer-events: none;
-  background: radial-gradient(circle at center, color-mix(in oklab, var(--glass-tint, #a6c8ff) 40%, rgba(255,255,255,.38)) 0%, rgba(255,255,255,.18) 40%, rgba(255,255,255,0) 70%);
-  opacity: 0; transition: opacity .18s ease, transform .18s ease;
+  background:
+    radial-gradient(120% 160% at 50% 0%, rgba(255,255,255,.30) 0%, rgba(255,255,255,.12) 55%, rgba(255,255,255,0) 80%),
+    radial-gradient(140% 120% at 50% 100%, color-mix(in oklab, var(--glass-tint, #a6c8ff) 18%, rgba(255,255,255,.15)) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0; transition: opacity .18s ease;
 }
 .pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab:hover::after,
-.pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab:focus-visible::after {
-  opacity: .9; transform: translate(-50%,-50%) scale(1.05);
-}
+.pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab:focus-visible::after { opacity: .6; }
 
 .pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab:hover,
 .pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab:focus-visible {
@@ -205,10 +204,13 @@
     rgba(255,255,255,0.2);
 }
 .pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab.is-active {
-  background: rgba(255,255,255,0.26);
-  border-color: rgba(255,255,255,0.55) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -12px 18px rgba(255,255,255,0.12) !important;
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--glass-tint, #a6c8ff) 32%, transparent) 0%, rgba(255,255,255,0.12) 100%),
+    rgba(255,255,255,0.28);
+  border-color: color-mix(in oklab, var(--glass-tint, #a6c8ff) 55%, rgba(255,255,255,0.55)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.65), inset 0 -14px 20px rgba(255,255,255,0.14) !important;
 }
+.pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab.is-active::after { opacity: .7; }
 .pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tabs-rail { opacity: .45; }
 
 /* Override non-glass hover border color */
