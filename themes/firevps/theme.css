@@ -94,6 +94,44 @@
 .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card__cta {
   background: transparent !important;
 }
+.pwpl-table--theme-firevps.pwpl-cards-glass .pwpl-plan__title,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card__price,
+.pwpl-table--theme-firevps.pwpl-cards-glass .pwpl-plan__billing,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-plan-lead { color: rgba(15,23,42,.92); text-shadow: 0 1px 0 rgba(255,255,255,.35); }
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card__specs { color: rgba(15,23,42,.9); }
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-spec__label { color: rgba(31,41,55,.85); font-weight: 600; }
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-spec__value { color: rgba(17,24,39,.98); }
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-icon { background: rgba(255,255,255,.5); color: rgba(17,24,39,.8); }
+
+/* Glass CTA on cards */
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button--inline {
+  border: 1px solid color-mix(in oklab, var(--glass-tint, #a6c8ff) 45%, rgba(255,255,255,.65));
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.35) 0%, rgba(255,255,255,.16) 100%),
+    color-mix(in oklab, var(--glass-tint, #a6c8ff) 22%, rgba(255,255,255,.18));
+  color: #0f172a;
+  box-shadow: 0 14px 28px rgba(15,23,42,.18), inset 0 1px 0 rgba(255,255,255,.55);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button,
+  .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button--inline { backdrop-filter: saturate(120%) blur(calc(var(--glass-frost, 6) * 1px)); }
+}
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button:hover,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button--inline:hover {
+  transform: translateY(-1px);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.42) 0%, rgba(255,255,255,.20) 100%),
+    color-mix(in oklab, var(--glass-solid) 18%, rgba(255,255,255,.22));
+  box-shadow: 0 18px 34px rgba(15,23,42,.22), inset 0 1px 0 rgba(255,255,255,.65);
+}
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button:active,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button--inline:active { transform: translateY(0); }
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button:focus-visible,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button--inline:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--glass-tint, #a6c8ff) 50%, #fff 50%), 0 12px 24px rgba(15,23,42,.22);
+}
 .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-plan-badge,
 .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-plan-location { background: rgba(255,255,255,.24); color: #1b1b1b; }
 
