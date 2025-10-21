@@ -21,6 +21,7 @@ class PWPL_Meta {
     const LAYOUT_WIDTHS           = '_pwpl_layout_widths';
     const LAYOUT_COLUMNS          = '_pwpl_layout_columns';
     const LAYOUT_CARD_WIDTHS      = '_pwpl_layout_card_widths';
+    const TABS_GLASS              = '_pwpl_tabs_glass';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -118,6 +119,15 @@ class PWPL_Meta {
             'type'              => 'array',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => [ $this, 'sanitize_layout_card_widths' ],
+            'show_in_rest'      => false,
+        ] );
+
+        // UI toggles
+        register_post_meta( 'pwpl_table', self::TABS_GLASS, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) { return ! empty( $value ) ? 1 : 0; },
             'show_in_rest'      => false,
         ] );
 

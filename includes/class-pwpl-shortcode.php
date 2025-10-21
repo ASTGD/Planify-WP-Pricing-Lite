@@ -426,6 +426,7 @@ class PWPL_Shortcode {
                 'availability'     => $availability_payload,
                 'style'            => $style_inline,
                 'badge_shadow'     => $badge_shadow,
+                'tabs_glass'       => (bool) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS, true ),
             ];
 
             $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );

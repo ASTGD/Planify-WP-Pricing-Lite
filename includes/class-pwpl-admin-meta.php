@@ -567,6 +567,7 @@ class PWPL_Admin_Meta {
                 'allowed' => (array) $allowed_locations,
             ],
         ];
+        $tabs_glass = (int) get_post_meta( $post->ID, PWPL_Meta::TABS_GLASS, true );
         ?>
         <div class="pwpl-meta pwpl-meta--table" data-pwpl-dimensions>
             <div class="pwpl-field">
@@ -577,6 +578,13 @@ class PWPL_Admin_Meta {
                     <?php endforeach; ?>
                 </select>
                 <p class="description"><?php esc_html_e( 'Applies to every plan within this table. Customize colors via assets/css/themes.css.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
+            <div class="pwpl-field">
+                <label>
+                    <input type="checkbox" name="pwpl_table[ui][tabs_glass]" value="1" <?php checked( $tabs_glass, 1 ); ?> />
+                    <strong><?php esc_html_e( 'Enable glass tabs (iOS liquid glass)', 'planify-wp-pricing-lite' ); ?></strong>
+                </label>
+                <p class="description"><?php esc_html_e( 'Adds a tasteful translucent look to the tab pills with backdrop blur where supported. Falls back gracefully.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
             <?php foreach ( $dimension_map as $key => $config ) :
                 $enabled = in_array( $key, $dimensions, true );
@@ -935,6 +943,7 @@ class PWPL_Admin_Meta {
         update_post_meta( $post_id, PWPL_Meta::TABLE_THEME, $theme );
 
         $layout_input = isset( $input['layout'] ) ? (array) $input['layout'] : [];
+        $ui_input     = isset( $input['ui'] ) ? (array) $input['ui'] : [];
         $layout_widths_input = isset( $layout_input['widths'] ) ? (array) $layout_input['widths'] : [];
         $layout_widths       = $meta->sanitize_layout_widths( $layout_widths_input );
 
@@ -960,6 +969,14 @@ class PWPL_Admin_Meta {
             update_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, $layout_card_widths );
         } else {
             delete_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS );
+        }
+
+        // UI toggles
+        $tabs_glass = ! empty( $ui_input['tabs_glass'] ) ? 1 : 0;
+        if ( $tabs_glass ) {
+            update_post_meta( $post_id, PWPL_Meta::TABS_GLASS, 1 );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS );
         }
 
         // Optional plan card size controls (legacy breakpoint container)

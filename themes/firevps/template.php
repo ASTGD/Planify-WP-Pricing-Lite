@@ -11,6 +11,10 @@ $classes = [ 'pwpl-table', 'pwpl-table--theme-' . $theme_slug ];
 if ( ! empty( $manifest['containerClass'] ) ) {
 	$classes[] = sanitize_html_class( $manifest['containerClass'] );
 }
+$tabs_glass_enabled = ! empty( $table['tabs_glass'] );
+if ( $tabs_glass_enabled ) {
+	$classes[] = 'pwpl-tabs-glass';
+}
 $classes = array_filter( array_unique( $classes ) );
 
 $active      = is_array( $table['active'] ?? null ) ? $table['active'] : [];

@@ -130,6 +130,22 @@
   z-index: 10;
   transition: opacity 0.2s ease;
 }
+
+/* Glass tabs (optional) */
+.pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab {
+  background: rgba(255,255,255,0.16);
+  border: 1px solid rgba(255,255,255,0.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
+  color: var(--fvps-color-header);
+}
+@supports (backdrop-filter: blur(6px)) {
+  .pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab { backdrop-filter: blur(6px); }
+}
+.pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab.is-active {
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.45);
+}
+.pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tabs-rail { opacity: .45; }
 .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-nav {
   opacity: 1;
 }
