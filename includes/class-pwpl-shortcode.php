@@ -426,6 +426,11 @@ class PWPL_Shortcode {
                 'availability'     => $availability_payload,
                 'style'            => $style_inline,
                 'badge_shadow'     => $badge_shadow,
+                'tabs_glass'       => (bool) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS, true ),
+                'tabs_glass_tint'  => (string) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_TINT, true ),
+                'tabs_glass_intensity' => (int) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_INTENSITY, true ),
+                'tabs_glass_frost'     => (int) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_FROST, true ),
+                'cards_glass'          => (bool) get_post_meta( $table_id, PWPL_Meta::CARDS_GLASS, true ),
             ];
 
             $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );

@@ -11,6 +11,21 @@ $classes = [ 'pwpl-table', 'pwpl-table--theme-' . $theme_slug ];
 if ( ! empty( $manifest['containerClass'] ) ) {
 	$classes[] = sanitize_html_class( $manifest['containerClass'] );
 }
+$tabs_glass_enabled = ! empty( $table['tabs_glass'] );
+$cards_glass_enabled = ! empty( $table['cards_glass'] );
+if ( $tabs_glass_enabled ) {
+    $glass_tint = (string) ( $table['tabs_glass_tint'] ?? '' );
+    $glass_intensity = isset( $table['tabs_glass_intensity'] ) ? (int) $table['tabs_glass_intensity'] : 60;
+    $glass_intensity = max( 10, min( 100, $glass_intensity ) );
+    $glass_frost = isset( $table['tabs_glass_frost'] ) ? (int) $table['tabs_glass_frost'] : 6;
+    $glass_frost = max( 0, min( 24, $glass_frost ) );
+}
+if ( $tabs_glass_enabled ) {
+    $classes[] = 'pwpl-tabs-glass';
+}
+if ( $cards_glass_enabled ) {
+    $classes[] = 'pwpl-cards-glass';
+}
 $classes = array_filter( array_unique( $classes ) );
 
 $active      = is_array( $table['active'] ?? null ) ? $table['active'] : [];
@@ -84,16 +99,26 @@ $spec_priority = [
 ];
 
 ?>
-<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 <?php
-foreach ( $wrapper_attrs as $attr => $value ) {
-	printf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
-}
-if ( $table_style ) {
-	echo ' style="' . esc_attr( $table_style ) . '"';
+$style_combined = '';
+if ( $table_style ) { $style_combined .= trim( (string) $table_style ); }
+if ( $tabs_glass_enabled ) {
+    $style_vars = '';
+    if ( $glass_tint ) { $style_vars .= '--glass-tint:' . $glass_tint . ';'; }
+    $style_vars .= '--glass-intensity:' . ( $glass_intensity / 100 ) . ';';
+    $style_vars .= '--glass-frost:' . $glass_frost . ';';
+    if ( $style_combined ) { $style_combined .= ';'; }
+    $style_combined .= $style_vars;
 }
 ?>
->
+<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"<?php
+foreach ( $wrapper_attrs as $attr => $value ) {
+    printf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
+}
+if ( $style_combined ) {
+    echo ' style="' . esc_attr( $style_combined ) . '"';
+}
+?>>
 	<?php
 	static $fvps_sprite_inlined = false;
 	if ( ! $fvps_sprite_inlined ) {
