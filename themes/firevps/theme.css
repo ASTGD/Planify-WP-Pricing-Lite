@@ -25,10 +25,11 @@
   position: relative;
   font-family: var(--fvps-font-base);
   color: var(--fvps-color-header);
-  background: linear-gradient(135deg, #f8f9ff 0%, #d9e4f5 100%);
-  border-radius: var(--fvps-radius-lg);
+  /* Clean frameless look by default for FireVPS */
+  background: transparent !important;
+  border-radius: 0;
   padding: var(--fvps-spacing-xl) var(--fvps-spacing-lg);
-  box-shadow: var(--fvps-shadow-outer);
+  box-shadow: none !important;
   overflow: visible;
   inline-size: min(var(--pwpl-width-global), 100%);
   margin-inline: auto;
@@ -82,9 +83,9 @@
 
 /* Glass cards (optional) */
 .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card {
-  background: color-mix(in oklab, var(--glass-tint, #a6c8ff) 8%, rgba(255,255,255,0.22));
+  background: color-mix(in oklab, var(--glass-tint, #a6c8ff) calc(var(--glass-intensity, .6) * 12%), rgba(255,255,255,0.22));
   border: 1px solid color-mix(in oklab, var(--glass-tint, #a6c8ff) 28%, rgba(255,255,255,0.45));
-  box-shadow: 0 16px 36px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.45);
+  box-shadow: none; /* remove drop shadow to avoid table-bottom glow */
 }
 @supports (backdrop-filter: blur(1px)) {
   .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card { backdrop-filter: saturate(120%) blur(calc(var(--glass-frost, 6) * 1px)); }
@@ -93,6 +94,44 @@
 .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card__specs,
 .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card__cta {
   background: transparent !important;
+}
+.pwpl-table--theme-firevps.pwpl-cards-glass .pwpl-plan__title,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card__price,
+.pwpl-table--theme-firevps.pwpl-cards-glass .pwpl-plan__billing,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-plan-lead { color: rgba(15,23,42,.92); text-shadow: 0 1px 0 rgba(255,255,255,.35); }
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card__specs { color: rgba(15,23,42,.9); }
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-spec__label { color: rgba(31,41,55,.85); font-weight: 600; }
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-spec__value { color: rgba(17,24,39,.98); }
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-icon { background: rgba(255,255,255,.5); color: rgba(17,24,39,.8); }
+
+/* Glass CTA on cards */
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button--inline {
+  border: 1px solid color-mix(in oklab, var(--glass-tint, #a6c8ff) 45%, rgba(255,255,255,.65));
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.35) 0%, rgba(255,255,255,.16) 100%),
+    color-mix(in oklab, var(--glass-tint, #a6c8ff) 22%, rgba(255,255,255,.18));
+  color: #0f172a;
+  box-shadow: 0 14px 28px rgba(15,23,42,.18), inset 0 1px 0 rgba(255,255,255,.55);
+}
+@supports (backdrop-filter: blur(1px)) {
+  .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button,
+  .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button--inline { backdrop-filter: saturate(120%) blur(calc(var(--glass-frost, 6) * 1px)); }
+}
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button:hover,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button--inline:hover {
+  transform: translateY(-1px);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.42) 0%, rgba(255,255,255,.20) 100%),
+    color-mix(in oklab, var(--glass-solid) 18%, rgba(255,255,255,.22));
+  box-shadow: 0 18px 34px rgba(15,23,42,.22), inset 0 1px 0 rgba(255,255,255,.65);
+}
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button:active,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button--inline:active { transform: translateY(0); }
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button:focus-visible,
+.pwpl-table--theme-firevps.pwpl-cards-glass .fvps-button--inline:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--glass-tint, #a6c8ff) 50%, #fff 50%), 0 12px 24px rgba(15,23,42,.22);
 }
 .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-plan-badge,
 .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-plan-location { background: rgba(255,255,255,.24); color: #1b1b1b; }
@@ -183,6 +222,8 @@
   pointer-events: none;
   z-index: 9;
 }
+/* Hide plan rail entirely (we use arrows) */
+.pwpl-table--theme-firevps .fvps-plans-rail { display: none !important; }
 
 /* Tiny arrows for tabs */
 .pwpl-table--theme-firevps .fvps-tabs-nav {
@@ -198,7 +239,7 @@
 .pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab {
   position: relative;
   /* subtle tint overlay + translucent body */
-  background: color-mix(in oklab, var(--glass-tint, #a6c8ff) 24%, rgba(255,255,255,0.20));
+  background: color-mix(in oklab, var(--glass-tint, #a6c8ff) calc(var(--glass-intensity, .6) * 28%), rgba(255,255,255,0.20));
   border: 1px solid color-mix(in oklab, var(--glass-tint, #a6c8ff) 38%, rgba(255,255,255,0.35));
   color: var(--fvps-color-header);
   /* inner depth only (no outer drop shadow) */
@@ -383,7 +424,7 @@
 @media (hover: none), (pointer: coarse) {
   /* Hide rails by default on touch devices; show while interacting */
   .pwpl-table--theme-firevps .fvps-tabs-rail,
-  .pwpl-table--theme-firevps .fvps-plans-rail { opacity: 0; }
+  .pwpl-table--theme-firevps .fvps-plans-rail { opacity: 0; display: none !important; }
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail,
   .pwpl-table--theme-firevps .fvps-plan-rail-wrapper.is-scrollable.is-user-scrolling .fvps-plans-rail { opacity: 1; }
 }
@@ -599,10 +640,7 @@
   transition: transform 0.24s ease, box-shadow 0.24s ease;
 }
 
-.pwpl-table--theme-firevps .fvps-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 28px 52px rgba(15, 23, 42, 0.16);
-}
+.pwpl-table--theme-firevps .fvps-card:hover { transform: translateY(-2px); box-shadow: none; }
 
 .pwpl-table--theme-firevps .fvps-card__top {
   background: linear-gradient(180deg, rgba(255, 253, 245, 0.98) 0%, rgba(255, 240, 205, 0.98) 100%);
