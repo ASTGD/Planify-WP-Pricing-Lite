@@ -85,7 +85,7 @@
 .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card {
   background: color-mix(in oklab, var(--glass-tint, #a6c8ff) calc(var(--glass-intensity, .6) * 12%), rgba(255,255,255,0.22));
   border: 1px solid color-mix(in oklab, var(--glass-tint, #a6c8ff) 28%, rgba(255,255,255,0.45));
-  box-shadow: 0 16px 36px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.45);
+  box-shadow: none; /* remove drop shadow to avoid table-bottom glow */
 }
 @supports (backdrop-filter: blur(1px)) {
   .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card { backdrop-filter: saturate(120%) blur(calc(var(--glass-frost, 6) * 1px)); }
@@ -640,10 +640,7 @@
   transition: transform 0.24s ease, box-shadow 0.24s ease;
 }
 
-.pwpl-table--theme-firevps .fvps-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 28px 52px rgba(15, 23, 42, 0.16);
-}
+.pwpl-table--theme-firevps .fvps-card:hover { transform: translateY(-2px); box-shadow: none; }
 
 .pwpl-table--theme-firevps .fvps-card__top {
   background: linear-gradient(180deg, rgba(255, 253, 245, 0.98) 0%, rgba(255, 240, 205, 0.98) 100%);
