@@ -82,7 +82,7 @@
 
 /* Glass cards (optional) */
 .pwpl-table--theme-firevps.pwpl-cards-glass .fvps-card {
-  background: color-mix(in oklab, var(--glass-tint, #a6c8ff) 8%, rgba(255,255,255,0.22));
+  background: color-mix(in oklab, var(--glass-tint, #a6c8ff) calc(var(--glass-intensity, .6) * 12%), rgba(255,255,255,0.22));
   border: 1px solid color-mix(in oklab, var(--glass-tint, #a6c8ff) 28%, rgba(255,255,255,0.45));
   box-shadow: 0 16px 36px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.45);
 }
@@ -236,7 +236,7 @@
 .pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-tab {
   position: relative;
   /* subtle tint overlay + translucent body */
-  background: color-mix(in oklab, var(--glass-tint, #a6c8ff) 24%, rgba(255,255,255,0.20));
+  background: color-mix(in oklab, var(--glass-tint, #a6c8ff) calc(var(--glass-intensity, .6) * 28%), rgba(255,255,255,0.20));
   border: 1px solid color-mix(in oklab, var(--glass-tint, #a6c8ff) 38%, rgba(255,255,255,0.35));
   color: var(--fvps-color-header);
   /* inner depth only (no outer drop shadow) */
