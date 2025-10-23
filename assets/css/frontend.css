@@ -10,6 +10,7 @@
   --pwpl-card-max: 420px;
 }
 
+.pwpl-table.pwpl-table--theme-firevps,
 .pwpl-table {
   --pwpl-radius: 18px;
   --pwpl-gap: 18px;
@@ -48,6 +49,13 @@
   min-width: 320px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Remove the global frame when FireVPS theme is active */
+.pwpl-table.pwpl-table--theme-firevps {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .pwpl-table__title {

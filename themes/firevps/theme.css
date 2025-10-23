@@ -25,10 +25,11 @@
   position: relative;
   font-family: var(--fvps-font-base);
   color: var(--fvps-color-header);
-  background: linear-gradient(135deg, #f8f9ff 0%, #d9e4f5 100%);
-  border-radius: var(--fvps-radius-lg);
+  /* Clean frameless look by default for FireVPS */
+  background: transparent !important;
+  border-radius: 0;
   padding: var(--fvps-spacing-xl) var(--fvps-spacing-lg);
-  box-shadow: var(--fvps-shadow-outer);
+  box-shadow: none !important;
   overflow: visible;
   inline-size: min(var(--pwpl-width-global), 100%);
   margin-inline: auto;
@@ -221,6 +222,8 @@
   pointer-events: none;
   z-index: 9;
 }
+/* Hide plan rail entirely (we use arrows) */
+.pwpl-table--theme-firevps .fvps-plans-rail { display: none !important; }
 
 /* Tiny arrows for tabs */
 .pwpl-table--theme-firevps .fvps-tabs-nav {
@@ -421,7 +424,7 @@
 @media (hover: none), (pointer: coarse) {
   /* Hide rails by default on touch devices; show while interacting */
   .pwpl-table--theme-firevps .fvps-tabs-rail,
-  .pwpl-table--theme-firevps .fvps-plans-rail { opacity: 0; }
+  .pwpl-table--theme-firevps .fvps-plans-rail { opacity: 0; display: none !important; }
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail,
   .pwpl-table--theme-firevps .fvps-plan-rail-wrapper.is-scrollable.is-user-scrolling .fvps-plans-rail { opacity: 1; }
 }
