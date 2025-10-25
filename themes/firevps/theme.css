@@ -655,6 +655,17 @@
   min-height: 100%;
 }
 
+/* Subtle keyline + ambient shadow to prevent card blending with page */
+.pwpl-table--theme-firevps .fvps-card { position: relative; }
+.pwpl-table--theme-firevps .fvps-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--fvps-radius-lg);
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(28,26,22,0.06), 0 8px 20px rgba(15,23,42,0.05);
+}
+
 /* Modern subtle hover for pointer devices; keep steady on touch */
 @media (hover: hover) {
   .pwpl-table--theme-firevps .fvps-card { transition: transform 0.22s ease, box-shadow 0.22s ease; }
