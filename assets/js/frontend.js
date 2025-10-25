@@ -438,7 +438,7 @@
         const iconEl = badgeEl.querySelector('[data-pwpl-badge-icon]');
         const labelEl = badgeEl.querySelector('[data-pwpl-badge-label]');
 
-        if (!badge) {
+        if (!badge || (!badge.label && !badge.icon)) {
             badgeEl.hidden = true;
             badgeEl.dataset.badgeColor = '';
             badgeEl.dataset.badgeText = '';
@@ -514,22 +514,57 @@
     function updateCta(plan, variant) {
         const ctaButton = plan.querySelector('[data-pwpl-cta-button]');
         const ctaLabel = plan.querySelector('[data-pwpl-cta-label]');
+        const inlineContainer = plan.querySelector('.fvps-card__cta-inline');
+        const inlineBtn = inlineContainer ? inlineContainer.querySelector('.fvps-button--inline') : null;
+        const inlineSpan = inlineBtn ? inlineBtn.querySelector('span') : null;
         if (!ctaButton || !ctaLabel) {
             return;
         }
 
+        // Unavailable state overrides normal CTA rules
+        if (variant && variant.unavailable) {
+            // Show disabled button with clear label and no link
+            ctaButton.hidden = false;
+            ctaButton.removeAttribute('href');
+            ctaButton.setAttribute('aria-disabled', 'true');
+            ctaButton.classList.add('is-disabled');
+            ctaLabel.textContent = __('Unavailable');
+            if (inlineBtn && inlineSpan) {
+                inlineBtn.removeAttribute('href');
+                inlineBtn.setAttribute('aria-disabled', 'true');
+                inlineBtn.classList.add('is-disabled');
+                inlineSpan.textContent = __('Unavailable');
+                if (inlineContainer) { inlineContainer.hidden = false; }
+            }
+            plan.classList.add('pwpl-unavailable');
+            return;
+        }
+
+        // Otherwise, normal CTA logic
         if (!variant || !variant.cta_label || !variant.cta_url) {
             ctaButton.hidden = true;
             ctaButton.removeAttribute('href');
             ctaButton.removeAttribute('target');
             ctaButton.removeAttribute('rel');
             ctaLabel.textContent = '';
+            if (inlineContainer) { inlineContainer.hidden = true; }
+            plan.classList.remove('pwpl-unavailable');
             return;
         }
 
         ctaButton.hidden = false;
         ctaButton.setAttribute('href', variant.cta_url);
         ctaLabel.textContent = variant.cta_label;
+        ctaButton.removeAttribute('aria-disabled');
+        ctaButton.classList.remove('is-disabled');
+        if (inlineBtn && inlineSpan) {
+            inlineBtn.setAttribute('href', variant.cta_url);
+            inlineBtn.removeAttribute('aria-disabled');
+            inlineBtn.classList.remove('is-disabled');
+            inlineSpan.textContent = variant.cta_label;
+            if (inlineContainer) { inlineContainer.hidden = false; }
+        }
+        plan.classList.remove('pwpl-unavailable');
 
         if (variant.target && (variant.target === '_blank' || variant.target === '_self')) {
             ctaButton.setAttribute('target', variant.target);

@@ -13,6 +13,8 @@ if ( ! empty( $manifest['containerClass'] ) ) {
 }
 $tabs_glass_enabled = ! empty( $table['tabs_glass'] );
 $cards_glass_enabled = ! empty( $table['cards_glass'] );
+$specs_style = isset( $table['specs_style'] ) ? sanitize_key( (string) $table['specs_style'] ) : '';
+$specs_anim  = is_array( $table['specs_anim'] ?? null ) ? $table['specs_anim'] : [];
 if ( $tabs_glass_enabled ) {
     $glass_tint = (string) ( $table['tabs_glass_tint'] ?? '' );
     $glass_intensity = isset( $table['tabs_glass_intensity'] ) ? (int) $table['tabs_glass_intensity'] : 60;
@@ -25,6 +27,12 @@ if ( $tabs_glass_enabled ) {
 }
 if ( $cards_glass_enabled ) {
     $classes[] = 'pwpl-cards-glass';
+}
+$anim_flags = array_map( 'sanitize_key', (array) ( $specs_anim['flags'] ?? [] ) );
+foreach ( [ 'row','icon','divider','chip','stagger' ] as $flag ) {
+    if ( in_array( $flag, $anim_flags, true ) ) {
+        $classes[] = 'fvps-anim--' . $flag;
+    }
 }
 $classes = array_filter( array_unique( $classes ) );
 
@@ -42,6 +50,14 @@ $wrapper_attrs = [
 	'data-badges'           => $badges_json ?: '{}',
 	'data-dimension-labels' => $labels_json ?: '{}',
 ];
+
+if ( $specs_style && $specs_style !== 'default' ) {
+    $wrapper_attrs['data-fvps-specs-style'] = $specs_style;
+}
+// Animation intensity
+$anim_intensity = isset( $specs_anim['intensity'] ) ? max( 0, min( 100, (int) $specs_anim['intensity'] ) ) : 45;
+$anim_strength = max( 0.1, min( 1, $anim_intensity / 100 ) );
+$wrapper_attrs['data-anim-touch'] = ! empty( $specs_anim['mobile'] ) ? 'on' : 'off';
 
 foreach ( [ 'platform', 'period', 'location' ] as $dimension ) {
 	$current = sanitize_title( $active[ $dimension ] ?? '' );
@@ -102,6 +118,8 @@ $spec_priority = [
 <?php
 $style_combined = '';
 if ( $table_style ) { $style_combined .= trim( (string) $table_style ); }
+// Inject animation CSS variables
+$style_combined .= ($style_combined ? ';' : '') . '--fvps-anim-strength:' . esc_attr( $anim_strength );
 if ( $tabs_glass_enabled ) {
     $style_vars = '';
     if ( $glass_tint ) { $style_vars .= '--glass-tint:' . $glass_tint . ';'; }
