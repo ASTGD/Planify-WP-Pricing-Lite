@@ -999,7 +999,9 @@
   text-transform: uppercase;
   text-decoration: none;
   box-shadow: none;
-  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 /* Disabled CTA state */
@@ -1022,7 +1024,10 @@
 
 .pwpl-table--theme-firevps .fvps-button:hover,
 .pwpl-table--theme-firevps .fvps-button--inline:hover {
-  background: #1f1f1f;
+  transform: translateY(-2px);
+  background: color-mix(in oklab, var(--fvps-color-button) 76%, var(--fvps-color-accent) 24%);
+  border-color: color-mix(in oklab, var(--fvps-color-accent-strong) 60%, #000 40%);
+  box-shadow: 0 10px 24px rgba(15,23,42,0.16);
 }
 
 .pwpl-table--theme-firevps .fvps-button:active,
@@ -1035,6 +1040,29 @@
   outline: 3px solid rgba(241, 154, 40, 0.45);
   outline-offset: 3px;
 }
+
+/* Subtle sheen animation on hover (pointer devices only) */
+@media (hover: hover) {
+  .pwpl-table--theme-firevps .fvps-button::after,
+  .pwpl-table--theme-firevps .fvps-button--inline::after {
+    content: '';
+    position: absolute;
+    inset: -20% -40% -20% -40%;
+    background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 35%, rgba(255,255,255,0) 70%);
+    transform: translateX(-120%);
+    transition: transform 0.6s ease;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .pwpl-table--theme-firevps .fvps-button:hover::after,
+  .pwpl-table--theme-firevps .fvps-button--inline:hover::after {
+    transform: translateX(120%);
+  }
+}
+
+/* Disable animation for aria-disabled buttons */
+.pwpl-table--theme-firevps .fvps-button[aria-disabled="true"]::after,
+.pwpl-table--theme-firevps .fvps-button--inline[aria-disabled="true"]::after { display: none; }
 
 @media (max-width: 1024px) {
   .pwpl-table--theme-firevps {
