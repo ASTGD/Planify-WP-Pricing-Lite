@@ -22,6 +22,8 @@
   --fvps-font-heading: "Space Grotesk", "Inter", system-ui, sans-serif;
   --fvps-card-min-fallback: 280px;
   --fvps-card-max-inline: 520px;
+  /* Unify arrow offsets for tabs and plan carousel */
+  --fvps-plan-nav-offset: 64px;
   position: relative;
   font-family: var(--fvps-font-base);
   color: var(--fvps-color-header);
@@ -184,7 +186,8 @@
   position: relative;
   margin: 0 auto clamp(16px, 2vw, 24px);
   max-width: 100%;
-  --fvps-tabs-nav-offset: 36px;
+  /* Keep tabs arrows horizontally in line with plan carousel arrows */
+  --fvps-tabs-nav-offset: var(--fvps-plan-nav-offset, 64px);
   overflow: visible;
 }
 
@@ -991,6 +994,8 @@
 @media (max-width: 1024px) {
   .pwpl-table--theme-firevps {
     padding: var(--fvps-spacing-lg);
+    /* Match tabs arrows offset to plans arrows on medium screens */
+    --fvps-plan-nav-offset: 48px;
   }
   .pwpl-table--theme-firevps .fvps-plan-rail-wrapper {
     --fvps-plan-nav-offset: 48px;
