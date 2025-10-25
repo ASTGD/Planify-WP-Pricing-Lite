@@ -570,6 +570,12 @@ class PWPL_Admin_Meta {
         $tabs_glass = (int) get_post_meta( $post->ID, PWPL_Meta::TABS_GLASS, true );
         $specs_style = get_post_meta( $post->ID, PWPL_Meta::SPECS_STYLE, true );
         $specs_style = in_array( $specs_style, [ 'default', 'flat', 'segmented', 'chips' ], true ) ? $specs_style : 'default';
+        $anim_preset = get_post_meta( $post->ID, PWPL_Meta::SPECS_ANIM_PRESET, true );
+        $anim_preset = in_array( $anim_preset, [ 'off', 'minimal', 'segmented', 'chips', 'all' ], true ) ? $anim_preset : 'minimal';
+        $anim_flags  = get_post_meta( $post->ID, PWPL_Meta::SPECS_ANIM_FLAGS, true );
+        $anim_flags  = is_array( $anim_flags ) ? array_values( array_intersect( array_map( 'sanitize_key', $anim_flags ), [ 'row', 'icon', 'divider', 'chip', 'stagger' ] ) ) : [];
+        $anim_intensity = (int) get_post_meta( $post->ID, PWPL_Meta::SPECS_ANIM_INTENSITY, true ); if ( $anim_intensity <= 0 ) $anim_intensity = 45;
+        $anim_mobile = (int) get_post_meta( $post->ID, PWPL_Meta::SPECS_ANIM_MOBILE, true );
         ?>
         <div class="pwpl-meta pwpl-meta--table" data-pwpl-dimensions>
             <div class="pwpl-field">
@@ -580,6 +586,54 @@ class PWPL_Admin_Meta {
                     <?php endforeach; ?>
                 </select>
                 <p class="description"><?php esc_html_e( 'Applies to every plan within this table. Customize colors via assets/css/themes.css.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
+            <div class="pwpl-field">
+                <label for="pwpl_specs_anim_preset"><strong><?php esc_html_e( 'Specifications interactions', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <select id="pwpl_specs_anim_preset" name="pwpl_table[ui][specs_anim][preset]" class="widefat">
+                    <?php $options = [
+                        'off'     => __( 'Off', 'planify-wp-pricing-lite' ),
+                        'minimal' => __( 'Minimal (row + icon)', 'planify-wp-pricing-lite' ),
+                        'segmented' => __( 'Segmented (row + divider)', 'planify-wp-pricing-lite' ),
+                        'chips'   => __( 'Chips (row + chip)', 'planify-wp-pricing-lite' ),
+                        'all'     => __( 'Everything', 'planify-wp-pricing-lite' ),
+                    ]; foreach ( $options as $key => $label ) : ?>
+                        <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $anim_preset, $key ); ?>><?php echo esc_html( $label ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <div class="pwpl-field__row" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:8px;">
+                    <label style="display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="row" <?php checked( in_array( 'row', $anim_flags, true ) ); ?> />
+                        <span><?php esc_html_e( 'Row highlight', 'planify-wp-pricing-lite' ); ?></span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="icon" <?php checked( in_array( 'icon', $anim_flags, true ) ); ?> />
+                        <span><?php esc_html_e( 'Icon micro‑motion', 'planify-wp-pricing-lite' ); ?></span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="divider" <?php checked( in_array( 'divider', $anim_flags, true ) ); ?> />
+                        <span><?php esc_html_e( 'Divider sweep (Segmented)', 'planify-wp-pricing-lite' ); ?></span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="chip" <?php checked( in_array( 'chip', $anim_flags, true ) ); ?> />
+                        <span><?php esc_html_e( 'Chip emphasis (Chips)', 'planify-wp-pricing-lite' ); ?></span>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px;">
+                        <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="stagger" <?php checked( in_array( 'stagger', $anim_flags, true ) ); ?> />
+                        <span><?php esc_html_e( 'Stagger on card hover', 'planify-wp-pricing-lite' ); ?></span>
+                    </label>
+                </div>
+                <div class="pwpl-field__row" style="display:flex; gap:12px; align-items:center; margin-top:8px;">
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <span><?php esc_html_e( 'Intensity', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="range" min="0" max="100" step="1" name="pwpl_table[ui][specs_anim][intensity]" value="<?php echo esc_attr( $anim_intensity ); ?>" />
+                        <output><?php echo esc_html( $anim_intensity ); ?></output>
+                    </label>
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" name="pwpl_table[ui][specs_anim][mobile]" value="1" <?php checked( $anim_mobile, 1 ); ?> />
+                        <span><?php esc_html_e( 'Enable on touch devices', 'planify-wp-pricing-lite' ); ?></span>
+                    </label>
+                </div>
+                <p class="description"><?php esc_html_e( 'Preset chooses sensible flags. You may override by toggling flags. Intensity maps to subtlety and speed.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
             <div class="pwpl-field">
                 <label for="pwpl_specs_style"><strong><?php esc_html_e( 'Specifications list style', 'planify-wp-pricing-lite' ); ?></strong></label>
@@ -1062,6 +1116,23 @@ class PWPL_Admin_Meta {
             $specs_style = 'default';
         }
         update_post_meta( $post_id, PWPL_Meta::SPECS_STYLE, $specs_style );
+
+        // Specs interactions
+        $anim_input = isset( $ui_input['specs_anim'] ) ? (array) $ui_input['specs_anim'] : [];
+        $anim_preset = isset( $anim_input['preset'] ) ? sanitize_key( $anim_input['preset'] ) : 'minimal';
+        if ( ! in_array( $anim_preset, [ 'off', 'minimal', 'segmented', 'chips', 'all' ], true ) ) { $anim_preset = 'minimal'; }
+        update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_PRESET, $anim_preset );
+
+        $flags = isset( $anim_input['flags'] ) && is_array( $anim_input['flags'] ) ? array_map( 'sanitize_key', $anim_input['flags'] ) : [];
+        $flags = array_values( array_intersect( $flags, [ 'row', 'icon', 'divider', 'chip', 'stagger' ] ) );
+        update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_FLAGS, $flags );
+
+        $intensity = isset( $anim_input['intensity'] ) ? (int) $anim_input['intensity'] : 45;
+        $intensity = max( 0, min( 100, $intensity ) );
+        update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_INTENSITY, $intensity );
+
+        $mobile = ! empty( $anim_input['mobile'] ) ? 1 : 0;
+        if ( $mobile ) { update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE ); }
 
         // Optional plan card size controls (legacy breakpoint container)
         $breakpoints_input  = isset( $input['breakpoints'] ) ? (array) $input['breakpoints'] : [];

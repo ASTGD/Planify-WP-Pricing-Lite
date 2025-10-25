@@ -432,6 +432,26 @@ class PWPL_Shortcode {
                 'tabs_glass_frost'     => (int) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_FROST, true ),
                 'cards_glass'          => (bool) get_post_meta( $table_id, PWPL_Meta::CARDS_GLASS, true ),
                 'specs_style'         => (string) get_post_meta( $table_id, PWPL_Meta::SPECS_STYLE, true ),
+                'specs_anim'           => (function($table_id){
+                    $preset = get_post_meta( $table_id, PWPL_Meta::SPECS_ANIM_PRESET, true );
+                    $preset = $preset ? sanitize_key( $preset ) : 'minimal';
+                    $flags  = get_post_meta( $table_id, PWPL_Meta::SPECS_ANIM_FLAGS, true );
+                    $flags  = is_array( $flags ) ? array_values( array_intersect( array_map( 'sanitize_key', $flags ), [ 'row','icon','divider','chip','stagger' ] ) ) : [];
+                    if ( empty( $flags ) ) {
+                        switch ( $preset ) {
+                            case 'off': $flags = []; break;
+                            case 'segmented': $flags = [ 'row', 'divider' ]; break;
+                            case 'chips': $flags = [ 'row', 'chip' ]; break;
+                            case 'all': $flags = [ 'row', 'icon', 'divider', 'chip', 'stagger' ]; break;
+                            case 'minimal':
+                            default: $flags = [ 'row', 'icon' ]; break;
+                        }
+                    }
+                    $intensity = (int) get_post_meta( $table_id, PWPL_Meta::SPECS_ANIM_INTENSITY, true );
+                    $intensity = $intensity > 0 ? $intensity : 45;
+                    $mobile    = (bool) get_post_meta( $table_id, PWPL_Meta::SPECS_ANIM_MOBILE, true );
+                    return [ 'preset' => $preset, 'flags' => $flags, 'intensity' => $intensity, 'mobile' => $mobile ];
+                })($table_id),
             ];
 
             $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );

@@ -27,6 +27,11 @@ class PWPL_Meta {
     const TABS_GLASS_FROST        = '_pwpl_tabs_glass_frost';
     const CARDS_GLASS             = '_pwpl_cards_glass';
     const SPECS_STYLE             = '_pwpl_specs_style';
+    // Specs interactions
+    const SPECS_ANIM_PRESET       = '_pwpl_specs_anim_preset';
+    const SPECS_ANIM_FLAGS        = '_pwpl_specs_anim_flags';
+    const SPECS_ANIM_INTENSITY    = '_pwpl_specs_anim_intensity';
+    const SPECS_ANIM_MOBILE       = '_pwpl_specs_anim_mobile';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -185,6 +190,52 @@ class PWPL_Meta {
                 $allowed = [ 'default', 'flat', 'segmented', 'chips' ];
                 return in_array( $v, $allowed, true ) ? $v : 'default';
             },
+            'show_in_rest'      => false,
+        ] );
+
+        // Specs interactions preset
+        register_post_meta( 'pwpl_table', self::SPECS_ANIM_PRESET, [
+            'single'            => true,
+            'type'              => 'string',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) {
+                $v = is_string( $value ) ? sanitize_key( $value ) : '';
+                $allowed = [ 'off', 'minimal', 'segmented', 'chips', 'all' ];
+                return in_array( $v, $allowed, true ) ? $v : 'minimal';
+            },
+            'show_in_rest'      => false,
+        ] );
+
+        // Specs interactions flags (row, icon, divider, chip, stagger)
+        register_post_meta( 'pwpl_table', self::SPECS_ANIM_FLAGS, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) {
+                $allowed = [ 'row', 'icon', 'divider', 'chip', 'stagger' ];
+                if ( ! is_array( $value ) ) { return []; }
+                $list = array_map( 'sanitize_key', $value );
+                $list = array_values( array_intersect( $list, $allowed ) );
+                return $list;
+            },
+            'show_in_rest'      => false,
+        ] );
+
+        // Intensity: 0-100
+        register_post_meta( 'pwpl_table', self::SPECS_ANIM_INTENSITY, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) { $n = (int) $value; if ( $n < 0 ) $n = 0; if ( $n > 100 ) $n = 100; return $n; },
+            'show_in_rest'      => false,
+        ] );
+
+        // Enable on touch devices
+        register_post_meta( 'pwpl_table', self::SPECS_ANIM_MOBILE, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) { return ! empty( $value ) ? 1 : 0; },
             'show_in_rest'      => false,
         ] );
 
