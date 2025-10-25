@@ -150,7 +150,6 @@
 .pwpl-table--theme-firevps .fvps-tab.is-active {
   box-shadow: none !important;
   filter: none !important;
-  transform: none !important;
 }
 
 
@@ -237,9 +236,9 @@
 /* Tiny arrows for tabs */
 .pwpl-table--theme-firevps .fvps-tabs-nav {
   position: absolute;
-  top: auto;
-  bottom: 0;
-  transform: translateY(50%);
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
   pointer-events: none;
   opacity: 0;
   z-index: 10;
@@ -471,6 +470,12 @@
   color: var(--fvps-color-header);
 }
 
+/* Subtle lift on hover for pointer devices */
+@media (hover: hover) {
+  .pwpl-table--theme-firevps .fvps-tab { transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease; }
+  .pwpl-table--theme-firevps .fvps-tab:hover { transform: translateY(-1px); }
+}
+
 .pwpl-table--theme-firevps .fvps-tab.is-active {
   background: var(--fvps-color-accent);
   color: #ffffff;
@@ -641,13 +646,16 @@
   background: var(--fvps-color-surface);
   border-radius: var(--fvps-radius-lg);
   border: none; /* unibody: remove white edge */
-  box-shadow: none; /* embedded look: no outer shadow */
+  box-shadow: none; /* embedded look by default */
   overflow: hidden;
   min-height: 100%;
-  transition: background-color 0.2s ease;
 }
 
-.pwpl-table--theme-firevps .fvps-card:hover { transform: none; box-shadow: none; }
+/* Modern subtle hover for pointer devices; keep steady on touch */
+@media (hover: hover) {
+  .pwpl-table--theme-firevps .fvps-card { transition: transform 0.22s ease, box-shadow 0.22s ease; }
+  .pwpl-table--theme-firevps .fvps-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(15,23,42,0.12); }
+}
 
 .pwpl-table--theme-firevps .fvps-card__top {
   background: linear-gradient(180deg, rgba(255, 253, 245, 0.98) 0%, rgba(255, 240, 205, 0.98) 100%);
@@ -933,8 +941,10 @@
   margin-top: 0;
 }
 
-/* Prefer a single CTA: hide duplicated bottom CTA when inline CTA is visible */
-.pwpl-table--theme-firevps .fvps-card.fvps-card--inline-cta .fvps-card__cta { display: none; }
+/* Keep bottom footer present for future extra info, even with inline CTA */
+.pwpl-table--theme-firevps .fvps-card__cta { min-height: 44px; }
+.pwpl-table--theme-firevps .fvps-card.fvps-card--inline-cta .fvps-card__cta { display: flex !important; }
+.pwpl-table--theme-firevps .fvps-card.fvps-card--inline-cta .fvps-card__cta .fvps-button { display: none !important; }
 
 .pwpl-table--theme-firevps .fvps-button,
 .pwpl-table--theme-firevps .fvps-button--inline {
