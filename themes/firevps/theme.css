@@ -52,9 +52,17 @@
 
 /* Desktop edge fade to avoid harsh clipping of end pills under the arrows */
 @media (min-width: 769px) {
-  /* Only show edge fade when the row actually overflows */
+  /* Only show edge fade when the row actually overflows (glass) */
   .pwpl-table--theme-firevps.pwpl-tabs-glass .fvps-dimension-nav.is-overflowing .fvps-dimension-nav__viewport {
     --edge-fade: 28px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--edge-fade), #000 calc(100% - var(--edge-fade)), transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0, #000 var(--edge-fade), #000 calc(100% - var(--edge-fade)), transparent 100%);
+    -webkit-mask-size: 100% 100%;
+            mask-size: 100% 100%;
+  }
+  /* Only show edge fade when the row actually overflows (non-glass) */
+  .pwpl-table--theme-firevps:not(.pwpl-tabs-glass) .fvps-dimension-nav.is-overflowing .fvps-dimension-nav__viewport {
+    --edge-fade: 24px;
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--edge-fade), #000 calc(100% - var(--edge-fade)), transparent 100%);
             mask-image: linear-gradient(90deg, transparent 0, #000 var(--edge-fade), #000 calc(100% - var(--edge-fade)), transparent 100%);
     -webkit-mask-size: 100% 100%;
@@ -222,13 +230,16 @@
   pointer-events: none;
   z-index: 9;
 }
-/* Hide plan rail entirely (we use arrows) */
+/* Hide rails entirely for non‑glass polish (use arrows only) */
 .pwpl-table--theme-firevps .fvps-plans-rail { display: none !important; }
+.pwpl-table--theme-firevps .fvps-tabs-rail { display: none !important; }
 
 /* Tiny arrows for tabs */
 .pwpl-table--theme-firevps .fvps-tabs-nav {
   position: absolute;
-  top: 50%;
+  top: auto;
+  bottom: 0;
+  transform: translateY(50%);
   pointer-events: none;
   opacity: 0;
   z-index: 10;
@@ -295,27 +306,25 @@
 }
 .pwpl-table--theme-firevps .fvps-tabs-nav--prev {
   left: calc(var(--fvps-tabs-nav-offset) * -1);
-  transform: translateY(-50%);
 }
 .pwpl-table--theme-firevps .fvps-tabs-nav--next {
   right: calc(var(--fvps-tabs-nav-offset) * -1);
-  transform: translateY(-50%);
 }
 .pwpl-table--theme-firevps .fvps-tabs-nav__btn {
   pointer-events: auto;
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(120, 120, 120, 0.5); /* unified faded gray */
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(110, 110, 110, 0.6);
   color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   line-height: 1;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.12);
-  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, opacity .18s ease;
+  box-shadow: none;
+  transition: transform .18s ease, background .18s ease, opacity .18s ease;
 }
 .pwpl-table--theme-firevps .fvps-tabs-nav__btn:disabled {
   opacity: 0.45;
@@ -326,9 +335,8 @@
 }
 .pwpl-table--theme-firevps .fvps-tabs-nav__btn:hover {
   transform: translateY(-1px);
-  background: rgba(120, 120, 120, 0.65);
+  background: rgba(120, 120, 120, 0.7);
   color: #fff;
-  box-shadow: 0 8px 12px rgba(0,0,0,.18);
 }
 
 /* Glass‑styled arrows with tint */
@@ -358,10 +366,8 @@
 /* On touch devices: keep arrows subtle but visible when overflow exists */
 @media (hover: none), (pointer: coarse) {
   .pwpl-table--theme-firevps .fvps-dimension-nav { --fvps-tabs-nav-offset: 12px; }
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-nav { opacity: .55; }
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-nav,
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:focus-within .fvps-tabs-nav { opacity: .95; }
-  .pwpl-table--theme-firevps .fvps-tabs-nav__btn { width: 22px; height: 22px; font-size: 10px; }
+  /* Hide tabs arrows on touch/mobile */
+  .pwpl-table--theme-firevps .fvps-tabs-nav { display: none !important; }
 }
 
 .pwpl-table--theme-firevps .fvps-tabs-rail__track,
@@ -443,14 +449,14 @@
   position: relative;
   padding: 12px 22px;
   border-radius: 999px;
-  border: 1px solid rgba(28, 26, 22, 0.08);
-  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(28, 26, 22, 0.14);
+  background: #ffffff;
   text-transform: uppercase;
   font-size: 0.8rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   font-weight: 600;
-  color: rgba(30, 28, 25, 0.7);
-  transition: background 0.2s ease, color 0.2s ease;
+  color: rgba(30, 28, 25, 0.72);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   white-space: nowrap;
   box-shadow: none;
   filter: none;
@@ -460,14 +466,15 @@
 }
 
 .pwpl-table--theme-firevps .fvps-tab:hover {
-  border-color: rgba(247, 166, 35, 0.45);
+  border-color: rgba(247, 166, 35, 0.42);
+  background: #fff8ec;
   color: var(--fvps-color-header);
 }
 
 .pwpl-table--theme-firevps .fvps-tab.is-active {
-  background: linear-gradient(135deg, #f9c04a 0%, #d9790b 100%);
-  color: #1a1205;
-  border-color: rgba(247, 166, 35, 0.7);
+  background: var(--fvps-color-accent);
+  color: #ffffff;
+  border-color: var(--fvps-color-accent-strong);
 }
 
 .pwpl-table--theme-firevps .fvps-tab:focus-visible {
@@ -634,13 +641,13 @@
   background: var(--fvps-color-surface);
   border-radius: var(--fvps-radius-lg);
   border: none; /* unibody: remove white edge */
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  box-shadow: none; /* embedded look: no outer shadow */
   overflow: hidden;
   min-height: 100%;
-  transition: transform 0.24s ease, box-shadow 0.24s ease;
+  transition: background-color 0.2s ease;
 }
 
-.pwpl-table--theme-firevps .fvps-card:hover { transform: translateY(-2px); box-shadow: none; }
+.pwpl-table--theme-firevps .fvps-card:hover { transform: none; box-shadow: none; }
 
 .pwpl-table--theme-firevps .fvps-card__top {
   background: linear-gradient(180deg, rgba(255, 253, 245, 0.98) 0%, rgba(255, 240, 205, 0.98) 100%);
@@ -937,16 +944,16 @@
   width: 100%;
   padding: 15px 28px;
   border-radius: 999px;
-  border: 1px solid rgba(252, 210, 106, 0.65);
-  background: linear-gradient(135deg, #fcd66b 0%, #f19a28 100%);
-  color: #1e1306;
+  border: 1px solid rgba(20, 20, 20, 0.7);
+  background: var(--fvps-color-button);
+  color: var(--fvps-color-button-text);
   font-weight: 700;
   font-size: 0.95rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none;
-  box-shadow: 0 12px 24px rgba(217, 145, 32, 0.26);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  box-shadow: none;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
 .pwpl-table--theme-firevps .fvps-button--inline {
@@ -956,21 +963,18 @@
 
 .pwpl-table--theme-firevps .fvps-button:hover,
 .pwpl-table--theme-firevps .fvps-button--inline:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 30px rgba(217, 145, 32, 0.32);
-  background: linear-gradient(135deg, #ffe089 0%, #f6a53c 100%);
+  background: #1f1f1f;
 }
 
 .pwpl-table--theme-firevps .fvps-button:active,
 .pwpl-table--theme-firevps .fvps-button--inline:active {
-  transform: translateY(0);
-  box-shadow: 0 10px 20px rgba(217, 145, 32, 0.26);
+  background: #121212;
 }
 
 .pwpl-table--theme-firevps .fvps-button:focus-visible,
 .pwpl-table--theme-firevps .fvps-button--inline:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(241, 154, 40, 0.28), 0 12px 24px rgba(217, 145, 32, 0.26);
+  outline: 3px solid rgba(241, 154, 40, 0.45);
+  outline-offset: 3px;
 }
 
 @media (max-width: 1024px) {
@@ -1012,15 +1016,9 @@
   }
   /* Leave space so tiny arrows never overlap the pills */
   .pwpl-table--theme-firevps .fvps-dimension-nav__viewport { padding-inline-start: 0; padding-inline-end: 40px; padding-bottom: 14px; }
-  /* Place arrows just outside the content edge but inside the section visually */
-  .pwpl-table--theme-firevps .fvps-tabs-nav { top: auto; bottom: 0; transform: translateY(50%); }
-  .pwpl-table--theme-firevps .fvps-tabs-nav--prev { left: 12px; right: auto; }
-  .pwpl-table--theme-firevps .fvps-tabs-nav--next { right: 12px; left: auto; }
-  /* Ensure rail is always visible (light), stronger while interacting; align width between arrows */
-  .pwpl-table--theme-firevps .fvps-tabs-rail { left: 40px; right: 40px; bottom: 0; opacity: .35; }
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-rail { opacity: .35 !important; }
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail,
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:focus-within .fvps-tabs-rail { opacity: .9 !important; }
+  /* Hide tiny arrows on mobile per spec */
+  .pwpl-table--theme-firevps .fvps-tabs-nav { display: none !important; }
+  .pwpl-table--theme-firevps .fvps-tabs-rail { display: none !important; }
 
   /* On mobile, start pills from the left edge when overflowing */
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-overflowing .fvps-tablist { justify-content: flex-start; margin-inline: 0; }
@@ -1050,6 +1048,36 @@
     min-width: 0;
     width: 100%;
   }
+}
+
+/* Plan carousel arrows: neutral gray with hover lift */
+.pwpl-table--theme-firevps .pwpl-plan-nav__btn {
+  pointer-events: auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(110, 110, 110, 0.7);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  box-shadow: none;
+  transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+.pwpl-table--theme-firevps .pwpl-plan-nav__btn:hover {
+  transform: translateY(-2px);
+  background: rgba(120, 120, 120, 0.82);
+  color: #fff;
+}
+.pwpl-table--theme-firevps .pwpl-plan-nav__btn:active { transform: translateY(0); }
+.pwpl-table--theme-firevps .pwpl-plan-nav__btn:disabled {
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+  background: rgba(120, 120, 120, 0.45);
 }
 
 @media (max-width: 414px) {
