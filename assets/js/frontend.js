@@ -438,7 +438,7 @@
         const iconEl = badgeEl.querySelector('[data-pwpl-badge-icon]');
         const labelEl = badgeEl.querySelector('[data-pwpl-badge-label]');
 
-        if (!badge) {
+        if (!badge || (!badge.label && !badge.icon)) {
             badgeEl.hidden = true;
             badgeEl.dataset.badgeColor = '';
             badgeEl.dataset.badgeText = '';
