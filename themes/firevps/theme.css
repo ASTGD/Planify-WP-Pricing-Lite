@@ -1002,6 +1002,19 @@
   transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
+/* Disabled CTA state */
+.pwpl-table--theme-firevps .fvps-button[aria-disabled="true"],
+.pwpl-table--theme-firevps .fvps-button.is-disabled,
+.pwpl-table--theme-firevps .fvps-button--inline[aria-disabled="true"],
+.pwpl-table--theme-firevps .fvps-button--inline.is-disabled {
+  background: #d7d7d7;
+  border-color: rgba(0,0,0,0.08);
+  color: #6b7280;
+  cursor: not-allowed;
+}
+.pwpl-table--theme-firevps .fvps-button[aria-disabled="true"]:hover,
+.pwpl-table--theme-firevps .fvps-button--inline[aria-disabled="true"]:hover { transform: none; background: #d7d7d7; }
+
 .pwpl-table--theme-firevps .fvps-button--inline {
   width: auto;
   min-width: 180px;

@@ -844,6 +844,7 @@ class PWPL_Admin_Meta {
                             <th><?php esc_html_e( 'CTA URL', 'planify-wp-pricing-lite' ); ?></th>
                             <th><?php esc_html_e( 'Target', 'planify-wp-pricing-lite' ); ?></th>
                             <th><?php esc_html_e( 'Rel', 'planify-wp-pricing-lite' ); ?></th>
+                            <th><?php esc_html_e( 'Unavailable', 'planify-wp-pricing-lite' ); ?></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -858,6 +859,7 @@ class PWPL_Admin_Meta {
                             $cta_url   = $row['cta_url'] ?? '';
                             $target    = $row['target'] ?? '';
                             $rel       = $row['rel'] ?? '';
+                            $unavail   = ! empty( $row['unavailable'] );
                             ?>
                             <tr>
                                 <td><?php $this->render_select( "pwpl_plan[variants][{$index}][platform]", $platforms, $platform, __( 'Any', 'planify-wp-pricing-lite' ) ); ?></td>
@@ -875,8 +877,9 @@ class PWPL_Admin_Meta {
                                     </select>
                                 </td>
                                 <td><input type="text" name="pwpl_plan[variants][<?php echo esc_attr( $index ); ?>][rel]" value="<?php echo esc_attr( $rel ); ?>" class="widefat" placeholder="<?php esc_attr_e( 'nofollow noopener', 'planify-wp-pricing-lite' ); ?>" /></td>
+                                <td style="text-align:center"><input type="checkbox" name="pwpl_plan[variants][<?php echo esc_attr( $index ); ?>][unavailable]" value="1" <?php checked( $unavail ); ?> /></td>
                                 <td><button type="button" class="button pwpl-remove-row" aria-label="<?php esc_attr_e( 'Remove row', 'planify-wp-pricing-lite' ); ?>">&times;</button></td>
-                            </tr>
+                        </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -908,6 +911,7 @@ class PWPL_Admin_Meta {
                     </select>
                 </td>
                 <td><input type="text" name="pwpl_plan[variants][{{data.index}}][rel]" class="widefat" placeholder="<?php esc_attr_e( 'nofollow noopener', 'planify-wp-pricing-lite' ); ?>" /></td>
+                <td style="text-align:center"><input type="checkbox" name="pwpl_plan[variants][{{data.index}}][unavailable]" value="1" /></td>
                 <td><button type="button" class="button pwpl-remove-row" aria-label="<?php esc_attr_e( 'Remove row', 'planify-wp-pricing-lite' ); ?>">&times;</button></td>
             </tr>
         </script>

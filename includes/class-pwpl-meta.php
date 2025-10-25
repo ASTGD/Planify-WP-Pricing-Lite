@@ -549,6 +549,7 @@ class PWPL_Meta {
                 'cta_url'    => esc_url_raw( $item['cta_url'] ?? '' ),
                 'target'     => in_array( $item['target'] ?? '', [ '_blank', '_self' ], true ) ? $item['target'] : '',
                 'rel'        => sanitize_text_field( $item['rel'] ?? '' ),
+                'unavailable'=> ! empty( $item['unavailable'] ) ? 1 : 0,
             ];
             if ( $variant['price'] === '' && $variant['sale_price'] === '' && $variant['cta_url'] === '' ) {
                 continue;
