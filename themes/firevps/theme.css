@@ -663,7 +663,8 @@
   inset: 0;
   border-radius: var(--fvps-radius-lg);
   pointer-events: none;
-  box-shadow: 0 0 0 1px rgba(28,26,22,0.06), 0 8px 20px rgba(15,23,42,0.05);
+  /* Slightly stronger ring + ambient to avoid blending into page */
+  box-shadow: 0 0 0 1px rgba(28,26,22,0.10), 0 12px 28px rgba(15,23,42,0.08);
 }
 
 /* Modern subtle hover for pointer devices; keep steady on touch */
