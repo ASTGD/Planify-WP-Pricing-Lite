@@ -1037,10 +1037,16 @@
   .pwpl-table--theme-firevps .fvps-tabs-nav--prev { left: 12px; right: auto; }
   .pwpl-table--theme-firevps .fvps-tabs-nav--next { right: 12px; left: auto; }
   /* Ensure rail is visible and sized between arrows */
-  .pwpl-table--theme-firevps .fvps-tabs-rail { left: 40px; right: 40px; bottom: 0; opacity: .35; display: block !important; }
-  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-rail { opacity: .35 !important; }
+  .pwpl-table--theme-firevps .fvps-tabs-rail { left: 36px; right: 36px; bottom: 0; opacity: .25; display: block !important; }
+  .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable .fvps-tabs-rail { opacity: .25 !important; }
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable.is-user-scrolling .fvps-tabs-rail,
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-scrollable:focus-within .fvps-tabs-rail { opacity: .9 !important; }
+
+  /* Make arrows lighter and slightly smaller on mobile */
+  .pwpl-table--theme-firevps .fvps-tabs-nav__btn { width: 24px; height: 24px; font-size: 11px; background: rgba(0,0,0,0.2); border-color: rgba(0,0,0,0.08); }
+  /* Slimmer rail for a cleaner, less busy look */
+  .pwpl-table--theme-firevps .fvps-tabs-rail__track { height: 3px; background: rgba(28,26,22,0.1); }
+  .pwpl-table--theme-firevps .fvps-tabs-rail__thumb { height: 100%; }
 
   /* On mobile, start pills from the left edge when overflowing */
   .pwpl-table--theme-firevps .fvps-dimension-nav.is-overflowing .fvps-tablist { justify-content: flex-start; margin-inline: 0; }
