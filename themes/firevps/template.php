@@ -13,6 +13,7 @@ if ( ! empty( $manifest['containerClass'] ) ) {
 }
 $tabs_glass_enabled = ! empty( $table['tabs_glass'] );
 $cards_glass_enabled = ! empty( $table['cards_glass'] );
+$specs_style = isset( $table['specs_style'] ) ? sanitize_key( (string) $table['specs_style'] ) : '';
 if ( $tabs_glass_enabled ) {
     $glass_tint = (string) ( $table['tabs_glass_tint'] ?? '' );
     $glass_intensity = isset( $table['tabs_glass_intensity'] ) ? (int) $table['tabs_glass_intensity'] : 60;
@@ -42,6 +43,10 @@ $wrapper_attrs = [
 	'data-badges'           => $badges_json ?: '{}',
 	'data-dimension-labels' => $labels_json ?: '{}',
 ];
+
+if ( $specs_style && $specs_style !== 'default' ) {
+    $wrapper_attrs['data-fvps-specs-style'] = $specs_style;
+}
 
 foreach ( [ 'platform', 'period', 'location' ] as $dimension ) {
 	$current = sanitize_title( $active[ $dimension ] ?? '' );

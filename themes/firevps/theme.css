@@ -889,6 +889,31 @@
 .pwpl-table--theme-firevps .fvps-spec__label::after { content: ':'; margin-left: 4px; opacity: 0.8; }
 .pwpl-table--theme-firevps .fvps-spec__value { font-size: 0.95rem; font-weight: 700; color: #ffffff; }
 
+/* Specs styles: Flat / Segmented / Chips (opt-in via data attribute) */
+/* Flat: cleaner text contrast, remove colon, stronger value */
+.pwpl-table--theme-firevps[data-fvps-specs-style="flat"] .fvps-spec__label { color: rgba(28,26,22,0.78); font-weight: 600; letter-spacing: 0; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="flat"] .fvps-spec__label::after { content: none; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="flat"] .fvps-card__specs { background: linear-gradient(180deg, #ffe7be 0%, #e69a3b 100%); color: #1b1a16; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="flat"] .fvps-icon { background: rgba(27,26,22,0.06); color: #6c655c; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="flat"] .fvps-spec__value { color: #1b1a16; font-weight: 700; }
+
+/* Segmented: hairline separators and relaxed padding */
+.pwpl-table--theme-firevps[data-fvps-specs-style="segmented"] .fvps-card__specs { gap: 10px; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="segmented"] .fvps-spec { padding: 8px 0; border-bottom: 1px solid rgba(27,26,22,0.12); }
+.pwpl-table--theme-firevps[data-fvps-specs-style="segmented"] .fvps-spec:last-child { border-bottom: 0; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="segmented"] .fvps-spec__label { color: rgba(28,26,22,0.8); }
+.pwpl-table--theme-firevps[data-fvps-specs-style="segmented"] .fvps-spec__label::after { content: none; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="segmented"] .fvps-card__specs { background: linear-gradient(180deg, #fff6e3 0%, #f2c17a 100%); color: #1b1a16; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="segmented"] .fvps-icon { background: rgba(27,26,22,0.06); color: #6c655c; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="segmented"] .fvps-spec__value { color: #1b1a16; }
+
+/* Chips: emphasize values as small pills */
+.pwpl-table--theme-firevps[data-fvps-specs-style="chips"] .fvps-spec__label { color: rgba(28,26,22,0.78); font-weight: 600; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="chips"] .fvps-spec__label::after { content: none; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="chips"] .fvps-card__specs { background: linear-gradient(180deg, #fff4db 0%, #efb35a 100%); color: #1b1a16; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="chips"] .fvps-icon { background: rgba(27,26,22,0.06); color: #6c655c; }
+.pwpl-table--theme-firevps[data-fvps-specs-style="chips"] .fvps-spec__value { color: #1a1205; background: rgba(26,18,5,0.06); padding: 4px 10px; border-radius: 999px; font-weight: 700; }
+
 .pwpl-table--theme-firevps .fvps-spec--ram .fvps-icon,
 .pwpl-table--theme-firevps .fvps-spec--memory .fvps-icon {
   background: rgba(255, 219, 61, 0.2);

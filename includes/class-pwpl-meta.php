@@ -26,6 +26,7 @@ class PWPL_Meta {
     const TABS_GLASS_INTENSITY    = '_pwpl_tabs_glass_intensity';
     const TABS_GLASS_FROST        = '_pwpl_tabs_glass_frost';
     const CARDS_GLASS             = '_pwpl_cards_glass';
+    const SPECS_STYLE             = '_pwpl_specs_style';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -171,6 +172,19 @@ class PWPL_Meta {
             'type'              => 'integer',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => function( $value ) { return ! empty( $value ) ? 1 : 0; },
+            'show_in_rest'      => false,
+        ] );
+
+        // Specs list style selector (flat | segmented | chips | default)
+        register_post_meta( 'pwpl_table', self::SPECS_STYLE, [
+            'single'            => true,
+            'type'              => 'string',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) {
+                $v = is_string( $value ) ? sanitize_key( $value ) : '';
+                $allowed = [ 'default', 'flat', 'segmented', 'chips' ];
+                return in_array( $v, $allowed, true ) ? $v : 'default';
+            },
             'show_in_rest'      => false,
         ] );
 

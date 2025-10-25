@@ -431,6 +431,7 @@ class PWPL_Shortcode {
                 'tabs_glass_intensity' => (int) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_INTENSITY, true ),
                 'tabs_glass_frost'     => (int) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_FROST, true ),
                 'cards_glass'          => (bool) get_post_meta( $table_id, PWPL_Meta::CARDS_GLASS, true ),
+                'specs_style'         => (string) get_post_meta( $table_id, PWPL_Meta::SPECS_STYLE, true ),
             ];
 
             $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );

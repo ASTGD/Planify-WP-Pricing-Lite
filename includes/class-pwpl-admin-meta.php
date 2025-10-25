@@ -568,6 +568,8 @@ class PWPL_Admin_Meta {
             ],
         ];
         $tabs_glass = (int) get_post_meta( $post->ID, PWPL_Meta::TABS_GLASS, true );
+        $specs_style = get_post_meta( $post->ID, PWPL_Meta::SPECS_STYLE, true );
+        $specs_style = in_array( $specs_style, [ 'default', 'flat', 'segmented', 'chips' ], true ) ? $specs_style : 'default';
         ?>
         <div class="pwpl-meta pwpl-meta--table" data-pwpl-dimensions>
             <div class="pwpl-field">
@@ -578,6 +580,22 @@ class PWPL_Admin_Meta {
                     <?php endforeach; ?>
                 </select>
                 <p class="description"><?php esc_html_e( 'Applies to every plan within this table. Customize colors via assets/css/themes.css.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
+            <div class="pwpl-field">
+                <label for="pwpl_specs_style"><strong><?php esc_html_e( 'Specifications list style', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <select id="pwpl_specs_style" name="pwpl_table[ui][specs_style]" class="widefat">
+                    <?php
+                    $options = [
+                        'default'   => __( 'Default (theme)', 'planify-wp-pricing-lite' ),
+                        'flat'      => __( 'Flat rows (clean)', 'planify-wp-pricing-lite' ),
+                        'segmented' => __( 'Segmented with dividers', 'planify-wp-pricing-lite' ),
+                        'chips'     => __( 'Value chips (compact)', 'planify-wp-pricing-lite' ),
+                    ];
+                    foreach ( $options as $key => $label ) : ?>
+                        <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $specs_style, $key ); ?>><?php echo esc_html( $label ); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="description"><?php esc_html_e( 'Choose how plan specifications are displayed. Changes affect this table only.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
             <div class="pwpl-field">
                 <label>
@@ -1033,6 +1051,13 @@ class PWPL_Admin_Meta {
         } else {
             delete_post_meta( $post_id, PWPL_Meta::CARDS_GLASS );
         }
+
+        // Specs style selector
+        $specs_style = isset( $ui_input['specs_style'] ) ? sanitize_key( $ui_input['specs_style'] ) : 'default';
+        if ( ! in_array( $specs_style, [ 'default', 'flat', 'segmented', 'chips' ], true ) ) {
+            $specs_style = 'default';
+        }
+        update_post_meta( $post_id, PWPL_Meta::SPECS_STYLE, $specs_style );
 
         // Optional plan card size controls (legacy breakpoint container)
         $breakpoints_input  = isset( $input['breakpoints'] ) ? (array) $input['breakpoints'] : [];
