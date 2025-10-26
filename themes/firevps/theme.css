@@ -851,10 +851,17 @@
   align-self: center;
 }
 
-/* Trust trio under inline CTA */
-.pwpl-table--theme-firevps .fvps-cta-trust { display:flex; gap: 14px; align-items:center; margin-top: 10px; color: rgba(28,26,22,0.72); font-size: .8rem; flex-wrap: wrap; }
-.pwpl-table--theme-firevps .fvps-cta-trust__item { position:relative; padding-left: 12px; }
-.pwpl-table--theme-firevps .fvps-cta-trust__item::before { content:''; position:absolute; left:0; top:50%; width:6px; height:6px; background: rgba(28,26,22,.26); border-radius:999px; transform: translateY(-50%); }
+/* Trust row (inline bullets that wrap cleanly) */
+.pwpl-table--theme-firevps .fvps-cta-trust { list-style:none; padding:0; margin:10px 0 0; display:flex; flex-wrap:wrap; gap:14px; color: rgba(28,26,22,0.72); font-size:.8rem; }
+.pwpl-table--theme-firevps .fvps-cta-trust li { display:flex; align-items:center; white-space:nowrap; }
+.pwpl-table--theme-firevps .fvps-cta-trust li + li::before { content:''; width:6px; height:6px; border-radius:999px; background: rgba(28,26,22,.26); margin-right:8px; }
+/* Stacked layout for many items or very narrow screens */
+.pwpl-table--theme-firevps .fvps-cta-trust--stack { display:grid; grid-template-columns: 1fr 1fr; gap:8px 14px; }
+.pwpl-table--theme-firevps .fvps-cta-trust--stack li + li::before { content:none; }
+@media (max-width: 360px) {
+  .pwpl-table--theme-firevps .fvps-cta-trust { display:grid; grid-template-columns:1fr; gap:8px; }
+  .pwpl-table--theme-firevps .fvps-cta-trust li + li::before { content:none; }
+}
 
 .pwpl-table--theme-firevps .fvps-card__specs {
   list-style: none;

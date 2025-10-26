@@ -595,6 +595,10 @@ class PWPL_Admin_Meta {
                     <strong><?php esc_html_e( 'Show trust row under CTA (Money‑back, Uptime, Support)', 'planify-wp-pricing-lite' ); ?></strong>
                 </label>
                 <p class="description"><?php esc_html_e( 'Displays a concise assurance row beneath the inline CTA.', 'planify-wp-pricing-lite' ); ?></p>
+                <?php $trust_items = get_post_meta( $post->ID, PWPL_Meta::TRUST_ITEMS, true ); $trust_items = is_array( $trust_items ) ? implode("\n", $trust_items) : ""; ?>
+                <label for="pwpl_trust_items" style="display:block; margin-top:8px;"><strong><?php esc_html_e( 'Trust items (one per line)', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <textarea id="pwpl_trust_items" name="pwpl_table[ui][trust_items]" class="widefat" rows="3" placeholder="<?php esc_attr_e( "7-day money-back\n99.9% uptime SLA\n24/7 support", 'planify-wp-pricing-lite' ); ?>"><?php echo esc_textarea( $trust_items ); ?></textarea>
+                <p class="description"><?php esc_html_e( 'Each line becomes a bullet. Keep 2–3 items for best results.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
             <div class="pwpl-field">
                 <label style="display:flex; gap:8px; align-items:center;">
@@ -1150,6 +1154,18 @@ class PWPL_Admin_Meta {
 
         $sticky_cta = ! empty( $ui_input['sticky_cta'] ) ? 1 : 0;
         if ( $sticky_cta ) { update_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE ); }
+
+        // Trust items textarea -> array
+        $trust_items_input = isset( $ui_input['trust_items'] ) ? (string) $ui_input['trust_items'] : '';
+        $lines = array_filter( array_map( function( $line ) {
+            $t = trim( (string) $line );
+            return $t !== '' ? wp_strip_all_tags( $t ) : '';
+        }, preg_split( '/\r\n|\r|\n/', $trust_items_input ) ) );
+        if ( ! empty( $lines ) ) {
+            update_post_meta( $post_id, PWPL_Meta::TRUST_ITEMS, array_values( $lines ) );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::TRUST_ITEMS );
+        }
 
         // Optional plan card size controls (legacy breakpoint container)
         $breakpoints_input  = isset( $input['breakpoints'] ) ? (array) $input['breakpoints'] : [];

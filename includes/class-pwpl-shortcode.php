@@ -454,6 +454,7 @@ class PWPL_Shortcode {
                 })($table_id),
                 'trust_trio'          => (bool) get_post_meta( $table_id, PWPL_Meta::TRUST_TRIO_ENABLED, true ),
                 'sticky_cta_mobile'   => (bool) get_post_meta( $table_id, PWPL_Meta::STICKY_CTA_MOBILE, true ),
+                'trust_items'         => (function($table_id){ $items = get_post_meta( $table_id, PWPL_Meta::TRUST_ITEMS, true ); return is_array( $items ) ? array_values( array_filter( array_map( 'sanitize_text_field', $items ) ) ) : []; })($table_id),
             ];
 
             $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );

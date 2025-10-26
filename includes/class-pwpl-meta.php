@@ -35,6 +35,7 @@ class PWPL_Meta {
     // CTA/trust + sticky bar
     const TRUST_TRIO_ENABLED      = '_pwpl_trust_trio_enabled';
     const STICKY_CTA_MOBILE       = '_pwpl_sticky_cta_mobile';
+    const TRUST_ITEMS             = '_pwpl_trust_items';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -257,6 +258,24 @@ class PWPL_Meta {
             'type'              => 'integer',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => function( $value ) { return ! empty( $value ) ? 1 : 0; },
+            'show_in_rest'      => false,
+        ] );
+
+        // Trust row custom items (array of non-empty strings)
+        register_post_meta( 'pwpl_table', self::TRUST_ITEMS, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) {
+                $items = [];
+                if ( is_array( $value ) ) {
+                    foreach ( $value as $v ) {
+                        $label = trim( wp_strip_all_tags( (string) $v ) );
+                        if ( $label !== '' ) { $items[] = $label; }
+                    }
+                }
+                return array_values( $items );
+            },
             'show_in_rest'      => false,
         ] );
 

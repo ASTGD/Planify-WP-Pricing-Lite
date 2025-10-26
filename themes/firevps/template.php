@@ -17,6 +17,7 @@ $specs_style = isset( $table['specs_style'] ) ? sanitize_key( (string) $table['s
 $specs_anim  = is_array( $table['specs_anim'] ?? null ) ? $table['specs_anim'] : [];
 $trust_trio_enabled = ! empty( $table['trust_trio'] );
 $sticky_cta_mobile  = ! empty( $table['sticky_cta_mobile'] );
+$trust_items        = is_array( $table['trust_items'] ?? null ) ? array_filter( $table['trust_items'] ) : [];
 if ( $tabs_glass_enabled ) {
     $glass_tint = (string) ( $table['tabs_glass_tint'] ?? '' );
     $glass_intensity = isset( $table['tabs_glass_intensity'] ) ? (int) $table['tabs_glass_intensity'] : 60;
@@ -349,12 +350,12 @@ if ( $style_combined ) {
                                 ?>>
                                 <span><?php echo esc_html( $cta_label ); ?></span>
                             </a>
-                            <?php if ( $trust_trio_enabled ) : ?>
-                            <div class="fvps-cta-trust" aria-hidden="false">
-                                <span class="fvps-cta-trust__item"><?php esc_html_e( '7‑day money‑back', 'planify-wp-pricing-lite' ); ?></span>
-                                <span class="fvps-cta-trust__item"><?php esc_html_e( '99.9% uptime SLA', 'planify-wp-pricing-lite' ); ?></span>
-                                <span class="fvps-cta-trust__item"><?php esc_html_e( '24/7 support', 'planify-wp-pricing-lite' ); ?></span>
-                            </div>
+                            <?php if ( $trust_trio_enabled && $trust_items ) : ?>
+                            <ul class="fvps-cta-trust<?php echo count( $trust_items ) > 3 ? ' fvps-cta-trust--stack' : ''; ?>" role="list">
+                                <?php foreach ( $trust_items as $item ) : ?>
+                                    <li role="listitem"><?php echo esc_html( (string) $item ); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
                             <?php endif; ?>
                         </div>
 						</div>
