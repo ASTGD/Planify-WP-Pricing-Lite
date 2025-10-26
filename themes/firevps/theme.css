@@ -938,20 +938,22 @@
 
 /* Row highlight */
 .pwpl-table--theme-firevps.fvps-anim--row .fvps-spec { border-radius: 10px; transition: background-color .18s ease, outline-color .18s ease; }
-.pwpl-table--theme-firevps.fvps-anim--row .fvps-spec:hover { background: rgba(255,255,255, calc(.06 * var(--fvps-anim-strength, .45))); outline: 1px solid rgba(255,255,255, calc(.10 * var(--fvps-anim-strength, .45))); outline-offset: -1px; }
+.pwpl-table--theme-firevps.fvps-anim--row .fvps-spec:hover { background: rgba(255,255,255, calc(.08 * var(--fvps-anim-strength, .45))); outline: 1px solid rgba(255,255,255, calc(.14 * var(--fvps-anim-strength, .45))); outline-offset: -1px; }
 
 /* Icon micro‑motion */
 .pwpl-table--theme-firevps.fvps-anim--icon .fvps-icon { transition: transform .16s ease, filter .16s ease, box-shadow .16s ease, background-color .16s ease; }
-.pwpl-table--theme-firevps.fvps-anim--icon .fvps-spec:hover .fvps-icon { transform: scale( calc(1 + (.04 * var(--fvps-anim-strength, .45))) ); filter: brightness(1.08); box-shadow: 0 0 0 1px rgba(255,255,255,.25), inset 0 1px 0 rgba(255,255,255,.2); }
+.pwpl-table--theme-firevps.fvps-anim--icon .fvps-spec:hover .fvps-icon { transform: scale( calc(1 + (.06 * var(--fvps-anim-strength, .45))) ); filter: brightness(1.1); box-shadow: 0 0 0 1px rgba(255,255,255,.28), inset 0 1px 0 rgba(255,255,255,.22); }
 
 /* Divider sweep (Segmented) */
-.pwpl-table--theme-firevps.fvps-anim--divider[data-fvps-specs-style="segmented"] .fvps-spec { position: relative; overflow: hidden; }
-.pwpl-table--theme-firevps.fvps-anim--divider[data-fvps-specs-style="segmented"] .fvps-spec::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:1px; background: rgba(255,255,255, .25); transform-origin:left center; transform: scaleX(0); transition: transform .18s ease; }
-.pwpl-table--theme-firevps.fvps-anim--divider[data-fvps-specs-style="segmented"] .fvps-spec:hover::after { transform: scaleX(1); }
+/* Divider sweep (works for all styles) */
+.pwpl-table--theme-firevps.fvps-anim--divider .fvps-spec { position: relative; overflow: hidden; }
+.pwpl-table--theme-firevps.fvps-anim--divider .fvps-spec::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:1px; background: rgba(255,255,255, .25); transform-origin:left center; transform: scaleX(0); transition: transform .18s ease; }
+.pwpl-table--theme-firevps.fvps-anim--divider .fvps-spec:hover::after { transform: scaleX(1); }
 
 /* Chip emphasis (Chips) */
-.pwpl-table--theme-firevps.fvps-anim--chip[data-fvps-specs-style="chips"] .fvps-spec__value { transition: transform .16s ease, background-color .16s ease, border-color .16s ease; }
-.pwpl-table--theme-firevps.fvps-anim--chip[data-fvps-specs-style="chips"] .fvps-spec:hover .fvps-spec__value { transform: translateY(-1px); background: rgba(255,255,255, calc(.22 * var(--fvps-anim-strength, .45))); border-color: rgba(255,255,255, .42); }
+/* Chip emphasis (works for all styles; if style isn't Chips, create a temporary chip) */
+.pwpl-table--theme-firevps.fvps-anim--chip .fvps-spec__value { transition: transform .16s ease, background-color .16s ease, border-color .16s ease, box-shadow .16s ease, padding .16s ease, border-radius .16s ease; }
+.pwpl-table--theme-firevps.fvps-anim--chip .fvps-spec:hover .fvps-spec__value { transform: translateY(-1px); background: rgba(255,255,255, calc(.20 * var(--fvps-anim-strength, .45))); border: 1px solid rgba(255,255,255, .40); border-radius: 999px; padding: 4px 10px; box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
 
 /* Stagger on card hover */
 .pwpl-table--theme-firevps.fvps-anim--stagger .fvps-card:hover .fvps-spec { transition-delay: 0ms; }
