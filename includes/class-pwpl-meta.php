@@ -32,6 +32,9 @@ class PWPL_Meta {
     const SPECS_ANIM_FLAGS        = '_pwpl_specs_anim_flags';
     const SPECS_ANIM_INTENSITY    = '_pwpl_specs_anim_intensity';
     const SPECS_ANIM_MOBILE       = '_pwpl_specs_anim_mobile';
+    // CTA/trust + sticky bar
+    const TRUST_TRIO_ENABLED      = '_pwpl_trust_trio_enabled';
+    const STICKY_CTA_MOBILE       = '_pwpl_sticky_cta_mobile';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -232,6 +235,24 @@ class PWPL_Meta {
 
         // Enable on touch devices
         register_post_meta( 'pwpl_table', self::SPECS_ANIM_MOBILE, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) { return ! empty( $value ) ? 1 : 0; },
+            'show_in_rest'      => false,
+        ] );
+
+        // Trust trio under CTA (money-back, uptime, support)
+        register_post_meta( 'pwpl_table', self::TRUST_TRIO_ENABLED, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) { return ! empty( $value ) ? 1 : 0; },
+            'show_in_rest'      => false,
+        ] );
+
+        // Sticky mobile summary bar
+        register_post_meta( 'pwpl_table', self::STICKY_CTA_MOBILE, [
             'single'            => true,
             'type'              => 'integer',
             'auth_callback'     => [ $this, 'can_edit' ],

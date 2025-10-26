@@ -17,6 +17,10 @@ function isTouchEnvironment() {
     return ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
 }
 
+function prefersReducedMotion() {
+    try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e) { return false; }
+}
+
 function getTabScroller(nav) {
 	if (!nav) {
 		return null;
@@ -964,6 +968,78 @@ function setupCtaMirroring(plan) {
 		initPlanRails();
 	}
 
+    // One-time CTA sheen on view (desktop only)
+    function initCtaOnView(root){
+        if (!root) return;
+        if (isTouchEnvironment() || prefersReducedMotion()) return;
+        var buttons = root.querySelectorAll('.fvps-button, .fvps-button--inline');
+        if (!buttons.length) return;
+        var seen = new WeakSet();
+        var io = new IntersectionObserver(function(entries){
+            entries.forEach(function(entry){
+                if (!entry.isIntersecting) return;
+                var btn = entry.target; if (seen.has(btn)) return; seen.add(btn);
+                btn.classList.add('fvps-cta--onview');
+                setTimeout(function(){ btn.classList.remove('fvps-cta--onview'); }, 1200);
+            });
+        }, { threshold: 0.6 });
+        buttons.forEach(function(b){ io.observe(b); });
+    }
+
+    // Sticky mobile summary bar when CTA off-screen
+    function initStickyBar(root){
+        if (!root || root.getAttribute('data-sticky-cta') !== 'on') return;
+        var isMobile = (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) || isTouchEnvironment();
+        if (!isMobile) return;
+        var bar = document.createElement('div');
+        bar.className = 'fvps-sticky-cta';
+        bar.innerHTML = '<div class="fvps-sticky-cta__meta"><div class="fvps-sticky-cta__title"></div><div class="fvps-sticky-cta__price"></div></div><a class="fvps-sticky-cta__btn" href="#"></a>';
+        root.appendChild(bar);
+        var titleEl = bar.querySelector('.fvps-sticky-cta__title');
+        var priceEl = bar.querySelector('.fvps-sticky-cta__price');
+        var btnEl = bar.querySelector('.fvps-sticky-cta__btn');
+
+        function ctaVisible(){
+            var ctAs = root.querySelectorAll('.fvps-button, .fvps-button--inline');
+            var vh = window.innerHeight || document.documentElement.clientHeight;
+            for (var i=0;i<ctAs.length;i++){
+                var r = ctAs[i].getBoundingClientRect();
+                if (r.top >= 0 && r.bottom <= vh) return true;
+            }
+            return false;
+        }
+        function nearestPlan(){
+            var plans = Array.from(root.querySelectorAll('.pwpl-plan'));
+            var best = null, bestDelta = Infinity;
+            for (var i=0;i<plans.length;i++){
+                var rect = plans[i].getBoundingClientRect();
+                if (rect.bottom < 80) continue;
+                var d = Math.abs(rect.top - 80);
+                if (d < bestDelta) { best = plans[i]; bestDelta = d; }
+            }
+            return best;
+        }
+        function refresh(){
+            if (ctaVisible()) { bar.classList.remove('is-visible'); return; }
+            var plan = nearestPlan(); if (!plan) { bar.classList.remove('is-visible'); return; }
+            var t = plan.querySelector('.pwpl-plan__title');
+            var p = plan.querySelector('[data-pwpl-price]');
+            var cta = plan.querySelector('.fvps-button[hidden], .fvps-button--inline[hidden]') ? null : (plan.querySelector('.fvps-button--inline') || plan.querySelector('.fvps-button'));
+            titleEl.textContent = t ? t.textContent.trim() : '';
+            priceEl.textContent = p ? p.textContent.trim() : '';
+            var href = cta && !cta.hasAttribute('aria-disabled') ? cta.getAttribute('href') : '';
+            var label = cta ? cta.textContent.trim() : '';
+            btnEl.textContent = label || 'Select';
+            if (href) { btnEl.setAttribute('href', href); btnEl.removeAttribute('aria-disabled'); }
+            else { btnEl.removeAttribute('href'); btnEl.setAttribute('aria-disabled','true'); }
+            bar.classList.add('is-visible');
+        }
+        var onScroll = function(){ refresh(); };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll, { passive: true });
+        setTimeout(refresh, 60);
+    }
+
 	if (!('ResizeObserver' in window)) {
 		var resizeTimeout;
 		window.addEventListener('resize', function () {
@@ -1014,9 +1090,13 @@ document.addEventListener('pwpl:updated', function(){
 		document.addEventListener('DOMContentLoaded', function () {
 			initNavs();
 			initPlans();
+			var tables = document.querySelectorAll(ROOT_SELECTOR);
+			tables.forEach(function(t){ initCtaOnView(t); initStickyBar(t); });
 		});
 	} else {
 		initNavs();
 		initPlans();
+		var tables = document.querySelectorAll(ROOT_SELECTOR);
+		tables.forEach(function(t){ initCtaOnView(t); initStickyBar(t); });
 	}
 })();

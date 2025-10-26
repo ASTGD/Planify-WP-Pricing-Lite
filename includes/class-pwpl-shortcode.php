@@ -452,6 +452,8 @@ class PWPL_Shortcode {
                     $mobile    = (bool) get_post_meta( $table_id, PWPL_Meta::SPECS_ANIM_MOBILE, true );
                     return [ 'preset' => $preset, 'flags' => $flags, 'intensity' => $intensity, 'mobile' => $mobile ];
                 })($table_id),
+                'trust_trio'          => (bool) get_post_meta( $table_id, PWPL_Meta::TRUST_TRIO_ENABLED, true ),
+                'sticky_cta_mobile'   => (bool) get_post_meta( $table_id, PWPL_Meta::STICKY_CTA_MOBILE, true ),
             ];
 
             $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );

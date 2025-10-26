@@ -576,6 +576,8 @@ class PWPL_Admin_Meta {
         $anim_flags  = is_array( $anim_flags ) ? array_values( array_intersect( array_map( 'sanitize_key', $anim_flags ), [ 'row', 'icon', 'divider', 'chip', 'stagger' ] ) ) : [];
         $anim_intensity = (int) get_post_meta( $post->ID, PWPL_Meta::SPECS_ANIM_INTENSITY, true ); if ( $anim_intensity <= 0 ) $anim_intensity = 45;
         $anim_mobile = (int) get_post_meta( $post->ID, PWPL_Meta::SPECS_ANIM_MOBILE, true );
+        $trust_trio  = (int) get_post_meta( $post->ID, PWPL_Meta::TRUST_TRIO_ENABLED, true );
+        $sticky_cta  = (int) get_post_meta( $post->ID, PWPL_Meta::STICKY_CTA_MOBILE, true );
         ?>
         <div class="pwpl-meta pwpl-meta--table" data-pwpl-dimensions>
             <div class="pwpl-field">
@@ -586,6 +588,20 @@ class PWPL_Admin_Meta {
                     <?php endforeach; ?>
                 </select>
                 <p class="description"><?php esc_html_e( 'Applies to every plan within this table. Customize colors via assets/css/themes.css.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
+            <div class="pwpl-field">
+                <label style="display:flex; gap:8px; align-items:center;">
+                    <input type="checkbox" name="pwpl_table[ui][trust_trio]" value="1" <?php checked( $trust_trio, 1 ); ?> />
+                    <strong><?php esc_html_e( 'Show trust row under CTA (Money‑back, Uptime, Support)', 'planify-wp-pricing-lite' ); ?></strong>
+                </label>
+                <p class="description"><?php esc_html_e( 'Displays a concise assurance row beneath the inline CTA.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
+            <div class="pwpl-field">
+                <label style="display:flex; gap:8px; align-items:center;">
+                    <input type="checkbox" name="pwpl_table[ui][sticky_cta]" value="1" <?php checked( $sticky_cta, 1 ); ?> />
+                    <strong><?php esc_html_e( 'Enable sticky mobile summary bar', 'planify-wp-pricing-lite' ); ?></strong>
+                </label>
+                <p class="description"><?php esc_html_e( 'Shows plan title, price, and CTA when a plan CTA is off‑screen (mobile).', 'planify-wp-pricing-lite' ); ?></p>
             </div>
             <div class="pwpl-field">
                 <label for="pwpl_specs_anim_preset"><strong><?php esc_html_e( 'Specifications interactions', 'planify-wp-pricing-lite' ); ?></strong></label>
@@ -1133,6 +1149,13 @@ class PWPL_Admin_Meta {
 
         $mobile = ! empty( $anim_input['mobile'] ) ? 1 : 0;
         if ( $mobile ) { update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE ); }
+
+        // Trust trio + sticky cta
+        $trust_trio = ! empty( $ui_input['trust_trio'] ) ? 1 : 0;
+        if ( $trust_trio ) { update_post_meta( $post_id, PWPL_Meta::TRUST_TRIO_ENABLED, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::TRUST_TRIO_ENABLED ); }
+
+        $sticky_cta = ! empty( $ui_input['sticky_cta'] ) ? 1 : 0;
+        if ( $sticky_cta ) { update_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE ); }
 
         // Optional plan card size controls (legacy breakpoint container)
         $breakpoints_input  = isset( $input['breakpoints'] ) ? (array) $input['breakpoints'] : [];

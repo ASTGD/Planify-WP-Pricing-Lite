@@ -842,6 +842,7 @@
   display: flex;
   justify-content: center; /* center the CTA horizontally */
   align-items: center;
+  flex-direction: column;
 }
 
 .pwpl-table--theme-firevps .fvps-button--inline {
@@ -849,6 +850,11 @@
   min-width: 200px;
   align-self: center;
 }
+
+/* Trust trio under inline CTA */
+.pwpl-table--theme-firevps .fvps-cta-trust { display:flex; gap: 14px; align-items:center; margin-top: 10px; color: rgba(28,26,22,0.72); font-size: .8rem; flex-wrap: wrap; }
+.pwpl-table--theme-firevps .fvps-cta-trust__item { position:relative; padding-left: 12px; }
+.pwpl-table--theme-firevps .fvps-cta-trust__item::before { content:''; position:absolute; left:0; top:50%; width:6px; height:6px; background: rgba(28,26,22,.26); border-radius:999px; transform: translateY(-50%); }
 
 .pwpl-table--theme-firevps .fvps-card__specs {
   list-style: none;
@@ -1112,6 +1118,19 @@
   .pwpl-table--theme-firevps .fvps-button--inline:hover::after {
     transform: translateX(120%);
   }
+}
+
+/* One-time on‑view sheen trigger */
+@media (hover: hover) {
+  .pwpl-table--theme-firevps .fvps-button.fvps-cta--onview::after,
+  .pwpl-table--theme-firevps .fvps-button--inline.fvps-cta--onview::after {
+    animation: fvps-cta-sheen 900ms ease-out 1;
+  }
+}
+
+@keyframes fvps-cta-sheen {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
 }
 
 /* Disable animation for aria-disabled buttons */
