@@ -15,6 +15,9 @@ $tabs_glass_enabled = ! empty( $table['tabs_glass'] );
 $cards_glass_enabled = ! empty( $table['cards_glass'] );
 $specs_style = isset( $table['specs_style'] ) ? sanitize_key( (string) $table['specs_style'] ) : '';
 $specs_anim  = is_array( $table['specs_anim'] ?? null ) ? $table['specs_anim'] : [];
+$trust_trio_enabled = ! empty( $table['trust_trio'] );
+$sticky_cta_mobile  = ! empty( $table['sticky_cta_mobile'] );
+$trust_items        = is_array( $table['trust_items'] ?? null ) ? array_filter( $table['trust_items'] ) : [];
 if ( $tabs_glass_enabled ) {
     $glass_tint = (string) ( $table['tabs_glass_tint'] ?? '' );
     $glass_intensity = isset( $table['tabs_glass_intensity'] ) ? (int) $table['tabs_glass_intensity'] : 60;
@@ -58,6 +61,7 @@ if ( $specs_style && $specs_style !== 'default' ) {
 $anim_intensity = isset( $specs_anim['intensity'] ) ? max( 0, min( 100, (int) $specs_anim['intensity'] ) ) : 45;
 $anim_strength = max( 0.1, min( 1, $anim_intensity / 100 ) );
 $wrapper_attrs['data-anim-touch'] = ! empty( $specs_anim['mobile'] ) ? 'on' : 'off';
+$wrapper_attrs['data-sticky-cta'] = $sticky_cta_mobile ? 'on' : 'off';
 
 foreach ( [ 'platform', 'period', 'location' ] as $dimension ) {
 	$current = sanitize_title( $active[ $dimension ] ?? '' );
@@ -337,16 +341,23 @@ if ( $style_combined ) {
 								<p class="pwpl-plan__billing" data-pwpl-billing><?php echo esc_html( $billing ); ?></p>
 							<?php endif; ?>
 
-							<div class="fvps-card__cta-inline"<?php echo $cta_hidden ? ' hidden' : ''; ?>>
-								<a class="fvps-button fvps-button--inline"
-									href="<?php echo esc_url( $cta_url ); ?>"<?php
-										if ( ! empty( $cta['blank'] ) ) {
-											echo ' target="_blank" rel="noopener noreferrer"';
-										}
-									?>>
-									<span><?php echo esc_html( $cta_label ); ?></span>
-								</a>
-							</div>
+                        <div class="fvps-card__cta-inline"<?php echo $cta_hidden ? ' hidden' : ''; ?>>
+                            <a class="fvps-button fvps-button--inline"
+                                href="<?php echo esc_url( $cta_url ); ?>"<?php
+                                    if ( ! empty( $cta['blank'] ) ) {
+                                        echo ' target="_blank" rel="noopener noreferrer"';
+                                    }
+                                ?>>
+                                <span><?php echo esc_html( $cta_label ); ?></span>
+                            </a>
+                            <?php if ( $trust_trio_enabled && $trust_items ) : ?>
+                            <ul class="fvps-cta-trust<?php echo count( $trust_items ) > 3 ? ' fvps-cta-trust--stack' : ''; ?>" role="list">
+                                <?php foreach ( $trust_items as $item ) : ?>
+                                    <li role="listitem"><?php echo esc_html( (string) $item ); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <?php endif; ?>
+                        </div>
 						</div>
 
 					<?php if ( $ordered_specs ) : ?>

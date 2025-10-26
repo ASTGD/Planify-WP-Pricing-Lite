@@ -576,6 +576,8 @@ class PWPL_Admin_Meta {
         $anim_flags  = is_array( $anim_flags ) ? array_values( array_intersect( array_map( 'sanitize_key', $anim_flags ), [ 'row', 'icon', 'divider', 'chip', 'stagger' ] ) ) : [];
         $anim_intensity = (int) get_post_meta( $post->ID, PWPL_Meta::SPECS_ANIM_INTENSITY, true ); if ( $anim_intensity <= 0 ) $anim_intensity = 45;
         $anim_mobile = (int) get_post_meta( $post->ID, PWPL_Meta::SPECS_ANIM_MOBILE, true );
+        $trust_trio  = (int) get_post_meta( $post->ID, PWPL_Meta::TRUST_TRIO_ENABLED, true );
+        $sticky_cta  = (int) get_post_meta( $post->ID, PWPL_Meta::STICKY_CTA_MOBILE, true );
         ?>
         <div class="pwpl-meta pwpl-meta--table" data-pwpl-dimensions>
             <div class="pwpl-field">
@@ -588,38 +590,50 @@ class PWPL_Admin_Meta {
                 <p class="description"><?php esc_html_e( 'Applies to every plan within this table. Customize colors via assets/css/themes.css.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
             <div class="pwpl-field">
-                <label for="pwpl_specs_anim_preset"><strong><?php esc_html_e( 'Specifications interactions', 'planify-wp-pricing-lite' ); ?></strong></label>
-                <select id="pwpl_specs_anim_preset" name="pwpl_table[ui][specs_anim][preset]" class="widefat">
-                    <?php $options = [
-                        'off'     => __( 'Off', 'planify-wp-pricing-lite' ),
-                        'minimal' => __( 'Minimal (row + icon)', 'planify-wp-pricing-lite' ),
-                        'segmented' => __( 'Segmented (row + divider)', 'planify-wp-pricing-lite' ),
-                        'chips'   => __( 'Chips (row + chip)', 'planify-wp-pricing-lite' ),
-                        'all'     => __( 'Everything', 'planify-wp-pricing-lite' ),
-                    ]; foreach ( $options as $key => $label ) : ?>
-                        <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $anim_preset, $key ); ?>><?php echo esc_html( $label ); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <div class="pwpl-field__row" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:8px;">
+                <label style="display:flex; gap:8px; align-items:center;">
+                    <input type="checkbox" name="pwpl_table[ui][trust_trio]" value="1" <?php checked( $trust_trio, 1 ); ?> />
+                    <strong><?php esc_html_e( 'Show trust row under CTA (Money‑back, Uptime, Support)', 'planify-wp-pricing-lite' ); ?></strong>
+                </label>
+                <p class="description"><?php esc_html_e( 'Displays a concise assurance row beneath the inline CTA.', 'planify-wp-pricing-lite' ); ?></p>
+                <?php $trust_items = get_post_meta( $post->ID, PWPL_Meta::TRUST_ITEMS, true ); $trust_items = is_array( $trust_items ) ? implode("\n", $trust_items) : ""; ?>
+                <label for="pwpl_trust_items" style="display:block; margin-top:8px;"><strong><?php esc_html_e( 'Trust items (one per line)', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <textarea id="pwpl_trust_items" name="pwpl_table[ui][trust_items]" class="widefat" rows="3" placeholder="<?php esc_attr_e( "7-day money-back\n99.9% uptime SLA\n24/7 support", 'planify-wp-pricing-lite' ); ?>"><?php echo esc_textarea( $trust_items ); ?></textarea>
+                <p class="description"><?php esc_html_e( 'Each line becomes a bullet. Keep 2–3 items for best results.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
+            <div class="pwpl-field">
+                <label style="display:flex; gap:8px; align-items:center;">
+                    <input type="checkbox" name="pwpl_table[ui][sticky_cta]" value="1" <?php checked( $sticky_cta, 1 ); ?> />
+                    <strong><?php esc_html_e( 'Enable sticky mobile summary bar', 'planify-wp-pricing-lite' ); ?></strong>
+                </label>
+                <p class="description"><?php esc_html_e( 'Shows plan title, price, and CTA when a plan CTA is off‑screen (mobile).', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
+            <div class="pwpl-field">
+                <label><strong><?php esc_html_e( 'Specifications interactions (hover effects)', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <div class="pwpl-field__row" style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin-top:8px;">
                     <label style="display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="row" <?php checked( in_array( 'row', $anim_flags, true ) ); ?> />
                         <span><?php esc_html_e( 'Row highlight', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Adds a soft background tint and thin keyline on row hover; no layout shift.', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                     <label style="display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="icon" <?php checked( in_array( 'icon', $anim_flags, true ) ); ?> />
                         <span><?php esc_html_e( 'Icon micro‑motion', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Brightens the icon tile slightly and scales the glyph (~1–3%) on hover.', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                     <label style="display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="divider" <?php checked( in_array( 'divider', $anim_flags, true ) ); ?> />
-                        <span><?php esc_html_e( 'Divider sweep (Segmented)', 'planify-wp-pricing-lite' ); ?></span>
+                        <span><?php esc_html_e( 'Divider sweep', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Animates a thin underline from left to right on row hover. Works with any spec style.', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                     <label style="display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="chip" <?php checked( in_array( 'chip', $anim_flags, true ) ); ?> />
-                        <span><?php esc_html_e( 'Chip emphasis (Chips)', 'planify-wp-pricing-lite' ); ?></span>
+                        <span><?php esc_html_e( 'Chip emphasis', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Emphasizes the value with a pill-like highlight on hover — even when your spec style is not Chips.', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                     <label style="display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="stagger" <?php checked( in_array( 'stagger', $anim_flags, true ) ); ?> />
                         <span><?php esc_html_e( 'Stagger on card hover', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Rows animate in a gentle top‑to‑bottom sequence when hovering a card (desktop, motion‑friendly only).', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                 </div>
                 <div class="pwpl-field__row" style="display:flex; gap:12px; align-items:center; margin-top:8px;">
@@ -631,9 +645,10 @@ class PWPL_Admin_Meta {
                     <label style="display:flex; align-items:center; gap:8px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][mobile]" value="1" <?php checked( $anim_mobile, 1 ); ?> />
                         <span><?php esc_html_e( 'Enable on touch devices', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'When enabled, hover effects also apply on touch devices (tap highlights). Off by default.', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                 </div>
-                <p class="description"><?php esc_html_e( 'Preset chooses sensible flags. You may override by toggling flags. Intensity maps to subtlety and speed.', 'planify-wp-pricing-lite' ); ?></p>
+                <p class="description"><?php esc_html_e( 'Choose one or more interactions. Intensity controls subtlety/speed. All effects work with any spec style and respect reduced motion.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
             <div class="pwpl-field">
                 <label for="pwpl_specs_style"><strong><?php esc_html_e( 'Specifications list style', 'planify-wp-pricing-lite' ); ?></strong></label>
@@ -1119,9 +1134,8 @@ class PWPL_Admin_Meta {
 
         // Specs interactions
         $anim_input = isset( $ui_input['specs_anim'] ) ? (array) $ui_input['specs_anim'] : [];
-        $anim_preset = isset( $anim_input['preset'] ) ? sanitize_key( $anim_input['preset'] ) : 'minimal';
-        if ( ! in_array( $anim_preset, [ 'off', 'minimal', 'segmented', 'chips', 'all' ], true ) ) { $anim_preset = 'minimal'; }
-        update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_PRESET, $anim_preset );
+        // No preset control in UI anymore. Persist 'off' and rely on flags.
+        update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_PRESET, 'off' );
 
         $flags = isset( $anim_input['flags'] ) && is_array( $anim_input['flags'] ) ? array_map( 'sanitize_key', $anim_input['flags'] ) : [];
         $flags = array_values( array_intersect( $flags, [ 'row', 'icon', 'divider', 'chip', 'stagger' ] ) );
@@ -1133,6 +1147,25 @@ class PWPL_Admin_Meta {
 
         $mobile = ! empty( $anim_input['mobile'] ) ? 1 : 0;
         if ( $mobile ) { update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE ); }
+
+        // Trust trio + sticky cta
+        $trust_trio = ! empty( $ui_input['trust_trio'] ) ? 1 : 0;
+        if ( $trust_trio ) { update_post_meta( $post_id, PWPL_Meta::TRUST_TRIO_ENABLED, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::TRUST_TRIO_ENABLED ); }
+
+        $sticky_cta = ! empty( $ui_input['sticky_cta'] ) ? 1 : 0;
+        if ( $sticky_cta ) { update_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE ); }
+
+        // Trust items textarea -> array
+        $trust_items_input = isset( $ui_input['trust_items'] ) ? (string) $ui_input['trust_items'] : '';
+        $lines = array_filter( array_map( function( $line ) {
+            $t = trim( (string) $line );
+            return $t !== '' ? wp_strip_all_tags( $t ) : '';
+        }, preg_split( '/\r\n|\r|\n/', $trust_items_input ) ) );
+        if ( ! empty( $lines ) ) {
+            update_post_meta( $post_id, PWPL_Meta::TRUST_ITEMS, array_values( $lines ) );
+        } else {
+            delete_post_meta( $post_id, PWPL_Meta::TRUST_ITEMS );
+        }
 
         // Optional plan card size controls (legacy breakpoint container)
         $breakpoints_input  = isset( $input['breakpoints'] ) ? (array) $input['breakpoints'] : [];
