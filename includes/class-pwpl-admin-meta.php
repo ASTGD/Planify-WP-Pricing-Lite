@@ -604,38 +604,32 @@ class PWPL_Admin_Meta {
                 <p class="description"><?php esc_html_e( 'Shows plan title, price, and CTA when a plan CTA is off‑screen (mobile).', 'planify-wp-pricing-lite' ); ?></p>
             </div>
             <div class="pwpl-field">
-                <label for="pwpl_specs_anim_preset"><strong><?php esc_html_e( 'Specifications interactions', 'planify-wp-pricing-lite' ); ?></strong></label>
-                <select id="pwpl_specs_anim_preset" name="pwpl_table[ui][specs_anim][preset]" class="widefat">
-                    <?php $options = [
-                        'off'     => __( 'Off', 'planify-wp-pricing-lite' ),
-                        'minimal' => __( 'Minimal (row + icon)', 'planify-wp-pricing-lite' ),
-                        'segmented' => __( 'Segmented (row + divider)', 'planify-wp-pricing-lite' ),
-                        'chips'   => __( 'Chips (row + chip)', 'planify-wp-pricing-lite' ),
-                        'all'     => __( 'Everything', 'planify-wp-pricing-lite' ),
-                    ]; foreach ( $options as $key => $label ) : ?>
-                        <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $anim_preset, $key ); ?>><?php echo esc_html( $label ); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <div class="pwpl-field__row" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:8px;">
+                <label><strong><?php esc_html_e( 'Specifications interactions (hover effects)', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <div class="pwpl-field__row" style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin-top:8px;">
                     <label style="display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="row" <?php checked( in_array( 'row', $anim_flags, true ) ); ?> />
                         <span><?php esc_html_e( 'Row highlight', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Adds a soft background tint and thin keyline on row hover; no layout shift.', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                     <label style="display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="icon" <?php checked( in_array( 'icon', $anim_flags, true ) ); ?> />
                         <span><?php esc_html_e( 'Icon micro‑motion', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Brightens the icon tile slightly and scales the glyph (~1–3%) on hover.', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                     <label style="display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="divider" <?php checked( in_array( 'divider', $anim_flags, true ) ); ?> />
-                        <span><?php esc_html_e( 'Divider sweep (Segmented)', 'planify-wp-pricing-lite' ); ?></span>
+                        <span><?php esc_html_e( 'Divider sweep', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Animates a thin underline from left to right on row hover. Works with any spec style.', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                     <label style="display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="chip" <?php checked( in_array( 'chip', $anim_flags, true ) ); ?> />
-                        <span><?php esc_html_e( 'Chip emphasis (Chips)', 'planify-wp-pricing-lite' ); ?></span>
+                        <span><?php esc_html_e( 'Chip emphasis', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Emphasizes the value with a pill-like highlight on hover — even when your spec style is not Chips.', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                     <label style="display:flex; align-items:center; gap:6px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][flags][]" value="stagger" <?php checked( in_array( 'stagger', $anim_flags, true ) ); ?> />
                         <span><?php esc_html_e( 'Stagger on card hover', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'Rows animate in a gentle top‑to‑bottom sequence when hovering a card (desktop, motion‑friendly only).', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                 </div>
                 <div class="pwpl-field__row" style="display:flex; gap:12px; align-items:center; margin-top:8px;">
@@ -647,9 +641,10 @@ class PWPL_Admin_Meta {
                     <label style="display:flex; align-items:center; gap:8px;">
                         <input type="checkbox" name="pwpl_table[ui][specs_anim][mobile]" value="1" <?php checked( $anim_mobile, 1 ); ?> />
                         <span><?php esc_html_e( 'Enable on touch devices', 'planify-wp-pricing-lite' ); ?></span>
+                        <span class="dashicons dashicons-editor-help" title="<?php esc_attr_e( 'When enabled, hover effects also apply on touch devices (tap highlights). Off by default.', 'planify-wp-pricing-lite' ); ?>" style="opacity:.6"></span>
                     </label>
                 </div>
-                <p class="description"><?php esc_html_e( 'Preset chooses sensible flags. You may override by toggling flags. Intensity maps to subtlety and speed.', 'planify-wp-pricing-lite' ); ?></p>
+                <p class="description"><?php esc_html_e( 'Choose one or more interactions. Intensity controls subtlety/speed. All effects work with any spec style and respect reduced motion.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
             <div class="pwpl-field">
                 <label for="pwpl_specs_style"><strong><?php esc_html_e( 'Specifications list style', 'planify-wp-pricing-lite' ); ?></strong></label>
@@ -1135,9 +1130,8 @@ class PWPL_Admin_Meta {
 
         // Specs interactions
         $anim_input = isset( $ui_input['specs_anim'] ) ? (array) $ui_input['specs_anim'] : [];
-        $anim_preset = isset( $anim_input['preset'] ) ? sanitize_key( $anim_input['preset'] ) : 'minimal';
-        if ( ! in_array( $anim_preset, [ 'off', 'minimal', 'segmented', 'chips', 'all' ], true ) ) { $anim_preset = 'minimal'; }
-        update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_PRESET, $anim_preset );
+        // No preset control in UI anymore. Persist 'off' and rely on flags.
+        update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_PRESET, 'off' );
 
         $flags = isset( $anim_input['flags'] ) && is_array( $anim_input['flags'] ) ? array_map( 'sanitize_key', $anim_input['flags'] ) : [];
         $flags = array_values( array_intersect( $flags, [ 'row', 'icon', 'divider', 'chip', 'stagger' ] ) );
