@@ -86,12 +86,32 @@
         }
         const formattedPrice = price ? formatPrice(price) : '';
         const formattedSale = sale ? formatPrice(sale) : '';
-        if (formattedSale && formattedPrice) {
-            return '<span class="pwpl-plan__price-sale">' + formattedSale + '</span>' +
-                   '<span class="pwpl-plan__price-original">' + formattedPrice + '</span>';
+
+        // Determine if there is a real discount (numeric and sale < base)
+        const priceNum = (price !== '' && price !== null) ? parseFloat(price) : NaN;
+        const saleNum = (sale !== '' && sale !== null) ? parseFloat(sale) : NaN;
+        const hasDiscount = !Number.isNaN(priceNum) && !Number.isNaN(saleNum) && priceNum > 0 && saleNum >= 0 && saleNum < priceNum;
+
+        // Infer a compact billing unit from the variant period
+        let unit = '';
+        const period = (variant && (variant.period || '')).toString().toLowerCase();
+        if (/month|monthly|\bmo\b/.test(period)) unit = ' /mo';
+        else if (/year|annual|annually|\byr\b/.test(period)) unit = ' /yr';
+        else if (/day|daily/.test(period)) unit = ' /day';
+        else if (/hour|hr/.test(period)) unit = ' /hr';
+
+        if (hasDiscount && formattedSale && formattedPrice) {
+            const pct = Math.round(((priceNum - saleNum) / priceNum) * 100);
+            const badge = pct > 0
+                ? '<span class="fvps-price-badge" aria-label="' + pct + '% off">' + pct + '% OFF</span>'
+                : '';
+            // Order: old price + badge, then sale on its own line; CSS in themes places sale next line
+            return '<span class="pwpl-plan__price-original">' + formattedPrice + '</span>' + badge +
+                   '<span class="pwpl-plan__price-sale">' + formattedSale + '</span>' + (unit ? '<span class="pwpl-price-unit">' + unit + '</span>' : '');
         }
-        const display = formattedPrice || formattedSale;
-        return '<span class="pwpl-plan__price">' + display + '</span>';
+
+        const display = formattedSale || formattedPrice;
+        return '<span class="pwpl-plan__price">' + display + '</span>' + (unit ? '<span class="pwpl-price-unit">' + unit + '</span>' : '');
     }
 
     function getVariants(plan) {

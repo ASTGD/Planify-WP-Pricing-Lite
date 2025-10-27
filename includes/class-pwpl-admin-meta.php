@@ -853,6 +853,13 @@ class PWPL_Admin_Meta {
                 <?php endif; ?>
             </div>
 
+            <?php $plan_subtitle = get_post_meta( $post->ID, '_pwpl_plan_subtitle', true ); $plan_subtitle = is_string( $plan_subtitle ) ? $plan_subtitle : ''; ?>
+            <div class="pwpl-field">
+                <label for="pwpl_plan_subtitle"><strong><?php esc_html_e( 'Plan subtitle', 'planify-wp-pricing-lite' ); ?></strong></label>
+                <input type="text" id="pwpl_plan_subtitle" name="pwpl_plan[subtitle]" class="widefat" value="<?php echo esc_attr( $plan_subtitle ); ?>" placeholder="<?php esc_attr_e( 'e.g. Basic VPS to start your hosting easily', 'planify-wp-pricing-lite' ); ?>" />
+                <p class="description"><?php esc_html_e( 'Appears under the plan title in the CTA section. Falls back to the plan excerpt if empty.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
+
             <div class="pwpl-field">
                 <label>
                     <input type="checkbox" name="pwpl_plan[featured]" value="1" <?php checked( $featured ); ?> />
@@ -1253,6 +1260,14 @@ class PWPL_Admin_Meta {
             update_post_meta( $post_id, PWPL_Meta::PLAN_BADGE_SHADOW, $badge_shadow );
         } else {
             delete_post_meta( $post_id, PWPL_Meta::PLAN_BADGE_SHADOW );
+        }
+
+        // Plan subtitle
+        $subtitle = isset( $input['subtitle'] ) ? trim( wp_strip_all_tags( (string) $input['subtitle'] ) ) : '';
+        if ( $subtitle !== '' ) {
+            update_post_meta( $post_id, '_pwpl_plan_subtitle', $subtitle );
+        } else {
+            delete_post_meta( $post_id, '_pwpl_plan_subtitle' );
         }
 
         $override_input    = $_POST['pwpl_plan_badges_override'] ?? [];
