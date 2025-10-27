@@ -814,6 +814,14 @@
   margin-top: 12px; /* clear space from old price + badge */
 }
 
+/* Ensure non-discounted price uses the same typography as discounted sale price */
+.pwpl-table--theme-firevps .pwpl-plan__price {
+  font-size: clamp(2rem, 4.5vw, 2.8rem);
+  color: #111214;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
 .pwpl-table--theme-firevps .pwpl-plan__price-original {
   position: relative;
   font-size: 0.95rem;
