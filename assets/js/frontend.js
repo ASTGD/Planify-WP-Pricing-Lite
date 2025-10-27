@@ -84,50 +84,50 @@
         if (!price && !sale) {
             return '<span class="pwpl-plan__price--empty">' + __( 'Contact us' ) + '</span>';
         }
-        const formattedPrice = price ? formatPrice(price) : '';
-        const formattedSale = sale ? formatPrice(sale) : '';
-
         // Determine if there is a real discount (numeric and sale < base)
         const priceNum = (price !== '' && price !== null) ? parseFloat(price) : NaN;
         const saleNum = (sale !== '' && sale !== null) ? parseFloat(sale) : NaN;
         const hasDiscount = !Number.isNaN(priceNum) && !Number.isNaN(saleNum) && priceNum > 0 && saleNum >= 0 && saleNum < priceNum;
 
-        // Infer a compact billing unit from the variant period
-        let unit = '';
+        // Normalize display to monthly equivalent regardless of selected period
         const period = (variant && (variant.period || '')).toString().toLowerCase();
-        if (/month|monthly|\bmo\b/.test(period)) unit = ' /mo';
-        else if (/year|annual|annually|\byr\b/.test(period)) unit = ' /yr';
-        else if (/day|daily/.test(period)) unit = ' /day';
-        else if (/hour|hr/.test(period)) unit = ' /hr';
+        let months = 1;
+        if (/year|annual/.test(period)) months = 12; else if (/semi|6/.test(period)) months = 6; else if (/quarter|3/.test(period)) months = 3; else months = 1;
+        const priceMonthly = !Number.isNaN(priceNum) ? Math.max(0, priceNum / Math.max(1, months)) : NaN;
+        const saleMonthly  = !Number.isNaN(saleNum)  ? Math.max(0, saleNum  / Math.max(1, months)) : NaN;
+        const formattedPriceMonthly = !Number.isNaN(priceMonthly) ? formatPrice(priceMonthly) : '';
+        const formattedSaleMonthly  = !Number.isNaN(saleMonthly)  ? formatPrice(saleMonthly)  : '';
+        const unit = ' /mo';
 
-        if (hasDiscount && formattedSale && formattedPrice) {
+        if (hasDiscount && formattedSaleMonthly && formattedPriceMonthly) {
             const pct = Math.round(((priceNum - saleNum) / priceNum) * 100);
             const badge = pct > 0
                 ? '<span class="fvps-price-badge" aria-label="' + pct + '% off">' + pct + '% OFF</span>'
                 : '';
             // Split currency pieces from formattedSale for typography
-            const m = formattedSale.match(/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/);
+            const m = formattedSaleMonthly.match(/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/);
             const pfx = m ? (m[1] || '').trim() : '';
-            const val = m ? (m[2] || formattedSale) : formattedSale;
+            const val = m ? (m[2] || formattedSaleMonthly) : formattedSaleMonthly;
             const sfx = m ? (m[3] || '').trim() : '';
             const saleHtml = '<span class="pwpl-plan__price-sale">'
               + (pfx ? '<span class="pwpl-price-currency pwpl-currency--prefix">' + pfx + '</span>' : '')
               + '<span class="pwpl-price-value">' + val + '</span>'
               + (sfx ? '<span class="pwpl-price-currency pwpl-currency--suffix">' + sfx + '</span>' : '')
-              + '</span>'
-              + (unit ? '<span class="pwpl-price-unit">' + unit + '</span>' : '');
-            return '<span class="pwpl-plan__price-original">' + formattedPrice + '</span>' + badge + saleHtml;
+              + '<span class="pwpl-price-unit">' + unit + '</span>'
+              + '</span>';
+            return '<span class="pwpl-plan__price-original">' + formattedPriceMonthly + '</span>' + badge + saleHtml;
         }
 
-        const display = formattedSale || formattedPrice;
+        const display = formattedSaleMonthly || formattedPriceMonthly;
         const m = display.match(/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/);
         const pfx = m ? (m[1] || '').trim() : '';
         const val = m ? (m[2] || display) : display;
         const sfx = m ? (m[3] || '').trim() : '';
         const single = (pfx ? '<span class="pwpl-price-currency pwpl-currency--prefix">' + pfx + '</span>' : '')
             + '<span class="pwpl-price-value">' + val + '</span>'
-            + (sfx ? '<span class="pwpl-price-currency pwpl-currency--suffix">' + sfx + '</span>' : '');
-        return '<span class="pwpl-plan__price">' + single + '</span>' + (unit ? '<span class="pwpl-price-unit">' + unit + '</span>' : '');
+            + (sfx ? '<span class="pwpl-price-currency pwpl-currency--suffix">' + sfx + '</span>' : '')
+            + '<span class="pwpl-price-unit">' + unit + '</span>';
+        return '<span class="pwpl-plan__price">' + single + '</span>';
     }
 
     function getVariants(plan) {

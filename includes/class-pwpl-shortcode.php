@@ -857,8 +857,19 @@ class PWPL_Shortcode {
             return '<span class="pwpl-plan__price--empty">' . esc_html__( 'Contact us', 'planify-wp-pricing-lite' ) . '</span>';
         }
 
-        $formatted_price = $price !== '' ? $this->format_price( $price, $settings ) : '';
-        $formatted_sale  = $sale !== '' ? $this->format_price( $sale, $settings ) : '';
+        // Normalize to monthly display regardless of selected period
+        $variant_period = isset( $variant['period'] ) ? strtolower( (string) $variant['period'] ) : '';
+        $months = 1;
+        if ( false !== strpos( $variant_period, 'year' ) || false !== strpos( $variant_period, 'annual' ) ) { $months = 12; }
+        elseif ( false !== strpos( $variant_period, 'semi' ) || false !== strpos( $variant_period, '6' ) ) { $months = 6; }
+        elseif ( false !== strpos( $variant_period, 'quarter' ) || false !== strpos( $variant_period, '3' ) ) { $months = 3; }
+        else { $months = 1; }
+
+        $price_num_m = $price_num !== null ? max( 0, $price_num / max( 1, $months ) ) : null;
+        $sale_num_m  = $sale_num  !== null ? max( 0, $sale_num  / max( 1, $months ) )  : null;
+
+        $formatted_price = $price_num_m !== null ? $this->format_price( $price_num_m, $settings ) : '';
+        $formatted_sale  = $sale_num_m  !== null ? $this->format_price( $sale_num_m,  $settings ) : '';
 
         // Show old price + inline discount badge + sale price only when numeric and sale < base
         $price_num = is_numeric( $price ) ? (float) $price : null;
@@ -882,6 +893,7 @@ class PWPL_Shortcode {
                 . ( $sale_prefix !== '' ? '<span class="pwpl-price-currency pwpl-currency--prefix">' . esc_html( $sale_prefix ) . '</span>' : '' )
                 . '<span class="pwpl-price-value">' . esc_html( $sale_value ) . '</span>'
                 . ( $sale_suffix !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sale_suffix ) . '</span>' : '' )
+                . '<span class="pwpl-price-unit">/mo</span>'
                 . '</span>';
             // Order: old price + badge (same line), then sale block; unit is added by CSS/JS if needed
             return '<span class="pwpl-plan__price-original">' . esc_html( $formatted_price ) . '</span>' . $badge_html . $sale_html;
@@ -898,7 +910,8 @@ class PWPL_Shortcode {
         }
         $single_html = ( $pfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--prefix">' . esc_html( $pfx ) . '</span>' : '' )
             . '<span class="pwpl-price-value">' . esc_html( $val ) . '</span>'
-            . ( $sfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sfx ) . '</span>' : '' );
+            . ( $sfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sfx ) . '</span>' : '' )
+            . '<span class="pwpl-price-unit">/mo</span>';
         return '<span class="pwpl-plan__price">' . $single_html . '</span>';
     }
 

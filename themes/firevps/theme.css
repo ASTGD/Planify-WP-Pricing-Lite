@@ -852,7 +852,7 @@
 
 .pwpl-table--theme-firevps .pwpl-price-currency { font-size: 60%; font-weight: 400; display: inline-block; transform: translateY(-1px); margin-right: 2px; color: rgba(17,24,39,.55); }
 .pwpl-table--theme-firevps .pwpl-price-value     { font-weight: 900; letter-spacing: -0.02em; }
-.pwpl-table--theme-firevps .pwpl-price-unit      { display: block; margin-top: 2px; font-size: 0.98rem; font-weight: 400; color: rgba(17,24,39,.60); }
+.pwpl-table--theme-firevps .pwpl-price-unit      { display: inline-block; margin-left: 8px; font-size: 0.98rem; font-weight: 400; color: rgba(17,24,39,.60); transform: translateY(-2px); }
 
 .pwpl-table--theme-firevps .pwpl-plan__billing {
   margin: 4px 0 0;
