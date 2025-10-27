@@ -22,6 +22,7 @@
   --fvps-font-heading: "Space Grotesk", "Inter", system-ui, sans-serif;
   --fvps-card-min-fallback: 280px;
   --fvps-card-max-inline: 520px;
+  --fvps-price-weight: 800; /* default heavy but not ink-heavy */
   /* Unify arrow offsets for tabs and plan carousel */
   --fvps-plan-nav-offset: 64px;
   position: relative;
@@ -851,7 +852,7 @@
 }
 
 .pwpl-table--theme-firevps .pwpl-price-currency { font-size: 60%; font-weight: 400; display: inline-block; transform: translateY(-1px); margin-right: 2px; color: rgba(17,24,39,.55); }
-.pwpl-table--theme-firevps .pwpl-price-value     { font-weight: 900; letter-spacing: -0.02em; }
+.pwpl-table--theme-firevps .pwpl-price-value     { font-weight: var(--fvps-price-weight, 800); letter-spacing: -0.015em; }
 .pwpl-table--theme-firevps .pwpl-price-unit      { display: inline-block; margin-left: 8px; font-size: 0.98rem; font-weight: 400; color: rgba(17,24,39,.60); transform: translateY(-2px); }
 
 .pwpl-table--theme-firevps .pwpl-plan__billing {
@@ -1295,6 +1296,11 @@
   .pwpl-table--theme-firevps .pwpl-plan__price-original {
     margin-inline-start: 0;
   }
+}
+
+/* On very small screens, slightly lighten the sale numerals for legibility */
+@media (max-width: 360px) {
+  .pwpl-table--theme-firevps .pwpl-price-value { font-weight: 700; }
 }
 
 @media (prefers-reduced-motion: reduce) {
