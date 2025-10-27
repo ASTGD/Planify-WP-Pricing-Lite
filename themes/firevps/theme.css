@@ -794,7 +794,7 @@
 .pwpl-table--theme-firevps .fvps-card__price {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 12px;
+  gap: 12px 12px; /* increase row gap to create breathing room above sale price */
   align-items: center;
   font-family: var(--fvps-font-heading);
   font-size: clamp(1.8rem, 3vw, 2.2rem);
@@ -810,7 +810,7 @@
   letter-spacing: 0.01em;
   flex: 0 0 100%; /* force to next line under old price + badge */
   font-variant-numeric: tabular-nums;
-  margin-top: 8px; /* clear space from old price + badge */
+  margin-top: 12px; /* clear space from old price + badge */
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-original {
