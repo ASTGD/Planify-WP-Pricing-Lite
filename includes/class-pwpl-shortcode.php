@@ -871,13 +871,35 @@ class PWPL_Shortcode {
             if ( $pct > 0 ) {
                 $badge_html = '<span class="fvps-price-badge" aria-label="' . esc_attr( sprintf( __( '%d%% off', 'planify-wp-pricing-lite' ), $pct ) ) . '">' . esc_html( sprintf( __( '%d%% OFF', 'planify-wp-pricing-lite' ), $pct ) ) . '</span>';
             }
-            // Order: old price + badge (same line), then sale price on next line via CSS
-            return '<span class="pwpl-plan__price-original">' . esc_html( $formatted_price ) . '</span>' . $badge_html . '<span class="pwpl-plan__price-sale">' . esc_html( $formatted_sale ) . '</span>';
+            // Split currency symbol from numeric portion for precise typography
+            $sale_prefix = ''; $sale_value = $formatted_sale; $sale_suffix = '';
+            if ( preg_match( '/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/u', $formatted_sale, $m ) ) {
+                $sale_prefix = trim( (string) ( $m[1] ?? '' ) );
+                $sale_value  = (string) ( $m[2] ?? $formatted_sale );
+                $sale_suffix = trim( (string) ( $m[3] ?? '' ) );
+            }
+            $sale_html = '<span class="pwpl-plan__price-sale">'
+                . ( $sale_prefix !== '' ? '<span class="pwpl-price-currency pwpl-currency--prefix">' . esc_html( $sale_prefix ) . '</span>' : '' )
+                . '<span class="pwpl-price-value">' . esc_html( $sale_value ) . '</span>'
+                . ( $sale_suffix !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sale_suffix ) . '</span>' : '' )
+                . '</span>';
+            // Order: old price + badge (same line), then sale block; unit is added by CSS/JS if needed
+            return '<span class="pwpl-plan__price-original">' . esc_html( $formatted_price ) . '</span>' . $badge_html . $sale_html;
         }
 
         // Otherwise prefer whichever value exists (single price, no badge)
         $display = $formatted_sale ?: $formatted_price;
-        return '<span class="pwpl-plan__price">' . esc_html( $display ) . '</span>';
+        // Split single price as well for consistent typography
+        $pfx = ''; $val = $display; $sfx = '';
+        if ( preg_match( '/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/u', (string) $display, $m ) ) {
+            $pfx = trim( (string) ( $m[1] ?? '' ) );
+            $val = (string) ( $m[2] ?? $display );
+            $sfx = trim( (string) ( $m[3] ?? '' ) );
+        }
+        $single_html = ( $pfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--prefix">' . esc_html( $pfx ) . '</span>' : '' )
+            . '<span class="pwpl-price-value">' . esc_html( $val ) . '</span>'
+            . ( $sfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sfx ) . '</span>' : '' );
+        return '<span class="pwpl-plan__price">' . $single_html . '</span>';
     }
 
     private function prepare_cta( $variant ) {

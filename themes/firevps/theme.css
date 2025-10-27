@@ -804,10 +804,11 @@
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-sale {
-  font-size: clamp(2rem, 4.5vw, 2.6rem);
+  font-size: clamp(2rem, 4.5vw, 2.8rem);
   color: #111214;
   letter-spacing: 0.01em;
   flex: 0 0 100%; /* force to next line under old price + badge */
+  font-variant-numeric: tabular-nums;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-original {
@@ -846,6 +847,11 @@
   background: color-mix(in oklab, var(--fvps-color-accent, #f5a623) 18%, #fff 82%);
   border: 1px solid color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 24%, #000 0%);
 }
+
+/* Currency symbol and numeric split for precise typography */
+.pwpl-table--theme-firevps .pwpl-price-currency { font-size: 60%; font-weight: 900; display: inline-block; transform: translateY(-2px); margin-right: 2px; }
+.pwpl-table--theme-firevps .pwpl-price-value     { font-weight: 900; letter-spacing: -0.02em; }
+.pwpl-table--theme-firevps .pwpl-price-unit      { display: block; margin-top: -6px; font-size: 1.15rem; font-weight: 800; color: #111214; }
 
 .pwpl-table--theme-firevps .pwpl-plan__billing {
   margin: 4px 0 0;

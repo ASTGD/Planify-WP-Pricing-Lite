@@ -105,13 +105,29 @@
             const badge = pct > 0
                 ? '<span class="fvps-price-badge" aria-label="' + pct + '% off">' + pct + '% OFF</span>'
                 : '';
-            // Order: old price + badge, then sale on its own line; CSS in themes places sale next line
-            return '<span class="pwpl-plan__price-original">' + formattedPrice + '</span>' + badge +
-                   '<span class="pwpl-plan__price-sale">' + formattedSale + '</span>' + (unit ? '<span class="pwpl-price-unit">' + unit + '</span>' : '');
+            // Split currency pieces from formattedSale for typography
+            const m = formattedSale.match(/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/);
+            const pfx = m ? (m[1] || '').trim() : '';
+            const val = m ? (m[2] || formattedSale) : formattedSale;
+            const sfx = m ? (m[3] || '').trim() : '';
+            const saleHtml = '<span class="pwpl-plan__price-sale">'
+              + (pfx ? '<span class="pwpl-price-currency pwpl-currency--prefix">' + pfx + '</span>' : '')
+              + '<span class="pwpl-price-value">' + val + '</span>'
+              + (sfx ? '<span class="pwpl-price-currency pwpl-currency--suffix">' + sfx + '</span>' : '')
+              + '</span>'
+              + (unit ? '<span class="pwpl-price-unit">' + unit + '</span>' : '');
+            return '<span class="pwpl-plan__price-original">' + formattedPrice + '</span>' + badge + saleHtml;
         }
 
         const display = formattedSale || formattedPrice;
-        return '<span class="pwpl-plan__price">' + display + '</span>' + (unit ? '<span class="pwpl-price-unit">' + unit + '</span>' : '');
+        const m = display.match(/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/);
+        const pfx = m ? (m[1] || '').trim() : '';
+        const val = m ? (m[2] || display) : display;
+        const sfx = m ? (m[3] || '').trim() : '';
+        const single = (pfx ? '<span class="pwpl-price-currency pwpl-currency--prefix">' + pfx + '</span>' : '')
+            + '<span class="pwpl-price-value">' + val + '</span>'
+            + (sfx ? '<span class="pwpl-price-currency pwpl-currency--suffix">' + sfx + '</span>' : '');
+        return '<span class="pwpl-plan__price">' + single + '</span>' + (unit ? '<span class="pwpl-price-unit">' + unit + '</span>' : '');
     }
 
     function getVariants(plan) {
