@@ -759,8 +759,9 @@
   gap: 6px;
 }
 
-.pwpl-table--theme-firevps .fvps-plan-heading-icon { display: flex; align-items: center; }
-.pwpl-table--theme-firevps .fvps-icon--plan { width: 40px; height: 40px; color: #c76706; background: rgba(247, 166, 35, 0.18); border-radius: 12px; padding: 8px; }
+/* Remove the large plan icon to reclaim vertical space */
+.pwpl-table--theme-firevps .fvps-plan-heading-icon { display: none !important; }
+.pwpl-table--theme-firevps .fvps-icon--plan { display: none !important; }
 
 .pwpl-table--theme-firevps .pwpl-plan__title {
   font-family: var(--fvps-font-heading);
@@ -809,6 +810,7 @@
   letter-spacing: 0.01em;
   flex: 0 0 100%; /* force to next line under old price + badge */
   font-variant-numeric: tabular-nums;
+  margin-top: 8px; /* clear space from old price + badge */
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-original {
@@ -848,10 +850,9 @@
   border: 1px solid color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 24%, #000 0%);
 }
 
-/* Currency symbol and numeric split for precise typography */
-.pwpl-table--theme-firevps .pwpl-price-currency { font-size: 60%; font-weight: 900; display: inline-block; transform: translateY(-2px); margin-right: 2px; }
+.pwpl-table--theme-firevps .pwpl-price-currency { font-size: 60%; font-weight: 400; display: inline-block; transform: translateY(-1px); margin-right: 2px; color: rgba(17,24,39,.55); }
 .pwpl-table--theme-firevps .pwpl-price-value     { font-weight: 900; letter-spacing: -0.02em; }
-.pwpl-table--theme-firevps .pwpl-price-unit      { display: block; margin-top: -6px; font-size: 1.15rem; font-weight: 800; color: #111214; }
+.pwpl-table--theme-firevps .pwpl-price-unit      { display: block; margin-top: 2px; font-size: 0.98rem; font-weight: 400; color: rgba(17,24,39,.60); }
 
 .pwpl-table--theme-firevps .pwpl-plan__billing {
   margin: 4px 0 0;
