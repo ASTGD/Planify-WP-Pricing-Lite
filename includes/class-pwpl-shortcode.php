@@ -860,11 +860,23 @@ class PWPL_Shortcode {
         $formatted_price = $price !== '' ? $this->format_price( $price, $settings ) : '';
         $formatted_sale  = $sale !== '' ? $this->format_price( $sale, $settings ) : '';
 
-        if ( $formatted_sale && $formatted_price ) {
-            return '<span class="pwpl-plan__price-sale">' . esc_html( $formatted_sale ) . '</span><span class="pwpl-plan__price-original">' . esc_html( $formatted_price ) . '</span>';
+        // Show old price + inline discount badge + sale price only when numeric and sale < base
+        $price_num = is_numeric( $price ) ? (float) $price : null;
+        $sale_num  = is_numeric( $sale ) ? (float) $sale : null;
+        $has_discount = null !== $price_num && null !== $sale_num && $price_num > 0 && $sale_num >= 0 && $sale_num < $price_num;
+
+        if ( $has_discount && $formatted_sale && $formatted_price ) {
+            $pct = (int) round( ( ( $price_num - $sale_num ) / $price_num ) * 100 );
+            $badge_html = '';
+            if ( $pct > 0 ) {
+                $badge_html = '<span class="fvps-price-badge" aria-label="' . esc_attr( sprintf( __( '%d%% off', 'planify-wp-pricing-lite' ), $pct ) ) . '">' . esc_html( sprintf( __( '%d%% OFF', 'planify-wp-pricing-lite' ), $pct ) ) . '</span>';
+            }
+            // Order: old price + badge (same line), then sale price on next line via CSS
+            return '<span class="pwpl-plan__price-original">' . esc_html( $formatted_price ) . '</span>' . $badge_html . '<span class="pwpl-plan__price-sale">' . esc_html( $formatted_sale ) . '</span>';
         }
 
-        $display = $formatted_price ?: $formatted_sale;
+        // Otherwise prefer whichever value exists (single price, no badge)
+        $display = $formatted_sale ?: $formatted_price;
         return '<span class="pwpl-plan__price">' . esc_html( $display ) . '</span>';
     }
 

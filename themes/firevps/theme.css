@@ -793,29 +793,30 @@
 .pwpl-table--theme-firevps .fvps-card__price {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  align-items: baseline;
+  gap: 8px 12px;
+  align-items: center;
   font-family: var(--fvps-font-heading);
-  font-size: clamp(2rem, 2.6vw, 2.4rem);
-  font-weight: 700;
-  color: #20160a;
-  letter-spacing: 0.01em;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+  font-weight: 800;
+  color: #111214;
+  letter-spacing: 0.005em;
   min-height: 2.4rem;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-sale {
-  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
-  color: #1d1207;
-  letter-spacing: 0.04em;
+  font-size: clamp(2rem, 4.5vw, 2.6rem);
+  color: #111214;
+  letter-spacing: 0.01em;
+  flex: 0 0 100%; /* force to next line under old price + badge */
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-original {
   position: relative;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  padding-inline: 4px;
-  color: rgba(28, 26, 22, 0.55);
+  font-size: 0.95rem;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  padding-inline: 2px;
+  color: rgba(17, 24, 39, 0.45);
   font-weight: 500;
 }
 
@@ -824,10 +825,26 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 50%;
-  height: 2px;
-  background: rgba(217, 121, 11, 0.85);
+  top: 52%;
+  height: 1px;
+  background: rgba(17, 24, 39, 0.35);
   transform: translateY(-50%);
+}
+
+/* Price discount badge — FireVPS brand accent */
+.pwpl-table--theme-firevps .fvps-price-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 100%, #000 0%);
+  background: color-mix(in oklab, var(--fvps-color-accent, #f5a623) 18%, #fff 82%);
+  border: 1px solid color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 24%, #000 0%);
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__billing {
