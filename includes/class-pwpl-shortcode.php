@@ -857,23 +857,13 @@ class PWPL_Shortcode {
             return '<span class="pwpl-plan__price--empty">' . esc_html__( 'Contact us', 'planify-wp-pricing-lite' ) . '</span>';
         }
 
-        // Normalize to monthly display regardless of selected period
-        $variant_period = isset( $variant['period'] ) ? strtolower( (string) $variant['period'] ) : '';
-        $months = 1;
-        if ( false !== strpos( $variant_period, 'year' ) || false !== strpos( $variant_period, 'annual' ) ) { $months = 12; }
-        elseif ( false !== strpos( $variant_period, 'semi' ) || false !== strpos( $variant_period, '6' ) ) { $months = 6; }
-        elseif ( false !== strpos( $variant_period, 'quarter' ) || false !== strpos( $variant_period, '3' ) ) { $months = 3; }
-        else { $months = 1; }
-
-        $price_num_m = $price_num !== null ? max( 0, $price_num / max( 1, $months ) ) : null;
-        $sale_num_m  = $sale_num  !== null ? max( 0, $sale_num  / max( 1, $months ) )  : null;
-
-        $formatted_price = $price_num_m !== null ? $this->format_price( $price_num_m, $settings ) : '';
-        $formatted_sale  = $sale_num_m  !== null ? $this->format_price( $sale_num_m,  $settings ) : '';
-
-        // Show old price + inline discount badge + sale price only when numeric and sale < base
+        // Use variant-provided prices as monthly values without additional math
         $price_num = is_numeric( $price ) ? (float) $price : null;
         $sale_num  = is_numeric( $sale ) ? (float) $sale : null;
+        $formatted_price = ( null !== $price_num ) ? $this->format_price( $price_num, $settings ) : '';
+        $formatted_sale  = ( null !== $sale_num )  ? $this->format_price( $sale_num,  $settings ) : '';
+
+        // Show old price + inline discount badge + sale price only when numeric and sale < base
         $has_discount = null !== $price_num && null !== $sale_num && $price_num > 0 && $sale_num >= 0 && $sale_num < $price_num;
 
         if ( $has_discount && $formatted_sale && $formatted_price ) {

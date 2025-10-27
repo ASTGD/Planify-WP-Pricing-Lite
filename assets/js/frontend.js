@@ -89,14 +89,9 @@
         const saleNum = (sale !== '' && sale !== null) ? parseFloat(sale) : NaN;
         const hasDiscount = !Number.isNaN(priceNum) && !Number.isNaN(saleNum) && priceNum > 0 && saleNum >= 0 && saleNum < priceNum;
 
-        // Normalize display to monthly equivalent regardless of selected period
-        const period = (variant && (variant.period || '')).toString().toLowerCase();
-        let months = 1;
-        if (/year|annual/.test(period)) months = 12; else if (/semi|6/.test(period)) months = 6; else if (/quarter|3/.test(period)) months = 3; else months = 1;
-        const priceMonthly = !Number.isNaN(priceNum) ? Math.max(0, priceNum / Math.max(1, months)) : NaN;
-        const saleMonthly  = !Number.isNaN(saleNum)  ? Math.max(0, saleNum  / Math.max(1, months)) : NaN;
-        const formattedPriceMonthly = !Number.isNaN(priceMonthly) ? formatPrice(priceMonthly) : '';
-        const formattedSaleMonthly  = !Number.isNaN(saleMonthly)  ? formatPrice(saleMonthly)  : '';
+        // Treat variant prices as monthly; just format and append /mo
+        const formattedPriceMonthly = price ? formatPrice(price) : '';
+        const formattedSaleMonthly  = sale ? formatPrice(sale)  : '';
         const unit = ' /mo';
 
         if (hasDiscount && formattedSaleMonthly && formattedPriceMonthly) {
