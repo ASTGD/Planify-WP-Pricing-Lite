@@ -860,7 +860,7 @@
 }
 
 .pwpl-table--theme-firevps .pwpl-price-currency { font-size: 58%; font-weight: 400; display: inline-block; transform: translateY(-1px); margin: 0; color: rgba(17,24,39,.55); }
-.pwpl-table--theme-firevps .pwpl-currency--prefix { margin-right: 0; }
+.pwpl-table--theme-firevps .pwpl-currency--prefix { margin-right: -1px; }
 .pwpl-table--theme-firevps .pwpl-currency--suffix { margin-left: 2px; }
 .pwpl-table--theme-firevps .pwpl-price-value     { font-weight: var(--fvps-price-weight, 800); letter-spacing: -0.015em; }
 .pwpl-table--theme-firevps .pwpl-price-unit      { display: inline-block; margin-left: 4px; font-size: 0.98rem; font-weight: 400; color: rgba(17,24,39,.60); transform: translateY(-2px); }
