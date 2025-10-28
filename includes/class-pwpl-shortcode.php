@@ -373,6 +373,8 @@ class PWPL_Shortcode {
             if ( isset( $cta_cfg['weight'] ) ) { $cta_vars['--cta-weight'] = (int)$cta_cfg['weight']; }
             if ( isset( $cta_cfg['lift'] ) )   { $cta_vars['--cta-lift']   = (int)$cta_cfg['lift']; }
             if ( ! empty( $cta_cfg['focus'] ) ) { $cta_vars['--cta-focus'] = (string) $cta_cfg['focus']; }
+            if ( isset( $cta_cfg['min_w'] ) && (int)$cta_cfg['min_w'] > 0 ) { $cta_vars['--cta-min'] = (int)$cta_cfg['min_w'] . 'px'; }
+            if ( isset( $cta_cfg['max_w'] ) && (int)$cta_cfg['max_w'] > 0 ) { $cta_vars['--cta-max'] = (int)$cta_cfg['max_w'] . 'px'; }
             if ( ! empty( $cta_cfg['normal']['bg'] ) )     { $cta_vars['--cta-bg']     = (string) $cta_cfg['normal']['bg']; }
             if ( ! empty( $cta_cfg['normal']['color'] ) )  { $cta_vars['--cta-color']  = (string) $cta_cfg['normal']['color']; }
             if ( ! empty( $cta_cfg['normal']['border'] ) ) { $cta_vars['--cta-border'] = (string) $cta_cfg['normal']['border']; }

@@ -625,6 +625,14 @@ class PWPL_Admin_Meta {
                         <span><?php esc_html_e( 'Hover lift (px)', 'planify-wp-pricing-lite' ); ?></span>
                         <input type="number" min="0" max="3" step="1" name="pwpl_table[ui][cta][lift]" value="<?php echo esc_attr( $cta['lift'] ?? 1 ); ?>" />
                     </label>
+                    <label style="display:flex; flex-direction:column; gap:6px;">
+                        <span><?php esc_html_e( 'Min width (px)', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="number" min="0" max="4000" step="1" name="pwpl_table[ui][cta][min_w]" value="<?php echo esc_attr( $cta['min_w'] ?? 0 ); ?>" />
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:6px;">
+                        <span><?php esc_html_e( 'Max width (px)', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="number" min="0" max="4000" step="1" name="pwpl_table[ui][cta][max_w]" value="<?php echo esc_attr( $cta['max_w'] ?? 0 ); ?>" />
+                    </label>
                 </div>
                 <div style="display:flex; flex-wrap:wrap; gap:16px; margin-top:8px;">
                     <div>
@@ -1242,6 +1250,8 @@ class PWPL_Admin_Meta {
         $out['border_width'] = max( 0, min( 4, $bw ) );
         $out['weight'] = max( 500, min( 900, (int) ( $v['weight'] ?? 700 ) ) );
         $out['lift']   = max( 0, min( 3, (int) ( $v['lift'] ?? 1 ) ) );
+        $out['min_w']  = max( 0, min( 4000, (int) ( $v['min_w'] ?? 0 ) ) );
+        $out['max_w']  = max( 0, min( 4000, (int) ( $v['max_w'] ?? 0 ) ) );
         $out['focus']  = (string) ( $v['focus'] ?? '' );
         $out['normal'] = [
             'bg'     => (string) ( $v['normal']['bg'] ?? '' ),

@@ -130,6 +130,8 @@ class PWPL_Meta {
                 $out['weight'] = max( 500, min( 900, (int) ( $v['weight'] ?? 700 ) ) );
                 $out['lift']   = max( 0, min( 3, (int) ( $v['lift'] ?? 1 ) ) );
                 $out['focus']  = (string) ( $v['focus'] ?? '' );
+                $out['min_w']  = max( 0, min( 4000, (int) ( $v['min_w'] ?? 0 ) ) );
+                $out['max_w']  = max( 0, min( 4000, (int) ( $v['max_w'] ?? 0 ) ) );
                 $out['normal'] = [
                     'bg'     => (string) ( $v['normal']['bg'] ?? '' ),
                     'color'  => (string) ( $v['normal']['color'] ?? '' ),

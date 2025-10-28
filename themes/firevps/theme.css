@@ -1125,8 +1125,9 @@
 .pwpl-table--theme-firevps .fvps-button--inline[aria-disabled="true"]:hover { transform: none; background: #d7d7d7; }
 
 .pwpl-table--theme-firevps .fvps-button--inline {
-  width: auto;
-  min-width: 180px;
+  width: var(--cta-width, 100%);
+  min-width: var(--cta-min, 0);
+  max-width: var(--cta-max, none);
 }
 
 .pwpl-table--theme-firevps .fvps-button:hover,
