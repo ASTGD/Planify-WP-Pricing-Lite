@@ -337,7 +337,7 @@ if ( $style_combined ) {
 						</div>
 
 							<div class="fvps-card__price" data-pwpl-price><?php echo wp_kses_post( $price_html ); ?></div>
-							<?php if ( $billing && preg_match( '/annual/i', $billing ) ) : ?>
+							<?php if ( $billing ) : ?>
 								<p class="pwpl-plan__billing" data-pwpl-billing><?php echo esc_html( $billing ); ?></p>
 							<?php endif; ?>
 

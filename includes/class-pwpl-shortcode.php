@@ -1149,11 +1149,25 @@ class PWPL_Shortcode {
         if ( '' === $period_slug ) {
             return '';
         }
-        $label = $dimension_labels['period'][ $period_slug ] ?? '';
-        if ( '' === $label ) {
+        $raw = $dimension_labels['period'][ $period_slug ] ?? '';
+        if ( '' === $raw ) {
             return '';
         }
-        return sprintf( esc_html__( 'Billed %s', 'planify-wp-pricing-lite' ), $label );
+        $t = strtolower( trim( (string) $raw ) );
+        if ( false !== strpos( $t, 'month' ) ) {
+            return esc_html__( 'Billed monthly', 'planify-wp-pricing-lite' );
+        }
+        if ( false !== strpos( $t, 'annual' ) || false !== strpos( $t, 'year' ) ) {
+            return esc_html__( 'Billed annually*', 'planify-wp-pricing-lite' );
+        }
+        if ( false !== strpos( $t, 'quarter' ) ) {
+            return esc_html__( 'Billed quarterly', 'planify-wp-pricing-lite' );
+        }
+        if ( false !== strpos( $t, 'semi' ) ) {
+            return esc_html__( 'Billed semi‑annually', 'planify-wp-pricing-lite' );
+        }
+        // Fallback to original label, lowercased
+        return sprintf( esc_html__( 'Billed %s', 'planify-wp-pricing-lite' ), strtolower( $raw ) );
     }
 
     private function format_price( $amount, $settings ) {
