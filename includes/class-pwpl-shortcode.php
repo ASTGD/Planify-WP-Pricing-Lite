@@ -482,6 +482,15 @@ class PWPL_Shortcode {
                 $badge               = $this->resolve_badge( $active_values, $override_badges, $table_badges );
                 $effective_shadow    = $plan_badge_shadow > 0 ? $plan_badge_shadow : $badge_shadow;
                 $badge_view          = $this->format_badge_for_output( $badge, $effective_shadow );
+                // Hide header discount badge if inline discount (from variant sale) is present
+                $bv_price = isset( $best_variant['price'] ) ? (float) $best_variant['price'] : null;
+                $bv_sale  = isset( $best_variant['sale_price'] ) ? (float) $best_variant['sale_price'] : null;
+                $has_variant_discount = ( null !== $bv_price && null !== $bv_sale && $bv_price > 0 && $bv_sale >= 0 && $bv_sale < $bv_price );
+                if ( $has_variant_discount && $this->looks_like_discount_badge( $badge_view['label'] ?? '' ) ) {
+                    $badge_view['hidden'] = true;
+                    // FireVPS template hides badge based on empty label; ensure it's empty
+                    $badge_view['label'] = '';
+                }
                 $cta_view            = $this->prepare_cta( $best_variant );
                 $cta_target          = '';
                 $cta_rel             = '';
@@ -670,6 +679,14 @@ class PWPL_Shortcode {
                     $plan_badge_shadow = (int) get_post_meta( $plan->ID, PWPL_Meta::PLAN_BADGE_SHADOW, true );
                     $effective_shadow  = $plan_badge_shadow > 0 ? $plan_badge_shadow : $badge_shadow;
                     $badge_view   = $this->format_badge_for_output( $badge, $effective_shadow );
+                    // Hide header discount badge if inline discount (from variant sale) is present
+                    $v_price = isset( $variant['price'] ) ? (float) $variant['price'] : null;
+                    $v_sale  = isset( $variant['sale_price'] ) ? (float) $variant['sale_price'] : null;
+                    $has_variant_discount = ( null !== $v_price && null !== $v_sale && $v_price > 0 && $v_sale >= 0 && $v_sale < $v_price );
+                    if ( $has_variant_discount && $this->looks_like_discount_badge( $badge_view['label'] ?? '' ) ) {
+                        $badge_view['hidden'] = true;
+                        $badge_view['label'] = '';
+                    }
                     $cta          = $this->prepare_cta( $variant );
                     $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );
 
@@ -1165,5 +1182,20 @@ class PWPL_Shortcode {
             default:
                 return $symbol . $formatted;
         }
+    }
+
+    /**
+     * Heuristic: does a badge label look like a discount message?
+     * Matches strings like "10% OFF", "Save 40%", "15%" etc.
+     */
+    private function looks_like_discount_badge( $label ) {
+        $text = strtolower( trim( (string) $label ) );
+        if ( $text === '' ) {
+            return false;
+        }
+        if ( preg_match( '/\d+\s*%/', $text ) ) {
+            return true;
+        }
+        return ( strpos( $text, 'off' ) !== false || strpos( $text, 'save' ) !== false );
     }
 }
