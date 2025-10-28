@@ -142,11 +142,16 @@ class PWPL_Meta {
                     'color'  => (string) ( $v['hover']['color'] ?? '' ),
                     'border' => (string) ( $v['hover']['border'] ?? '' ),
                 ];
+                // Normalize tracking: accept numeric and append em
+                $tracking_raw = isset( $v['font']['tracking'] ) ? trim( (string) $v['font']['tracking'] ) : '';
+                if ( $tracking_raw !== '' && preg_match( '/^[-+]?[0-9]*\.?[0-9]+$/', $tracking_raw ) ) {
+                    $tracking_raw .= 'em';
+                }
                 $out['font'] = [
                     'family'    => (string) ( $v['font']['family'] ?? '' ),
                     'size'      => max( 10, min( 28, (int) ( $v['font']['size'] ?? 0 ) ) ),
                     'transform' => in_array( $v['font']['transform'] ?? 'none', [ 'none', 'uppercase' ], true ) ? $v['font']['transform'] : 'none',
-                    'tracking'  => (string) ( $v['font']['tracking'] ?? '' ), // expect values like 0.01em
+                    'tracking'  => $tracking_raw,
                 ];
                 return $out;
             },

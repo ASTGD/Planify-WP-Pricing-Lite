@@ -384,7 +384,11 @@ class PWPL_Shortcode {
             if ( ! empty( $cta_cfg['font']['family'] ) )   { $cta_vars['--cta-font']       = (string) $cta_cfg['font']['family']; }
             if ( ! empty( $cta_cfg['font']['size'] ) )     { $cta_vars['--cta-font-size']  = (int) $cta_cfg['font']['size'] . 'px'; }
             if ( ! empty( $cta_cfg['font']['transform'] ) ){ $cta_vars['--cta-transform']  = (string) $cta_cfg['font']['transform']; }
-            if ( ! empty( $cta_cfg['font']['tracking'] ) ) { $cta_vars['--cta-tracking']   = (string) $cta_cfg['font']['tracking']; }
+            if ( ! empty( $cta_cfg['font']['tracking'] ) ) {
+                $trk = (string) $cta_cfg['font']['tracking'];
+                if ( preg_match( '/^[-+]?[0-9]*\.?[0-9]+$/', $trk ) ) { $trk .= 'em'; }
+                $cta_vars['--cta-tracking'] = $trk;
+            }
 
             foreach ( $cta_vars as $var => $value ) {
                 // Escape and append

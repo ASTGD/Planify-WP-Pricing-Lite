@@ -679,7 +679,8 @@ class PWPL_Admin_Meta {
                             </label>
                             <label style="display:flex; flex-direction:column; gap:6px;">
                                 <span><?php esc_html_e( 'Letter spacing (em)', 'planify-wp-pricing-lite' ); ?></span>
-                                <input type="text" name="pwpl_table[ui][cta][font][tracking]" value="<?php echo esc_attr( $cta['font']['tracking'] ?? '' ); ?>" placeholder="0.01em" />
+                                <input type="text" name="pwpl_table[ui][cta][font][tracking]" value="<?php echo esc_attr( $cta['font']['tracking'] ?? '' ); ?>" placeholder="0.01" />
+                                <em class="description" style="opacity:.75;"><?php esc_html_e( 'Enter a number; “em” is added automatically (e.g., 0.01).', 'planify-wp-pricing-lite' ); ?></em>
                             </label>
                         </div>
                     </div>
@@ -1289,11 +1290,16 @@ class PWPL_Admin_Meta {
             'color'  => (string) ( $v['hover']['color'] ?? '' ),
             'border' => (string) ( $v['hover']['border'] ?? '' ),
         ];
+        // Normalize tracking: numeric becomes em unit
+        $tracking_raw = isset( $v['font']['tracking'] ) ? trim( (string) $v['font']['tracking'] ) : '';
+        if ( $tracking_raw !== '' && preg_match( '/^[-+]?[0-9]*\.?[0-9]+$/', $tracking_raw ) ) {
+            $tracking_raw .= 'em';
+        }
         $out['font'] = [
             'family'    => (string) ( $v['font']['family'] ?? '' ),
             'size'      => max( 10, min( 28, (int) ( $v['font']['size'] ?? 0 ) ) ),
             'transform' => in_array( $v['font']['transform'] ?? 'none', [ 'none', 'uppercase' ], true ) ? $v['font']['transform'] : 'none',
-            'tracking'  => (string) ( $v['font']['tracking'] ?? '' ),
+            'tracking'  => $tracking_raw,
         ];
         update_post_meta( $post_id, PWPL_Meta::CTA_CONFIG, $out );
 
