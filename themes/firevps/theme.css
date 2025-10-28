@@ -1093,13 +1093,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  padding: 14px 22px;
-  border-radius: 12px;
-  border: 1.5px solid var(--fvps-cta-color);
-  background: transparent;
-  color: var(--fvps-cta-color);
-  font-weight: 700;
+  width: var(--cta-width, 100%);
+  height: var(--cta-height, 48px);
+  padding: 0 var(--cta-pad-x, 22px);
+  border-radius: var(--cta-radius, 12px);
+  border: var(--cta-border-width, 1.5px) solid var(--cta-border, var(--fvps-cta-color));
+  background: var(--cta-bg, transparent);
+  color: var(--cta-color, var(--fvps-cta-color));
+  font-weight: var(--cta-weight, 700);
   font-size: 0.98rem;
   letter-spacing: 0.01em;
   text-transform: none;
@@ -1131,9 +1132,9 @@
 .pwpl-table--theme-firevps .fvps-button:hover,
 .pwpl-table--theme-firevps .fvps-button--inline:hover {
   transform: translateY(-1px);
-  background: var(--fvps-cta-color);
-  color: #fff;
-  border-color: var(--fvps-cta-color);
+  background: var(--cta-hover-bg, var(--fvps-cta-color));
+  color: var(--cta-hover-color, #fff);
+  border-color: var(--cta-hover-border, var(--fvps-cta-color));
 }
 
 .pwpl-table--theme-firevps .fvps-button:active,
@@ -1141,7 +1142,7 @@
 
 .pwpl-table--theme-firevps .fvps-button:focus-visible,
 .pwpl-table--theme-firevps .fvps-button--inline:focus-visible {
-  outline: 3px solid rgba(241, 154, 40, 0.45);
+  outline: 3px solid var(--cta-focus, rgba(241, 154, 40, 0.45));
   outline-offset: 3px;
 }
 

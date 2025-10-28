@@ -359,6 +359,33 @@ class PWPL_Shortcode {
             $style_inline .= $var . ':' . $value . ';';
         }
 
+        // CTA variables from table meta
+        $cta_cfg = get_post_meta( $table_id, PWPL_Meta::CTA_CONFIG, true );
+        if ( is_array( $cta_cfg ) ) {
+            $cta_vars = [];
+            if ( ! empty( $cta_cfg['width'] ) ) {
+                $cta_vars['--cta-width'] = ( $cta_cfg['width'] === 'full' ) ? '100%' : 'auto';
+            }
+            if ( isset( $cta_cfg['height'] ) ) { $cta_vars['--cta-height'] = max(36, (int)$cta_cfg['height']) . 'px'; }
+            if ( isset( $cta_cfg['pad_x'] ) )  { $cta_vars['--cta-pad-x']  = max(10, (int)$cta_cfg['pad_x']) . 'px'; }
+            if ( isset( $cta_cfg['radius'] ) )  { $cta_vars['--cta-radius']  = max(0, (int)$cta_cfg['radius']) . 'px'; }
+            if ( isset( $cta_cfg['border_width'] ) ) { $cta_vars['--cta-border-width'] = max(0, (float)$cta_cfg['border_width']) . 'px'; }
+            if ( isset( $cta_cfg['weight'] ) ) { $cta_vars['--cta-weight'] = (int)$cta_cfg['weight']; }
+            if ( isset( $cta_cfg['lift'] ) )   { $cta_vars['--cta-lift']   = (int)$cta_cfg['lift']; }
+            if ( ! empty( $cta_cfg['focus'] ) ) { $cta_vars['--cta-focus'] = (string) $cta_cfg['focus']; }
+            if ( ! empty( $cta_cfg['normal']['bg'] ) )     { $cta_vars['--cta-bg']     = (string) $cta_cfg['normal']['bg']; }
+            if ( ! empty( $cta_cfg['normal']['color'] ) )  { $cta_vars['--cta-color']  = (string) $cta_cfg['normal']['color']; }
+            if ( ! empty( $cta_cfg['normal']['border'] ) ) { $cta_vars['--cta-border'] = (string) $cta_cfg['normal']['border']; }
+            if ( ! empty( $cta_cfg['hover']['bg'] ) )      { $cta_vars['--cta-hover-bg']     = (string) $cta_cfg['hover']['bg']; }
+            if ( ! empty( $cta_cfg['hover']['color'] ) )   { $cta_vars['--cta-hover-color']  = (string) $cta_cfg['hover']['color']; }
+            if ( ! empty( $cta_cfg['hover']['border'] ) )  { $cta_vars['--cta-hover-border'] = (string) $cta_cfg['hover']['border']; }
+
+            foreach ( $cta_vars as $var => $value ) {
+                // Escape and append
+                $style_inline .= $var . ':' . esc_attr( $value ) . ';';
+            }
+        }
+
         $table_style_attr = $style_inline ? ' style="' . esc_attr( $style_inline ) . '"' : '';
 
         $template_rel = 'template.php';

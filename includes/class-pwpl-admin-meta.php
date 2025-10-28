@@ -589,6 +589,69 @@ class PWPL_Admin_Meta {
                 </select>
                 <p class="description"><?php esc_html_e( 'Applies to every plan within this table. Customize colors via assets/css/themes.css.', 'planify-wp-pricing-lite' ); ?></p>
             </div>
+
+            <div class="pwpl-field">
+                <h3 style="margin:8px 0 6px;"><?php esc_html_e( 'CTA Button', 'planify-wp-pricing-lite' ); ?></h3>
+                <?php $cta = get_post_meta( $post->ID, PWPL_Meta::CTA_CONFIG, true ); $cta = is_array( $cta ) ? $cta : []; ?>
+                <div class="pwpl-field__row" style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+                    <label style="display:flex; flex-direction:column; gap:6px;">
+                        <span><?php esc_html_e( 'Width', 'planify-wp-pricing-lite' ); ?></span>
+                        <select name="pwpl_table[ui][cta][width]">
+                            <option value="auto" <?php selected( ($cta['width'] ?? 'full'), 'auto' ); ?>><?php esc_html_e( 'Auto', 'planify-wp-pricing-lite' ); ?></option>
+                            <option value="full" <?php selected( ($cta['width'] ?? 'full'), 'full' ); ?>><?php esc_html_e( 'Full', 'planify-wp-pricing-lite' ); ?></option>
+                        </select>
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:6px;">
+                        <span><?php esc_html_e( 'Height (px)', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="number" min="36" max="64" step="1" name="pwpl_table[ui][cta][height]" value="<?php echo esc_attr( $cta['height'] ?? 48 ); ?>" />
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:6px;">
+                        <span><?php esc_html_e( 'Padding X (px)', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="number" min="10" max="32" step="1" name="pwpl_table[ui][cta][pad_x]" value="<?php echo esc_attr( $cta['pad_x'] ?? 22 ); ?>" />
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:6px;">
+                        <span><?php esc_html_e( 'Radius (px)', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="number" min="0" max="999" step="1" name="pwpl_table[ui][cta][radius]" value="<?php echo esc_attr( $cta['radius'] ?? 12 ); ?>" />
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:6px;">
+                        <span><?php esc_html_e( 'Border width (px)', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="number" min="0" max="4" step="0.5" name="pwpl_table[ui][cta][border_width]" value="<?php echo esc_attr( $cta['border_width'] ?? 1.5 ); ?>" />
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:6px;">
+                        <span><?php esc_html_e( 'Weight', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="number" min="500" max="900" step="50" name="pwpl_table[ui][cta][weight]" value="<?php echo esc_attr( $cta['weight'] ?? 700 ); ?>" />
+                    </label>
+                    <label style="display:flex; flex-direction:column; gap:6px;">
+                        <span><?php esc_html_e( 'Hover lift (px)', 'planify-wp-pricing-lite' ); ?></span>
+                        <input type="number" min="0" max="3" step="1" name="pwpl_table[ui][cta][lift]" value="<?php echo esc_attr( $cta['lift'] ?? 1 ); ?>" />
+                    </label>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:16px; margin-top:8px;">
+                    <div>
+                        <strong><?php esc_html_e( 'Normal', 'planify-wp-pricing-lite' ); ?></strong>
+                        <div style="display:flex; gap:10px; margin-top:6px;">
+                            <label><?php esc_html_e( 'BG', 'planify-wp-pricing-lite' ); ?> <input type="color" name="pwpl_table[ui][cta][normal][bg]" value="<?php echo esc_attr( $cta['normal']['bg'] ?? '' ); ?>" /></label>
+                            <label><?php esc_html_e( 'Text', 'planify-wp-pricing-lite' ); ?> <input type="color" name="pwpl_table[ui][cta][normal][color]" value="<?php echo esc_attr( $cta['normal']['color'] ?? '' ); ?>" /></label>
+                            <label><?php esc_html_e( 'Border', 'planify-wp-pricing-lite' ); ?> <input type="color" name="pwpl_table[ui][cta][normal][border]" value="<?php echo esc_attr( $cta['normal']['border'] ?? '' ); ?>" /></label>
+                        </div>
+                    </div>
+                    <div>
+                        <strong><?php esc_html_e( 'Hover', 'planify-wp-pricing-lite' ); ?></strong>
+                        <div style="display:flex; gap:10px; margin-top:6px;">
+                            <label><?php esc_html_e( 'BG', 'planify-wp-pricing-lite' ); ?> <input type="color" name="pwpl_table[ui][cta][hover][bg]" value="<?php echo esc_attr( $cta['hover']['bg'] ?? '' ); ?>" /></label>
+                            <label><?php esc_html_e( 'Text', 'planify-wp-pricing-lite' ); ?> <input type="color" name="pwpl_table[ui][cta][hover][color]" value="<?php echo esc_attr( $cta['hover']['color'] ?? '' ); ?>" /></label>
+                            <label><?php esc_html_e( 'Border', 'planify-wp-pricing-lite' ); ?> <input type="color" name="pwpl_table[ui][cta][hover][border]" value="<?php echo esc_attr( $cta['hover']['border'] ?? '' ); ?>" /></label>
+                        </div>
+                    </div>
+                    <div>
+                        <strong><?php esc_html_e( 'Focus', 'planify-wp-pricing-lite' ); ?></strong>
+                        <div style="display:flex; gap:10px; margin-top:6px;">
+                            <label><?php esc_html_e( 'Outline', 'planify-wp-pricing-lite' ); ?> <input type="color" name="pwpl_table[ui][cta][focus]" value="<?php echo esc_attr( $cta['focus'] ?? '' ); ?>" /></label>
+                        </div>
+                    </div>
+                </div>
+                <p class="description"><?php esc_html_e( 'Leave colors empty to use the theme accent outline (fills on hover).', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
             <div class="pwpl-field">
                 <label style="display:flex; gap:8px; align-items:center;">
                     <input type="checkbox" name="pwpl_table[ui][trust_trio]" value="1" <?php checked( $trust_trio, 1 ); ?> />
@@ -1161,6 +1224,36 @@ class PWPL_Admin_Meta {
 
         $sticky_cta = ! empty( $ui_input['sticky_cta'] ) ? 1 : 0;
         if ( $sticky_cta ) { update_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE ); }
+
+        // CTA config
+        $cta_input = isset( $ui_input['cta'] ) ? (array) $ui_input['cta'] : [];
+        $cta_value = apply_filters( 'pwpl_sanitize_cta', $cta_input );
+        // Reuse the meta sanitizer to keep logic consistent
+        $meta_sanitizer = new PWPL_Meta();
+        $cta_clean = $meta_sanitizer->register_meta() ? null : null; // no-op to avoid unused warning
+        // Call the sanitizer inline (duplicated from PWPL_Meta::register_meta anonymous)
+        $v = is_array( $cta_input ) ? $cta_input : [];
+        $out = [];
+        $out['width']  = in_array( $v['width'] ?? 'full', [ 'auto','full' ], true ) ? $v['width'] : 'full';
+        $out['height'] = max( 36, min( 64, (int) ( $v['height'] ?? 48 ) ) );
+        $out['pad_x']  = max( 10, min( 32, (int) ( $v['pad_x'] ?? 22 ) ) );
+        $out['radius'] = max( 0, min( 999, (int) ( $v['radius'] ?? 12 ) ) );
+        $bw = isset( $v['border_width'] ) ? (float) $v['border_width'] : 1.5;
+        $out['border_width'] = max( 0, min( 4, $bw ) );
+        $out['weight'] = max( 500, min( 900, (int) ( $v['weight'] ?? 700 ) ) );
+        $out['lift']   = max( 0, min( 3, (int) ( $v['lift'] ?? 1 ) ) );
+        $out['focus']  = (string) ( $v['focus'] ?? '' );
+        $out['normal'] = [
+            'bg'     => (string) ( $v['normal']['bg'] ?? '' ),
+            'color'  => (string) ( $v['normal']['color'] ?? '' ),
+            'border' => (string) ( $v['normal']['border'] ?? '' ),
+        ];
+        $out['hover'] = [
+            'bg'     => (string) ( $v['hover']['bg'] ?? '' ),
+            'color'  => (string) ( $v['hover']['color'] ?? '' ),
+            'border' => (string) ( $v['hover']['border'] ?? '' ),
+        ];
+        update_post_meta( $post_id, PWPL_Meta::CTA_CONFIG, $out );
 
         // Trust items textarea -> array
         $trust_items_input = isset( $ui_input['trust_items'] ) ? (string) $ui_input['trust_items'] : '';
