@@ -666,6 +666,22 @@ class PWPL_Admin_Meta {
                                 <span><?php esc_html_e( 'Font family', 'planify-wp-pricing-lite' ); ?></span>
                                 <input type="text" name="pwpl_table[ui][cta][font][family]" class="widefat" value="<?php echo esc_attr( $cta['font']['family'] ?? '' ); ?>" placeholder="Inter, system-ui, -apple-system, sans-serif" />
                             </label>
+                            <label style="display:flex; flex-direction:column; gap:6px; min-width:220px;">
+                                <span><?php esc_html_e( 'Preset font', 'planify-wp-pricing-lite' ); ?></span>
+                                <?php $preset = $cta['font']['preset'] ?? ''; ?>
+                                <select name="pwpl_table[ui][cta][font][preset]">
+                                    <option value="" <?php selected( $preset, '' ); ?>><?php esc_html_e( '— Select a preset —', 'planify-wp-pricing-lite' ); ?></option>
+                                    <option value="system" <?php selected( $preset, 'system' ); ?>><?php esc_html_e( 'System UI (safe stack)', 'planify-wp-pricing-lite' ); ?></option>
+                                    <option value="inter" <?php selected( $preset, 'inter' ); ?>>Inter</option>
+                                    <option value="poppins" <?php selected( $preset, 'poppins' ); ?>>Poppins</option>
+                                    <option value="open_sans" <?php selected( $preset, 'open_sans' ); ?>>Open Sans</option>
+                                    <option value="montserrat" <?php selected( $preset, 'montserrat' ); ?>>Montserrat</option>
+                                    <option value="lato" <?php selected( $preset, 'lato' ); ?>>Lato</option>
+                                    <option value="space_grotesk" <?php selected( $preset, 'space_grotesk' ); ?>>Space Grotesk</option>
+                                    <option value="rubik" <?php selected( $preset, 'rubik' ); ?>>Rubik</option>
+                                </select>
+                                <em class="description" style="opacity:.75;"><?php esc_html_e( 'Pick a preset or type a custom family above.', 'planify-wp-pricing-lite' ); ?></em>
+                            </label>
                             <label style="display:flex; flex-direction:column; gap:6px;">
                                 <span><?php esc_html_e( 'Font size (px)', 'planify-wp-pricing-lite' ); ?></span>
                                 <input type="number" min="10" max="28" step="1" name="pwpl_table[ui][cta][font][size]" value="<?php echo esc_attr( $cta['font']['size'] ?? 0 ); ?>" />
@@ -675,6 +691,17 @@ class PWPL_Admin_Meta {
                                 <select name="pwpl_table[ui][cta][font][transform]">
                                     <option value="none" <?php selected( ($cta['font']['transform'] ?? 'none'), 'none' ); ?>><?php esc_html_e( 'None', 'planify-wp-pricing-lite' ); ?></option>
                                     <option value="uppercase" <?php selected( ($cta['font']['transform'] ?? 'none'), 'uppercase' ); ?>><?php esc_html_e( 'Uppercase', 'planify-wp-pricing-lite' ); ?></option>
+                                </select>
+                            </label>
+                            <label style="display:flex; flex-direction:column; gap:6px;">
+                                <span><?php esc_html_e( 'Weight', 'planify-wp-pricing-lite' ); ?></span>
+                                <?php $fw = (int) ( $cta['weight'] ?? 700 ); ?>
+                                <select name="pwpl_table[ui][cta][font][weight]">
+                                    <option value="400" <?php selected( $fw, 400 ); ?>><?php esc_html_e( 'Regular (400)', 'planify-wp-pricing-lite' ); ?></option>
+                                    <option value="500" <?php selected( $fw, 500 ); ?>><?php esc_html_e( 'Medium (500)', 'planify-wp-pricing-lite' ); ?></option>
+                                    <option value="600" <?php selected( $fw, 600 ); ?>><?php esc_html_e( 'Semibold (600)', 'planify-wp-pricing-lite' ); ?></option>
+                                    <option value="700" <?php selected( $fw, 700 ); ?>><?php esc_html_e( 'Bold (700)', 'planify-wp-pricing-lite' ); ?></option>
+                                    <option value="800" <?php selected( $fw, 800 ); ?>><?php esc_html_e( 'ExtraBold (800)', 'planify-wp-pricing-lite' ); ?></option>
                                 </select>
                             </label>
                             <label style="display:flex; flex-direction:column; gap:6px;">
@@ -1275,7 +1302,13 @@ class PWPL_Admin_Meta {
         $out['radius'] = max( 0, min( 999, (int) ( $v['radius'] ?? 12 ) ) );
         $bw = isset( $v['border_width'] ) ? (float) $v['border_width'] : 1.5;
         $out['border_width'] = max( 0, min( 4, $bw ) );
-        $out['weight'] = max( 500, min( 900, (int) ( $v['weight'] ?? 700 ) ) );
+        // Prefer font.weight if provided, else top-level weight
+        $font_weight = isset( $v['font']['weight'] ) ? (int) $v['font']['weight'] : 0;
+        if ( $font_weight ) {
+            $out['weight'] = max( 400, min( 900, $font_weight ) );
+        } else {
+            $out['weight'] = max( 500, min( 900, (int) ( $v['weight'] ?? 700 ) ) );
+        }
         $out['lift']   = max( 0, min( 3, (int) ( $v['lift'] ?? 1 ) ) );
         $out['min_w']  = max( 0, min( 4000, (int) ( $v['min_w'] ?? 0 ) ) );
         $out['max_w']  = max( 0, min( 4000, (int) ( $v['max_w'] ?? 0 ) ) );
@@ -1295,8 +1328,23 @@ class PWPL_Admin_Meta {
         if ( $tracking_raw !== '' && preg_match( '/^[-+]?[0-9]*\.?[0-9]+$/', $tracking_raw ) ) {
             $tracking_raw .= 'em';
         }
+        $preset = isset( $v['font']['preset'] ) ? sanitize_key( $v['font']['preset'] ) : '';
+        $preset_map = [
+            'system'        => 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+            'inter'         => '"Inter", system-ui, -apple-system, sans-serif',
+            'poppins'       => '"Poppins", system-ui, -apple-system, sans-serif',
+            'open_sans'     => '"Open Sans", system-ui, -apple-system, sans-serif',
+            'montserrat'    => '"Montserrat", system-ui, -apple-system, sans-serif',
+            'lato'          => '"Lato", system-ui, -apple-system, sans-serif',
+            'space_grotesk' => '"Space Grotesk", system-ui, -apple-system, sans-serif',
+            'rubik'         => '"Rubik", system-ui, -apple-system, sans-serif',
+        ];
+        $family = (string) ( $v['font']['family'] ?? '' );
+        if ( $family === '' && $preset && isset( $preset_map[ $preset ] ) ) {
+            $family = $preset_map[ $preset ];
+        }
         $out['font'] = [
-            'family'    => (string) ( $v['font']['family'] ?? '' ),
+            'family'    => $family,
             'size'      => max( 10, min( 28, (int) ( $v['font']['size'] ?? 0 ) ) ),
             'transform' => in_array( $v['font']['transform'] ?? 'none', [ 'none', 'uppercase' ], true ) ? $v['font']['transform'] : 'none',
             'tracking'  => $tracking_raw,
