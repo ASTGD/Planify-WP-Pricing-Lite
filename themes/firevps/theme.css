@@ -1088,22 +1088,24 @@
 
 .pwpl-table--theme-firevps .fvps-button,
 .pwpl-table--theme-firevps .fvps-button--inline {
+  /* Outline by default; fill on hover */
+  --fvps-cta-color: var(--fvps-color-accent-strong, var(--fvps-color-accent, #d9790b));
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 15px 28px;
-  border-radius: 999px;
-  border: 1px solid rgba(20, 20, 20, 0.7);
-  background: var(--fvps-color-button);
-  color: var(--fvps-color-button-text);
+  padding: 14px 22px;
+  border-radius: 12px;
+  border: 1.5px solid var(--fvps-cta-color);
+  background: transparent;
+  color: var(--fvps-cta-color);
   font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
   text-decoration: none;
   box-shadow: none;
-  transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   position: relative;
   overflow: hidden;
 }
@@ -1128,16 +1130,14 @@
 
 .pwpl-table--theme-firevps .fvps-button:hover,
 .pwpl-table--theme-firevps .fvps-button--inline:hover {
-  transform: translateY(-2px);
-  background: color-mix(in oklab, var(--fvps-color-button) 76%, var(--fvps-color-accent) 24%);
-  border-color: color-mix(in oklab, var(--fvps-color-accent-strong) 60%, #000 40%);
-  box-shadow: 0 10px 24px rgba(15,23,42,0.16);
+  transform: translateY(-1px);
+  background: var(--fvps-cta-color);
+  color: #fff;
+  border-color: var(--fvps-cta-color);
 }
 
 .pwpl-table--theme-firevps .fvps-button:active,
-.pwpl-table--theme-firevps .fvps-button--inline:active {
-  background: #121212;
-}
+.pwpl-table--theme-firevps .fvps-button--inline:active { transform: translateY(0); }
 
 .pwpl-table--theme-firevps .fvps-button:focus-visible,
 .pwpl-table--theme-firevps .fvps-button--inline:focus-visible {
@@ -1145,23 +1145,10 @@
   outline-offset: 3px;
 }
 
-/* Subtle sheen animation on hover (pointer devices only) */
+/* No sheen overlay for outline style */
 @media (hover: hover) {
   .pwpl-table--theme-firevps .fvps-button::after,
-  .pwpl-table--theme-firevps .fvps-button--inline::after {
-    content: '';
-    position: absolute;
-    inset: -20% -40% -20% -40%;
-    background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 35%, rgba(255,255,255,0) 70%);
-    transform: translateX(-120%);
-    transition: transform 0.6s ease;
-    pointer-events: none;
-    will-change: transform;
-  }
-  .pwpl-table--theme-firevps .fvps-button:hover::after,
-  .pwpl-table--theme-firevps .fvps-button--inline:hover::after {
-    transform: translateX(120%);
-  }
+  .pwpl-table--theme-firevps .fvps-button--inline::after { display: none; }
 }
 
 /* One-time on‑view sheen trigger */
