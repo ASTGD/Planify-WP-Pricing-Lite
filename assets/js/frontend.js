@@ -455,6 +455,23 @@
         return null;
     }
 
+    function looksLikeDiscountLabel(text) {
+        const t = String(text || '').toLowerCase().trim();
+        if (!t) return false;
+        if (/\d+\s*%/.test(t)) return true;
+        return t.includes('off') || t.includes('save');
+    }
+
+    function hasVariantDiscount(plan, selection) {
+        try {
+            const best = resolveVariant(getVariants(plan), selection);
+            if (!best) return false;
+            const price = parseFloat(best.price);
+            const sale  = parseFloat(best.sale_price);
+            return !isNaN(price) && !isNaN(sale) && price > 0 && sale >= 0 && sale < price;
+        } catch (e) { return false; }
+    }
+
     function updateBadge(plan, selection, tableBadges) {
         const badgeEl = plan.querySelector('[data-pwpl-badge]');
         if (!badgeEl) {
@@ -465,6 +482,20 @@
         toneClasses.forEach(function(cls){ badgeEl.classList.remove(cls); });
 
         const badge = resolveBadge(selection, getPlanBadges(plan), tableBadges);
+        // If a real variant discount exists, suppress any discount-looking header badge
+        if (hasVariantDiscount(plan, selection) && badge && looksLikeDiscountLabel(badge.label)) {
+            badgeEl.hidden = true;
+            badgeEl.dataset.badgeColor = '';
+            badgeEl.dataset.badgeText = '';
+            badgeEl.dataset.badgeTone = '';
+            badgeEl.style.removeProperty('--pwpl-badge-bg');
+            badgeEl.style.removeProperty('--pwpl-badge-color');
+            const iconEl = badgeEl.querySelector('[data-pwpl-badge-icon]');
+            const labelEl = badgeEl.querySelector('[data-pwpl-badge-label]');
+            if (iconEl) { iconEl.textContent = ''; iconEl.hidden = true; }
+            if (labelEl) { labelEl.textContent = ''; }
+            return;
+        }
 
         const iconEl = badgeEl.querySelector('[data-pwpl-badge-icon]');
         const labelEl = badgeEl.querySelector('[data-pwpl-badge-label]');
