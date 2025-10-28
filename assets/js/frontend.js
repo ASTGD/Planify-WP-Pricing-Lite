@@ -84,14 +84,45 @@
         if (!price && !sale) {
             return '<span class="pwpl-plan__price--empty">' + __( 'Contact us' ) + '</span>';
         }
-        const formattedPrice = price ? formatPrice(price) : '';
-        const formattedSale = sale ? formatPrice(sale) : '';
-        if (formattedSale && formattedPrice) {
-            return '<span class="pwpl-plan__price-sale">' + formattedSale + '</span>' +
-                   '<span class="pwpl-plan__price-original">' + formattedPrice + '</span>';
+        // Determine if there is a real discount (numeric and sale < base)
+        const priceNum = (price !== '' && price !== null) ? parseFloat(price) : NaN;
+        const saleNum = (sale !== '' && sale !== null) ? parseFloat(sale) : NaN;
+        const hasDiscount = !Number.isNaN(priceNum) && !Number.isNaN(saleNum) && priceNum > 0 && saleNum >= 0 && saleNum < priceNum;
+
+        // Treat variant prices as monthly; just format and append /mo
+        const formattedPriceMonthly = price ? formatPrice(price) : '';
+        const formattedSaleMonthly  = sale ? formatPrice(sale)  : '';
+        const unit = ' /mo';
+
+        if (hasDiscount && formattedSaleMonthly && formattedPriceMonthly) {
+            const pct = Math.round(((priceNum - saleNum) / priceNum) * 100);
+            const badge = pct > 0
+                ? '<span class="fvps-price-badge" aria-label="' + pct + '% off">' + pct + '% OFF</span>'
+                : '';
+            // Split currency pieces from formattedSale for typography
+            const m = formattedSaleMonthly.match(/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/);
+            const pfx = m ? (m[1] || '').trim() : '';
+            const val = m ? (m[2] || formattedSaleMonthly) : formattedSaleMonthly;
+            const sfx = m ? (m[3] || '').trim() : '';
+            const saleHtml = '<span class="pwpl-plan__price-sale">'
+              + (pfx ? '<span class="pwpl-price-currency pwpl-currency--prefix">' + pfx + '</span>' : '')
+              + '<span class="pwpl-price-value">' + val + '</span>'
+              + (sfx ? '<span class="pwpl-price-currency pwpl-currency--suffix">' + sfx + '</span>' : '')
+              + '<span class="pwpl-price-unit">' + unit + '</span>'
+              + '</span>';
+            return '<span class="pwpl-plan__price-original">' + formattedPriceMonthly + '</span>' + badge + saleHtml;
         }
-        const display = formattedPrice || formattedSale;
-        return '<span class="pwpl-plan__price">' + display + '</span>';
+
+        const display = formattedSaleMonthly || formattedPriceMonthly;
+        const m = display.match(/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/);
+        const pfx = m ? (m[1] || '').trim() : '';
+        const val = m ? (m[2] || display) : display;
+        const sfx = m ? (m[3] || '').trim() : '';
+        const single = (pfx ? '<span class="pwpl-price-currency pwpl-currency--prefix">' + pfx + '</span>' : '')
+            + '<span class="pwpl-price-value">' + val + '</span>'
+            + (sfx ? '<span class="pwpl-price-currency pwpl-currency--suffix">' + sfx + '</span>' : '')
+            + '<span class="pwpl-price-unit">' + unit + '</span>';
+        return '<span class="pwpl-plan__price">' + single + '</span>';
     }
 
     function getVariants(plan) {
@@ -424,6 +455,23 @@
         return null;
     }
 
+    function looksLikeDiscountLabel(text) {
+        const t = String(text || '').toLowerCase().trim();
+        if (!t) return false;
+        if (/\d+\s*%/.test(t)) return true;
+        return t.includes('off') || t.includes('save');
+    }
+
+    function hasVariantDiscount(plan, selection) {
+        try {
+            const best = resolveVariant(getVariants(plan), selection);
+            if (!best) return false;
+            const price = parseFloat(best.price);
+            const sale  = parseFloat(best.sale_price);
+            return !isNaN(price) && !isNaN(sale) && price > 0 && sale >= 0 && sale < price;
+        } catch (e) { return false; }
+    }
+
     function updateBadge(plan, selection, tableBadges) {
         const badgeEl = plan.querySelector('[data-pwpl-badge]');
         if (!badgeEl) {
@@ -434,6 +482,20 @@
         toneClasses.forEach(function(cls){ badgeEl.classList.remove(cls); });
 
         const badge = resolveBadge(selection, getPlanBadges(plan), tableBadges);
+        // If a real variant discount exists, suppress any discount-looking header badge
+        if (hasVariantDiscount(plan, selection) && badge && looksLikeDiscountLabel(badge.label)) {
+            badgeEl.hidden = true;
+            badgeEl.dataset.badgeColor = '';
+            badgeEl.dataset.badgeText = '';
+            badgeEl.dataset.badgeTone = '';
+            badgeEl.style.removeProperty('--pwpl-badge-bg');
+            badgeEl.style.removeProperty('--pwpl-badge-color');
+            const iconEl = badgeEl.querySelector('[data-pwpl-badge-icon]');
+            const labelEl = badgeEl.querySelector('[data-pwpl-badge-label]');
+            if (iconEl) { iconEl.textContent = ''; iconEl.hidden = true; }
+            if (labelEl) { labelEl.textContent = ''; }
+            return;
+        }
 
         const iconEl = badgeEl.querySelector('[data-pwpl-badge-icon]');
         const labelEl = badgeEl.querySelector('[data-pwpl-badge-label]');

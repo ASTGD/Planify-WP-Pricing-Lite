@@ -359,6 +359,43 @@ class PWPL_Shortcode {
             $style_inline .= $var . ':' . $value . ';';
         }
 
+        // CTA variables from table meta
+        $cta_cfg = get_post_meta( $table_id, PWPL_Meta::CTA_CONFIG, true );
+        if ( is_array( $cta_cfg ) ) {
+            $cta_vars = [];
+            if ( ! empty( $cta_cfg['width'] ) ) {
+                $cta_vars['--cta-width'] = ( $cta_cfg['width'] === 'full' ) ? '100%' : 'auto';
+            }
+            if ( isset( $cta_cfg['height'] ) ) { $cta_vars['--cta-height'] = max(36, (int)$cta_cfg['height']) . 'px'; }
+            if ( isset( $cta_cfg['pad_x'] ) )  { $cta_vars['--cta-pad-x']  = max(10, (int)$cta_cfg['pad_x']) . 'px'; }
+            if ( isset( $cta_cfg['radius'] ) )  { $cta_vars['--cta-radius']  = max(0, (int)$cta_cfg['radius']) . 'px'; }
+            if ( isset( $cta_cfg['border_width'] ) ) { $cta_vars['--cta-border-width'] = max(0, (float)$cta_cfg['border_width']) . 'px'; }
+            if ( isset( $cta_cfg['weight'] ) ) { $cta_vars['--cta-weight'] = (int)$cta_cfg['weight']; }
+            if ( isset( $cta_cfg['lift'] ) )   { $cta_vars['--cta-lift']   = (int)$cta_cfg['lift']; }
+            if ( ! empty( $cta_cfg['focus'] ) ) { $cta_vars['--cta-focus'] = (string) $cta_cfg['focus']; }
+            if ( isset( $cta_cfg['min_w'] ) && (int)$cta_cfg['min_w'] > 0 ) { $cta_vars['--cta-min'] = (int)$cta_cfg['min_w'] . 'px'; }
+            if ( isset( $cta_cfg['max_w'] ) && (int)$cta_cfg['max_w'] > 0 ) { $cta_vars['--cta-max'] = (int)$cta_cfg['max_w'] . 'px'; }
+            if ( ! empty( $cta_cfg['normal']['bg'] ) )     { $cta_vars['--cta-bg']     = (string) $cta_cfg['normal']['bg']; }
+            if ( ! empty( $cta_cfg['normal']['color'] ) )  { $cta_vars['--cta-color']  = (string) $cta_cfg['normal']['color']; }
+            if ( ! empty( $cta_cfg['normal']['border'] ) ) { $cta_vars['--cta-border'] = (string) $cta_cfg['normal']['border']; }
+            if ( ! empty( $cta_cfg['hover']['bg'] ) )      { $cta_vars['--cta-hover-bg']     = (string) $cta_cfg['hover']['bg']; }
+            if ( ! empty( $cta_cfg['hover']['color'] ) )   { $cta_vars['--cta-hover-color']  = (string) $cta_cfg['hover']['color']; }
+            if ( ! empty( $cta_cfg['hover']['border'] ) )  { $cta_vars['--cta-hover-border'] = (string) $cta_cfg['hover']['border']; }
+            if ( ! empty( $cta_cfg['font']['family'] ) )   { $cta_vars['--cta-font']       = (string) $cta_cfg['font']['family']; }
+            if ( ! empty( $cta_cfg['font']['size'] ) )     { $cta_vars['--cta-font-size']  = (int) $cta_cfg['font']['size'] . 'px'; }
+            if ( ! empty( $cta_cfg['font']['transform'] ) ){ $cta_vars['--cta-transform']  = (string) $cta_cfg['font']['transform']; }
+            if ( ! empty( $cta_cfg['font']['tracking'] ) ) {
+                $trk = (string) $cta_cfg['font']['tracking'];
+                if ( preg_match( '/^[-+]?[0-9]*\.?[0-9]+$/', $trk ) ) { $trk .= 'em'; }
+                $cta_vars['--cta-tracking'] = $trk;
+            }
+
+            foreach ( $cta_vars as $var => $value ) {
+                // Escape and append
+                $style_inline .= $var . ':' . esc_attr( $value ) . ';';
+            }
+        }
+
         $table_style_attr = $style_inline ? ' style="' . esc_attr( $style_inline ) . '"' : '';
 
         $template_rel = 'template.php';
@@ -482,6 +519,15 @@ class PWPL_Shortcode {
                 $badge               = $this->resolve_badge( $active_values, $override_badges, $table_badges );
                 $effective_shadow    = $plan_badge_shadow > 0 ? $plan_badge_shadow : $badge_shadow;
                 $badge_view          = $this->format_badge_for_output( $badge, $effective_shadow );
+                // Hide header discount badge if inline discount (from variant sale) is present
+                $bv_price = isset( $best_variant['price'] ) ? (float) $best_variant['price'] : null;
+                $bv_sale  = isset( $best_variant['sale_price'] ) ? (float) $best_variant['sale_price'] : null;
+                $has_variant_discount = ( null !== $bv_price && null !== $bv_sale && $bv_price > 0 && $bv_sale >= 0 && $bv_sale < $bv_price );
+                if ( $has_variant_discount && $this->looks_like_discount_badge( $badge_view['label'] ?? '' ) ) {
+                    $badge_view['hidden'] = true;
+                    // FireVPS template hides badge based on empty label; ensure it's empty
+                    $badge_view['label'] = '';
+                }
                 $cta_view            = $this->prepare_cta( $best_variant );
                 $cta_target          = '';
                 $cta_rel             = '';
@@ -670,6 +716,14 @@ class PWPL_Shortcode {
                     $plan_badge_shadow = (int) get_post_meta( $plan->ID, PWPL_Meta::PLAN_BADGE_SHADOW, true );
                     $effective_shadow  = $plan_badge_shadow > 0 ? $plan_badge_shadow : $badge_shadow;
                     $badge_view   = $this->format_badge_for_output( $badge, $effective_shadow );
+                    // Hide header discount badge if inline discount (from variant sale) is present
+                    $v_price = isset( $variant['price'] ) ? (float) $variant['price'] : null;
+                    $v_sale  = isset( $variant['sale_price'] ) ? (float) $variant['sale_price'] : null;
+                    $has_variant_discount = ( null !== $v_price && null !== $v_sale && $v_price > 0 && $v_sale >= 0 && $v_sale < $v_price );
+                    if ( $has_variant_discount && $this->looks_like_discount_badge( $badge_view['label'] ?? '' ) ) {
+                        $badge_view['hidden'] = true;
+                        $badge_view['label'] = '';
+                    }
                     $cta          = $this->prepare_cta( $variant );
                     $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );
 
@@ -857,15 +911,52 @@ class PWPL_Shortcode {
             return '<span class="pwpl-plan__price--empty">' . esc_html__( 'Contact us', 'planify-wp-pricing-lite' ) . '</span>';
         }
 
-        $formatted_price = $price !== '' ? $this->format_price( $price, $settings ) : '';
-        $formatted_sale  = $sale !== '' ? $this->format_price( $sale, $settings ) : '';
+        // Use variant-provided prices as monthly values without additional math
+        $price_num = is_numeric( $price ) ? (float) $price : null;
+        $sale_num  = is_numeric( $sale ) ? (float) $sale : null;
+        $formatted_price = ( null !== $price_num ) ? $this->format_price( $price_num, $settings ) : '';
+        $formatted_sale  = ( null !== $sale_num )  ? $this->format_price( $sale_num,  $settings ) : '';
 
-        if ( $formatted_sale && $formatted_price ) {
-            return '<span class="pwpl-plan__price-sale">' . esc_html( $formatted_sale ) . '</span><span class="pwpl-plan__price-original">' . esc_html( $formatted_price ) . '</span>';
+        // Show old price + inline discount badge + sale price only when numeric and sale < base
+        $has_discount = null !== $price_num && null !== $sale_num && $price_num > 0 && $sale_num >= 0 && $sale_num < $price_num;
+
+        if ( $has_discount && $formatted_sale && $formatted_price ) {
+            $pct = (int) round( ( ( $price_num - $sale_num ) / $price_num ) * 100 );
+            $badge_html = '';
+            if ( $pct > 0 ) {
+                $badge_html = '<span class="fvps-price-badge" aria-label="' . esc_attr( sprintf( __( '%d%% off', 'planify-wp-pricing-lite' ), $pct ) ) . '">' . esc_html( sprintf( __( '%d%% OFF', 'planify-wp-pricing-lite' ), $pct ) ) . '</span>';
+            }
+            // Split currency symbol from numeric portion for precise typography
+            $sale_prefix = ''; $sale_value = $formatted_sale; $sale_suffix = '';
+            if ( preg_match( '/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/u', $formatted_sale, $m ) ) {
+                $sale_prefix = trim( (string) ( $m[1] ?? '' ) );
+                $sale_value  = (string) ( $m[2] ?? $formatted_sale );
+                $sale_suffix = trim( (string) ( $m[3] ?? '' ) );
+            }
+            $sale_html = '<span class="pwpl-plan__price-sale">'
+                . ( $sale_prefix !== '' ? '<span class="pwpl-price-currency pwpl-currency--prefix">' . esc_html( $sale_prefix ) . '</span>' : '' )
+                . '<span class="pwpl-price-value">' . esc_html( $sale_value ) . '</span>'
+                . ( $sale_suffix !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sale_suffix ) . '</span>' : '' )
+                . '<span class="pwpl-price-unit">/mo</span>'
+                . '</span>';
+            // Order: old price + badge (same line), then sale block; unit is added by CSS/JS if needed
+            return '<span class="pwpl-plan__price-original">' . esc_html( $formatted_price ) . '</span>' . $badge_html . $sale_html;
         }
 
-        $display = $formatted_price ?: $formatted_sale;
-        return '<span class="pwpl-plan__price">' . esc_html( $display ) . '</span>';
+        // Otherwise prefer whichever value exists (single price, no badge)
+        $display = $formatted_sale ?: $formatted_price;
+        // Split single price as well for consistent typography
+        $pfx = ''; $val = $display; $sfx = '';
+        if ( preg_match( '/^([^\d\-]*)([0-9][0-9\.,]*)\s*([^\d]*)$/u', (string) $display, $m ) ) {
+            $pfx = trim( (string) ( $m[1] ?? '' ) );
+            $val = (string) ( $m[2] ?? $display );
+            $sfx = trim( (string) ( $m[3] ?? '' ) );
+        }
+        $single_html = ( $pfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--prefix">' . esc_html( $pfx ) . '</span>' : '' )
+            . '<span class="pwpl-price-value">' . esc_html( $val ) . '</span>'
+            . ( $sfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sfx ) . '</span>' : '' )
+            . '<span class="pwpl-price-unit">/mo</span>';
+        return '<span class="pwpl-plan__price">' . $single_html . '</span>';
     }
 
     private function prepare_cta( $variant ) {
@@ -1095,11 +1186,25 @@ class PWPL_Shortcode {
         if ( '' === $period_slug ) {
             return '';
         }
-        $label = $dimension_labels['period'][ $period_slug ] ?? '';
-        if ( '' === $label ) {
+        $raw = $dimension_labels['period'][ $period_slug ] ?? '';
+        if ( '' === $raw ) {
             return '';
         }
-        return sprintf( esc_html__( 'Billed %s', 'planify-wp-pricing-lite' ), $label );
+        $t = strtolower( trim( (string) $raw ) );
+        if ( false !== strpos( $t, 'month' ) ) {
+            return esc_html__( 'Billed monthly', 'planify-wp-pricing-lite' );
+        }
+        if ( false !== strpos( $t, 'annual' ) || false !== strpos( $t, 'year' ) ) {
+            return esc_html__( 'Billed annually*', 'planify-wp-pricing-lite' );
+        }
+        if ( false !== strpos( $t, 'quarter' ) ) {
+            return esc_html__( 'Billed quarterly', 'planify-wp-pricing-lite' );
+        }
+        if ( false !== strpos( $t, 'semi' ) ) {
+            return esc_html__( 'Billed semi‑annually', 'planify-wp-pricing-lite' );
+        }
+        // Fallback to original label, lowercased
+        return sprintf( esc_html__( 'Billed %s', 'planify-wp-pricing-lite' ), strtolower( $raw ) );
     }
 
     private function format_price( $amount, $settings ) {
@@ -1128,5 +1233,20 @@ class PWPL_Shortcode {
             default:
                 return $symbol . $formatted;
         }
+    }
+
+    /**
+     * Heuristic: does a badge label look like a discount message?
+     * Matches strings like "10% OFF", "Save 40%", "15%" etc.
+     */
+    private function looks_like_discount_badge( $label ) {
+        $text = strtolower( trim( (string) $label ) );
+        if ( $text === '' ) {
+            return false;
+        }
+        if ( preg_match( '/\d+\s*%/', $text ) ) {
+            return true;
+        }
+        return ( strpos( $text, 'off' ) !== false || strpos( $text, 'save' ) !== false );
     }
 }

@@ -36,6 +36,7 @@ class PWPL_Meta {
     const TRUST_TRIO_ENABLED      = '_pwpl_trust_trio_enabled';
     const STICKY_CTA_MOBILE       = '_pwpl_sticky_cta_mobile';
     const TRUST_ITEMS             = '_pwpl_trust_items';
+    const CTA_CONFIG              = '_pwpl_cta';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -109,6 +110,51 @@ class PWPL_Meta {
             'type'              => 'string',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => [ $this, 'sanitize_theme' ],
+            'show_in_rest'      => false,
+        ] );
+
+        // CTA configuration (table-level)
+        register_post_meta( 'pwpl_table', self::CTA_CONFIG, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) {
+                $v = is_array( $value ) ? $value : [];
+                $out = [];
+                $out['width']  = in_array( $v['width'] ?? 'full', [ 'auto','full' ], true ) ? $v['width'] : 'full';
+                $out['height'] = max( 36, min( 64, (int) ( $v['height'] ?? 48 ) ) );
+                $out['pad_x']  = max( 10, min( 32, (int) ( $v['pad_x'] ?? 22 ) ) );
+                $out['radius'] = max( 0, min( 999, (int) ( $v['radius'] ?? 12 ) ) );
+                $bw = isset( $v['border_width'] ) ? (float) $v['border_width'] : 1.5;
+                $out['border_width'] = max( 0, min( 4, $bw ) );
+                $out['weight'] = max( 500, min( 900, (int) ( $v['weight'] ?? 700 ) ) );
+                $out['lift']   = max( 0, min( 3, (int) ( $v['lift'] ?? 1 ) ) );
+                $out['focus']  = (string) ( $v['focus'] ?? '' );
+                $out['min_w']  = max( 0, min( 4000, (int) ( $v['min_w'] ?? 0 ) ) );
+                $out['max_w']  = max( 0, min( 4000, (int) ( $v['max_w'] ?? 0 ) ) );
+                $out['normal'] = [
+                    'bg'     => (string) ( $v['normal']['bg'] ?? '' ),
+                    'color'  => (string) ( $v['normal']['color'] ?? '' ),
+                    'border' => (string) ( $v['normal']['border'] ?? '' ),
+                ];
+                $out['hover'] = [
+                    'bg'     => (string) ( $v['hover']['bg'] ?? '' ),
+                    'color'  => (string) ( $v['hover']['color'] ?? '' ),
+                    'border' => (string) ( $v['hover']['border'] ?? '' ),
+                ];
+                // Normalize tracking: accept numeric and append em
+                $tracking_raw = isset( $v['font']['tracking'] ) ? trim( (string) $v['font']['tracking'] ) : '';
+                if ( $tracking_raw !== '' && preg_match( '/^[-+]?[0-9]*\.?[0-9]+$/', $tracking_raw ) ) {
+                    $tracking_raw .= 'em';
+                }
+                $out['font'] = [
+                    'family'    => (string) ( $v['font']['family'] ?? '' ),
+                    'size'      => max( 10, min( 28, (int) ( $v['font']['size'] ?? 0 ) ) ),
+                    'transform' => in_array( $v['font']['transform'] ?? 'none', [ 'none', 'uppercase' ], true ) ? $v['font']['transform'] : 'none',
+                    'tracking'  => $tracking_raw,
+                ];
+                return $out;
+            },
             'show_in_rest'      => false,
         ] );
 

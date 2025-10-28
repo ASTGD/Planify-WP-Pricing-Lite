@@ -22,6 +22,7 @@
   --fvps-font-heading: "Space Grotesk", "Inter", system-ui, sans-serif;
   --fvps-card-min-fallback: 280px;
   --fvps-card-max-inline: 520px;
+  --fvps-price-weight: 800; /* default heavy but not ink-heavy */
   /* Unify arrow offsets for tabs and plan carousel */
   --fvps-plan-nav-offset: 64px;
   position: relative;
@@ -759,8 +760,9 @@
   gap: 6px;
 }
 
-.pwpl-table--theme-firevps .fvps-plan-heading-icon { display: flex; align-items: center; }
-.pwpl-table--theme-firevps .fvps-icon--plan { width: 40px; height: 40px; color: #c76706; background: rgba(247, 166, 35, 0.18); border-radius: 12px; padding: 8px; }
+/* Remove the large plan icon to reclaim vertical space */
+.pwpl-table--theme-firevps .fvps-plan-heading-icon { display: none !important; }
+.pwpl-table--theme-firevps .fvps-icon--plan { display: none !important; }
 
 .pwpl-table--theme-firevps .pwpl-plan__title {
   font-family: var(--fvps-font-heading);
@@ -793,29 +795,40 @@
 .pwpl-table--theme-firevps .fvps-card__price {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  align-items: baseline;
+  gap: 12px 12px; /* increase row gap to create breathing room above sale price */
+  align-items: center;
   font-family: var(--fvps-font-heading);
-  font-size: clamp(2rem, 2.6vw, 2.4rem);
-  font-weight: 700;
-  color: #20160a;
-  letter-spacing: 0.01em;
+  font-size: clamp(1.8rem, 3vw, 2.2rem);
+  font-weight: 800;
+  color: #111214;
+  letter-spacing: 0.005em;
   min-height: 2.4rem;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-sale {
-  font-size: clamp(1.4rem, 2.2vw, 1.85rem);
-  color: #1d1207;
-  letter-spacing: 0.04em;
+  font-size: clamp(2rem, 4.5vw, 2.8rem);
+  color: #111214;
+  letter-spacing: 0.01em;
+  flex: 0 0 100%; /* force to next line under old price + badge */
+  font-variant-numeric: tabular-nums;
+  margin-top: 12px; /* clear space from old price + badge */
+}
+
+/* Ensure non-discounted price uses the same typography as discounted sale price */
+.pwpl-table--theme-firevps .pwpl-plan__price {
+  font-size: clamp(2rem, 4.5vw, 2.8rem);
+  color: #111214;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
 .pwpl-table--theme-firevps .pwpl-plan__price-original {
   position: relative;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  padding-inline: 4px;
-  color: rgba(28, 26, 22, 0.55);
+  font-size: 0.95rem;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  padding-inline: 2px;
+  color: rgba(17, 24, 39, 0.45);
   font-weight: 500;
 }
 
@@ -824,17 +837,39 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 50%;
-  height: 2px;
-  background: rgba(217, 121, 11, 0.85);
+  top: 52%;
+  height: 1px;
+  background: rgba(17, 24, 39, 0.35);
   transform: translateY(-50%);
 }
 
+/* Price discount badge — FireVPS brand accent */
+.pwpl-table--theme-firevps .fvps-price-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 100%, #000 0%);
+  background: color-mix(in oklab, var(--fvps-color-accent, #f5a623) 18%, #fff 82%);
+  border: 1px solid color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 24%, #000 0%);
+}
+
+.pwpl-table--theme-firevps .pwpl-price-currency { font-size: 58%; font-weight: 400; display: inline-block; transform: translateY(-1px); margin: 0; color: rgba(17,24,39,.55); }
+.pwpl-table--theme-firevps .pwpl-currency--prefix { margin-right: -1px; }
+.pwpl-table--theme-firevps .pwpl-currency--suffix { margin-left: 2px; }
+.pwpl-table--theme-firevps .pwpl-price-value     { font-weight: var(--fvps-price-weight, 800); letter-spacing: -0.015em; }
+.pwpl-table--theme-firevps .pwpl-price-unit      { display: inline-block; margin-left: 4px; font-size: 0.98rem; font-weight: 400; color: rgba(17,24,39,.60); transform: translateY(-2px); }
+
 .pwpl-table--theme-firevps .pwpl-plan__billing {
   margin: 4px 0 0;
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  color: rgba(32, 30, 28, 0.65);
+  color: rgba(32, 30, 28, 0.58);
 }
 
 .pwpl-table--theme-firevps .fvps-card__cta-inline {
@@ -1053,22 +1088,26 @@
 
 .pwpl-table--theme-firevps .fvps-button,
 .pwpl-table--theme-firevps .fvps-button--inline {
+  /* Outline by default; fill on hover */
+  --fvps-cta-color: var(--fvps-color-accent-strong, var(--fvps-color-accent, #d9790b));
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  padding: 15px 28px;
-  border-radius: 999px;
-  border: 1px solid rgba(20, 20, 20, 0.7);
-  background: var(--fvps-color-button);
-  color: var(--fvps-color-button-text);
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  width: var(--cta-width, 100%);
+  height: var(--cta-height, 48px);
+  padding: 0 var(--cta-pad-x, 22px);
+  border-radius: var(--cta-radius, 12px);
+  border: var(--cta-border-width, 1.5px) solid var(--cta-border, var(--fvps-cta-color));
+  background: var(--cta-bg, transparent);
+  color: var(--cta-color, var(--fvps-cta-color));
+  font-weight: var(--cta-weight, 700);
+  font-size: var(--cta-font-size, 0.98rem);
+  letter-spacing: var(--cta-tracking, 0.01em);
+  text-transform: var(--cta-transform, none);
+  font-family: var(--cta-font, inherit);
   text-decoration: none;
   box-shadow: none;
-  transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   position: relative;
   overflow: hidden;
 }
@@ -1087,46 +1126,32 @@
 .pwpl-table--theme-firevps .fvps-button--inline[aria-disabled="true"]:hover { transform: none; background: #d7d7d7; }
 
 .pwpl-table--theme-firevps .fvps-button--inline {
-  width: auto;
-  min-width: 180px;
+  width: var(--cta-width, 100%);
+  min-width: var(--cta-min, 0);
+  max-width: var(--cta-max, none);
 }
 
 .pwpl-table--theme-firevps .fvps-button:hover,
 .pwpl-table--theme-firevps .fvps-button--inline:hover {
-  transform: translateY(-2px);
-  background: color-mix(in oklab, var(--fvps-color-button) 76%, var(--fvps-color-accent) 24%);
-  border-color: color-mix(in oklab, var(--fvps-color-accent-strong) 60%, #000 40%);
-  box-shadow: 0 10px 24px rgba(15,23,42,0.16);
+  transform: translateY(-1px);
+  background: var(--cta-hover-bg, var(--fvps-cta-color));
+  color: var(--cta-hover-color, #fff);
+  border-color: var(--cta-hover-border, var(--fvps-cta-color));
 }
 
 .pwpl-table--theme-firevps .fvps-button:active,
-.pwpl-table--theme-firevps .fvps-button--inline:active {
-  background: #121212;
-}
+.pwpl-table--theme-firevps .fvps-button--inline:active { transform: translateY(0); }
 
 .pwpl-table--theme-firevps .fvps-button:focus-visible,
 .pwpl-table--theme-firevps .fvps-button--inline:focus-visible {
-  outline: 3px solid rgba(241, 154, 40, 0.45);
+  outline: 3px solid var(--cta-focus, rgba(241, 154, 40, 0.45));
   outline-offset: 3px;
 }
 
-/* Subtle sheen animation on hover (pointer devices only) */
+/* No sheen overlay for outline style */
 @media (hover: hover) {
   .pwpl-table--theme-firevps .fvps-button::after,
-  .pwpl-table--theme-firevps .fvps-button--inline::after {
-    content: '';
-    position: absolute;
-    inset: -20% -40% -20% -40%;
-    background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.18) 35%, rgba(255,255,255,0) 70%);
-    transform: translateX(-120%);
-    transition: transform 0.6s ease;
-    pointer-events: none;
-    will-change: transform;
-  }
-  .pwpl-table--theme-firevps .fvps-button:hover::after,
-  .pwpl-table--theme-firevps .fvps-button--inline:hover::after {
-    transform: translateX(120%);
-  }
+  .pwpl-table--theme-firevps .fvps-button--inline::after { display: none; }
 }
 
 /* One-time on‑view sheen trigger */
@@ -1271,6 +1296,11 @@
   .pwpl-table--theme-firevps .pwpl-plan__price-original {
     margin-inline-start: 0;
   }
+}
+
+/* On very small screens, slightly lighten the sale numerals for legibility */
+@media (max-width: 360px) {
+  .pwpl-table--theme-firevps .pwpl-price-value { font-weight: 700; }
 }
 
 @media (prefers-reduced-motion: reduce) {
