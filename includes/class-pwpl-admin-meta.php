@@ -662,10 +662,6 @@ class PWPL_Admin_Meta {
                     <div>
                         <strong><?php esc_html_e( 'Text', 'planify-wp-pricing-lite' ); ?></strong>
                         <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; align-items:flex-end;">
-                            <label style="display:flex; flex-direction:column; gap:6px; min-width:240px;">
-                                <span><?php esc_html_e( 'Font family', 'planify-wp-pricing-lite' ); ?></span>
-                                <input type="text" name="pwpl_table[ui][cta][font][family]" class="widefat" value="<?php echo esc_attr( $cta['font']['family'] ?? '' ); ?>" placeholder="Inter, system-ui, -apple-system, sans-serif" />
-                            </label>
                             <label style="display:flex; flex-direction:column; gap:6px; min-width:220px;">
                                 <span><?php esc_html_e( 'Preset font', 'planify-wp-pricing-lite' ); ?></span>
                                 <?php $preset = $cta['font']['preset'] ?? ''; ?>
@@ -680,7 +676,7 @@ class PWPL_Admin_Meta {
                                     <option value="space_grotesk" <?php selected( $preset, 'space_grotesk' ); ?>>Space Grotesk</option>
                                     <option value="rubik" <?php selected( $preset, 'rubik' ); ?>>Rubik</option>
                                 </select>
-                                <em class="description" style="opacity:.75;"><?php esc_html_e( 'Pick a preset or type a custom family above.', 'planify-wp-pricing-lite' ); ?></em>
+                                <em class="description" style="opacity:.75;"><?php esc_html_e( 'Pick a preset font. (Fonts must be available/loaded by your theme/site.)', 'planify-wp-pricing-lite' ); ?></em>
                             </label>
                             <label style="display:flex; flex-direction:column; gap:6px;">
                                 <span><?php esc_html_e( 'Font size (px)', 'planify-wp-pricing-lite' ); ?></span>
