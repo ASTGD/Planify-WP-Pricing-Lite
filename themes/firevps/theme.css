@@ -1101,9 +1101,10 @@
   background: var(--cta-bg, transparent);
   color: var(--cta-color, var(--fvps-cta-color));
   font-weight: var(--cta-weight, 700);
-  font-size: 0.98rem;
-  letter-spacing: 0.01em;
-  text-transform: none;
+  font-size: var(--cta-font-size, 0.98rem);
+  letter-spacing: var(--cta-tracking, 0.01em);
+  text-transform: var(--cta-transform, none);
+  font-family: var(--cta-font, inherit);
   text-decoration: none;
   box-shadow: none;
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;

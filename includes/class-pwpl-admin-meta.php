@@ -658,6 +658,32 @@ class PWPL_Admin_Meta {
                         </div>
                     </div>
                 </div>
+                <div style="display:flex; flex-wrap:wrap; gap:16px; margin-top:8px;">
+                    <div>
+                        <strong><?php esc_html_e( 'Text', 'planify-wp-pricing-lite' ); ?></strong>
+                        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px; align-items:flex-end;">
+                            <label style="display:flex; flex-direction:column; gap:6px; min-width:240px;">
+                                <span><?php esc_html_e( 'Font family', 'planify-wp-pricing-lite' ); ?></span>
+                                <input type="text" name="pwpl_table[ui][cta][font][family]" class="widefat" value="<?php echo esc_attr( $cta['font']['family'] ?? '' ); ?>" placeholder="Inter, system-ui, -apple-system, sans-serif" />
+                            </label>
+                            <label style="display:flex; flex-direction:column; gap:6px;">
+                                <span><?php esc_html_e( 'Font size (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                <input type="number" min="10" max="28" step="1" name="pwpl_table[ui][cta][font][size]" value="<?php echo esc_attr( $cta['font']['size'] ?? 0 ); ?>" />
+                            </label>
+                            <label style="display:flex; flex-direction:column; gap:6px;">
+                                <span><?php esc_html_e( 'Transform', 'planify-wp-pricing-lite' ); ?></span>
+                                <select name="pwpl_table[ui][cta][font][transform]">
+                                    <option value="none" <?php selected( ($cta['font']['transform'] ?? 'none'), 'none' ); ?>><?php esc_html_e( 'None', 'planify-wp-pricing-lite' ); ?></option>
+                                    <option value="uppercase" <?php selected( ($cta['font']['transform'] ?? 'none'), 'uppercase' ); ?>><?php esc_html_e( 'Uppercase', 'planify-wp-pricing-lite' ); ?></option>
+                                </select>
+                            </label>
+                            <label style="display:flex; flex-direction:column; gap:6px;">
+                                <span><?php esc_html_e( 'Letter spacing (em)', 'planify-wp-pricing-lite' ); ?></span>
+                                <input type="text" name="pwpl_table[ui][cta][font][tracking]" value="<?php echo esc_attr( $cta['font']['tracking'] ?? '' ); ?>" placeholder="0.01em" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <p class="description"><?php esc_html_e( 'Leave colors empty to use the theme accent outline (fills on hover).', 'planify-wp-pricing-lite' ); ?></p>
             </div>
             <div class="pwpl-field">
@@ -1262,6 +1288,12 @@ class PWPL_Admin_Meta {
             'bg'     => (string) ( $v['hover']['bg'] ?? '' ),
             'color'  => (string) ( $v['hover']['color'] ?? '' ),
             'border' => (string) ( $v['hover']['border'] ?? '' ),
+        ];
+        $out['font'] = [
+            'family'    => (string) ( $v['font']['family'] ?? '' ),
+            'size'      => max( 10, min( 28, (int) ( $v['font']['size'] ?? 0 ) ) ),
+            'transform' => in_array( $v['font']['transform'] ?? 'none', [ 'none', 'uppercase' ], true ) ? $v['font']['transform'] : 'none',
+            'tracking'  => (string) ( $v['font']['tracking'] ?? '' ),
         ];
         update_post_meta( $post_id, PWPL_Meta::CTA_CONFIG, $out );
 

@@ -381,6 +381,10 @@ class PWPL_Shortcode {
             if ( ! empty( $cta_cfg['hover']['bg'] ) )      { $cta_vars['--cta-hover-bg']     = (string) $cta_cfg['hover']['bg']; }
             if ( ! empty( $cta_cfg['hover']['color'] ) )   { $cta_vars['--cta-hover-color']  = (string) $cta_cfg['hover']['color']; }
             if ( ! empty( $cta_cfg['hover']['border'] ) )  { $cta_vars['--cta-hover-border'] = (string) $cta_cfg['hover']['border']; }
+            if ( ! empty( $cta_cfg['font']['family'] ) )   { $cta_vars['--cta-font']       = (string) $cta_cfg['font']['family']; }
+            if ( ! empty( $cta_cfg['font']['size'] ) )     { $cta_vars['--cta-font-size']  = (int) $cta_cfg['font']['size'] . 'px'; }
+            if ( ! empty( $cta_cfg['font']['transform'] ) ){ $cta_vars['--cta-transform']  = (string) $cta_cfg['font']['transform']; }
+            if ( ! empty( $cta_cfg['font']['tracking'] ) ) { $cta_vars['--cta-tracking']   = (string) $cta_cfg['font']['tracking']; }
 
             foreach ( $cta_vars as $var => $value ) {
                 // Escape and append

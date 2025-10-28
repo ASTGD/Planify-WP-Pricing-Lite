@@ -142,6 +142,12 @@ class PWPL_Meta {
                     'color'  => (string) ( $v['hover']['color'] ?? '' ),
                     'border' => (string) ( $v['hover']['border'] ?? '' ),
                 ];
+                $out['font'] = [
+                    'family'    => (string) ( $v['font']['family'] ?? '' ),
+                    'size'      => max( 10, min( 28, (int) ( $v['font']['size'] ?? 0 ) ) ),
+                    'transform' => in_array( $v['font']['transform'] ?? 'none', [ 'none', 'uppercase' ], true ) ? $v['font']['transform'] : 'none',
+                    'tracking'  => (string) ( $v['font']['tracking'] ?? '' ), // expect values like 0.01em
+                ];
                 return $out;
             },
             'show_in_rest'      => false,
