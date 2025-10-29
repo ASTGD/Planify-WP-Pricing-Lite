@@ -191,6 +191,7 @@
       { key: 'colors', label: i18n(data.i18n.sidebar.colors) },
       { key: 'cta', label: i18n(data.i18n.sidebar.cta) },
       { key: 'specs', label: i18n(data.i18n.sidebar.specs) },
+      { key: 'badges', label: i18n(data.i18n.sidebar.badges) },
     ];
     return h('nav', { className: 'pwpl-v1-sidebar' },
       items.map(item => h('button', {
@@ -212,6 +213,7 @@
         active === 'colors' ? h(ColorsSurfacesBlock) : null,
         active === 'cta' ? h(CTABlock) : null,
         active === 'specs' ? h(SpecsBlock) : null,
+        active === 'badges' ? h(BadgesBlock) : null,
       ])
     ]);
   }
@@ -292,6 +294,14 @@
     const [specsBg, setSpecsBg] = useState(colors.specs_bg || '');
     const [kColor, setKColor] = useState(keyline.color || '');
     const [kOpacity, setKOpacity] = useState(typeof keyline.opacity === 'number' ? keyline.opacity : '');
+    const topGrad = colors.top_grad || {};
+    const specsGrad = colors.specs_grad || {};
+    const [topType, setTopType] = useState(topGrad.type || '');
+    const [topStart, setTopStart] = useState(topGrad.start || '');
+    const [topEnd, setTopEnd] = useState(topGrad.end || '');
+    const [specsType, setSpecsType] = useState(specsGrad.type || '');
+    const [specsStart, setSpecsStart] = useState(specsGrad.start || '');
+    const [specsEnd, setSpecsEnd] = useState(specsGrad.end || '');
 
     return h('section', { className:'pwpl-v1-block' }, [
       SectionHeader({ title: i18n(data.i18n.sidebar.colors), description: 'Surface colors. Gradients can be added in a later pass.' }),
@@ -308,7 +318,29 @@
                 h(ColorPicker, { color: topBg || '#fff6e0', disableAlpha:true,
                   onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopBg(hex);} }),
                 HiddenInput({ name:'pwpl_table[card][colors][top_bg]', value: topBg }),
-              ])
+              ]),
+              h('div', null, [
+                h('label', { className:'components-base-control__label' }, 'Top gradient type'),
+                h('select', { value: topType, onChange:(e)=> setTopType(e.target.value) }, [
+                  h('option', { value:'' }, 'None'),
+                  h('option', { value:'linear' }, 'Linear'),
+                  h('option', { value:'radial' }, 'Radial'),
+                  h('option', { value:'conic' }, 'Conic'),
+                ]),
+                HiddenInput({ name:'pwpl_table[card][colors][top_grad][type]', value: topType }),
+              ]),
+              h('div', { className:'pwpl-v1-color' }, [
+                h('label', { className:'components-base-control__label' }, 'Top gradient start'),
+                h(ColorPicker, { color: topStart || '#ffe8c4', disableAlpha:true,
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopStart(hex);} }),
+                HiddenInput({ name:'pwpl_table[card][colors][top_grad][start]', value: topStart }),
+              ]),
+              h('div', { className:'pwpl-v1-color' }, [
+                h('label', { className:'components-base-control__label' }, 'Top gradient end'),
+                h(ColorPicker, { color: topEnd || '#ffd3b1', disableAlpha:true,
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopEnd(hex);} }),
+                HiddenInput({ name:'pwpl_table[card][colors][top_grad][end]', value: topEnd }),
+              ]),
             ]);
           }
           if (tab.name==='specsBg'){
@@ -318,7 +350,29 @@
                 h(ColorPicker, { color: specsBg || '#cf7a1a', disableAlpha:true,
                   onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsBg(hex);} }),
                 HiddenInput({ name:'pwpl_table[card][colors][specs_bg]', value: specsBg }),
-              ])
+              ]),
+              h('div', null, [
+                h('label', { className:'components-base-control__label' }, 'Specs gradient type'),
+                h('select', { value: specsType, onChange:(e)=> setSpecsType(e.target.value) }, [
+                  h('option', { value:'' }, 'None'),
+                  h('option', { value:'linear' }, 'Linear'),
+                  h('option', { value:'radial' }, 'Radial'),
+                  h('option', { value:'conic' }, 'Conic'),
+                ]),
+                HiddenInput({ name:'pwpl_table[card][colors][specs_grad][type]', value: specsType }),
+              ]),
+              h('div', { className:'pwpl-v1-color' }, [
+                h('label', { className:'components-base-control__label' }, 'Specs gradient start'),
+                h(ColorPicker, { color: specsStart || '#cf7a1a', disableAlpha:true,
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsStart(hex);} }),
+                HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start]', value: specsStart }),
+              ]),
+              h('div', { className:'pwpl-v1-color' }, [
+                h('label', { className:'components-base-control__label' }, 'Specs gradient end'),
+                h(ColorPicker, { color: specsEnd || '#8a3f00', disableAlpha:true,
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsEnd(hex);} }),
+                HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end]', value: specsEnd }),
+              ]),
             ]);
           }
           return h('div', { className:'pwpl-v1-grid' }, [
@@ -331,6 +385,97 @@
             h(NumberControl || TextControl, { label:'Keyline opacity (0–1)', value: kOpacity, min:0, max:1, step:0.01,
               onChange:(v)=>{ const n = (v===''? '' : Math.max(0, Math.min(1, parseFloat(v)||0))); setKOpacity(n);} }),
             HiddenInput({ name:'pwpl_table[card][colors][keyline][opacity]', value: kOpacity }),
+          ]);
+        })
+      ))
+    ]);
+  }
+
+  function BadgesBlock(){
+    const init = (data.badges || { period:[], location:[], platform:[], priority:['period','location','platform'], shadow:0 });
+    const [shadow, setShadow] = useState(parseInt(init.shadow||0,10)||0);
+    const [period, setPeriod] = useState([...(init.period||[])]);
+    const [location, setLocation] = useState([...(init.location||[])]);
+    const [platform, setPlatform] = useState([...(init.platform||[])]);
+    const dims = [
+      { key:'period',   label:'Period',   state: period,   set: setPeriod },
+      { key:'location', label:'Location', state: location, set: setLocation },
+      { key:'platform', label:'Platform', state: platform, set: setPlatform },
+    ];
+    const tones = ['', 'success','info','warning','danger','neutral'];
+
+    const Row = ({dim, idx, item})=>{
+      const update = (field, value)=>{
+        const list = [...dim.state];
+        list[idx] = Object.assign({}, list[idx]||{}, { [field]: value });
+        dim.set(list);
+      };
+      return h('div', { className:'pwpl-v1-grid', key: dim.key+idx }, [
+        h(TextControl, { label:'Value (slug)', value:item.slug||'', onChange:(v)=> update('slug', v) }),
+        HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][slug]`, value:item.slug||'' }),
+        h(TextControl, { label:'Badge label', value:item.label||'', onChange:(v)=> update('label', v) }),
+        HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][label]`, value:item.label||'' }),
+        h('div', { className:'pwpl-v1-color' }, [
+          h('label', { className:'components-base-control__label' }, 'Badge color'),
+          h(ColorPicker, { color:item.color||'', disableAlpha:true, onChangeComplete:(val)=> update('color', (typeof val==='string')?val:(val&&val.hex)?val.hex:'') }),
+          HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][color]`, value:item.color||'' }),
+        ]),
+        h('div', { className:'pwpl-v1-color' }, [
+          h('label', { className:'components-base-control__label' }, 'Text color'),
+          h(ColorPicker, { color:item.text_color||'', disableAlpha:true, onChangeComplete:(val)=> update('text_color', (typeof val==='string')?val:(val&&val.hex)?val.hex:'') }),
+          HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][text_color]`, value:item.text_color||'' }),
+        ]),
+        h(TextControl, { label:'Icon', value:item.icon||'', onChange:(v)=> update('icon', v) }),
+        HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][icon]`, value:item.icon||'' }),
+        h('div', null, [
+          h('label', { className:'components-base-control__label' }, 'Tone'),
+          h('select', { value:item.tone||'', onChange:(e)=> update('tone', e.target.value) }, tones.map(t=> h('option', { key:t||'none', value:t }, t? t[0].toUpperCase()+t.slice(1) : 'Auto'))),
+          HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][tone]`, value:item.tone||'' }),
+        ]),
+        h(TextControl, { label:'Start (YYYY-MM-DD)', value:item.start||'', onChange:(v)=> update('start', v) }),
+        HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][start]`, value:item.start||'' }),
+        h(TextControl, { label:'End (YYYY-MM-DD)', value:item.end||'', onChange:(v)=> update('end', v) }),
+        HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][end]`, value:item.end||'' }),
+        h('button', { type:'button', className:'button', onClick:()=>{
+          const list = [...dim.state]; list.splice(idx,1); dim.set(list);
+        }}, 'Remove')
+      ]);
+    };
+
+    const addRow = (dim)=>{
+      dim.set([...(dim.state||[]), { slug:'', label:'', color:'', text_color:'', icon:'', tone:'', start:'', end:'' }]);
+    };
+
+    const Priority = ()=>{
+      const dims = ['period','location','platform'];
+      const initP = (init.priority && init.priority.length) ? init.priority : dims;
+      const [p1,setP1] = useState(initP[0]||'period');
+      const [p2,setP2] = useState(initP[1]||'location');
+      const [p3,setP3] = useState(initP[2]||'platform');
+      const Select = ({value,onChange})=> h('select', { value, onChange }, dims.map(d=> h('option', { key:d, value:d }, d)));
+      return h('div', { className:'pwpl-v1-grid' }, [
+        h('div', null, [ h('label', { className:'components-base-control__label' }, 'Priority 1'), Select({value:p1,onChange:(e)=>setP1(e.target.value)}), HiddenInput({ name:'pwpl_table_badges[priority][0]', value:p1 }) ]),
+        h('div', null, [ h('label', { className:'components-base-control__label' }, 'Priority 2'), Select({value:p2,onChange:(e)=>setP2(e.target.value)}), HiddenInput({ name:'pwpl_table_badges[priority][1]', value:p2 }) ]),
+        h('div', null, [ h('label', { className:'components-base-control__label' }, 'Priority 3'), Select({value:p3,onChange:(e)=>setP3(e.target.value)}), HiddenInput({ name:'pwpl_table_badges[priority][2]', value:p3 }) ]),
+        h(NumberControl || TextControl, { label:'Badge shadow intensity', value:shadow, min:0, max:60, onChange:(v)=> setShadow(parseInt(v||0,10)||0) }),
+        HiddenInput({ name:'pwpl_table_badges[shadow]', value:shadow }),
+      ]);
+    };
+
+    return h('section', { className:'pwpl-v1-block' }, [
+      SectionHeader({ title: i18n(data.i18n.sidebar.badges), description: 'Table-level promotions by period/location/platform.' }),
+      h(Card, null, h(CardBody, null,
+        h(TabPanel, { tabs:[
+          { name:'period', title: i18n(data.i18n.tabs.period) },
+          { name:'location', title: i18n(data.i18n.tabs.location) },
+          { name:'platform', title: i18n(data.i18n.tabs.platform) },
+          { name:'priority', title: i18n(data.i18n.tabs.priority) },
+        ]}, (tab)=>{
+          if (tab.name==='priority') return Priority();
+          const dim = dims.find(d=> d.key===tab.name) || dims[0];
+          return h('div', null, [
+            (dim.state||[]).map((row,idx)=> Row({ dim, idx, item: row })),
+            h('div', { style:{ marginTop:'10px' } }, h('button', { type:'button', className:'button button-primary', onClick:()=> addRow(dim) }, 'Add Promotion')),
           ]);
         })
       ))
