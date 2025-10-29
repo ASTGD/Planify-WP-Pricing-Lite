@@ -189,6 +189,8 @@
       { key: 'card',  label: i18n(data.i18n.sidebar.planCard) },
       { key: 'typography', label: i18n(data.i18n.sidebar.typography) },
       { key: 'colors', label: i18n(data.i18n.sidebar.colors) },
+      { key: 'cta', label: i18n(data.i18n.sidebar.cta) },
+      { key: 'specs', label: i18n(data.i18n.sidebar.specs) },
     ];
     return h('nav', { className: 'pwpl-v1-sidebar' },
       items.map(item => h('button', {
@@ -208,6 +210,8 @@
         active === 'card'  ? h(PlanCardBlock)   : null,
         active === 'typography' ? h(TypographyBlock) : null,
         active === 'colors' ? h(ColorsSurfacesBlock) : null,
+        active === 'cta' ? h(CTABlock) : null,
+        active === 'specs' ? h(SpecsBlock) : null,
       ])
     ]);
   }
@@ -327,6 +331,108 @@
             h(NumberControl || TextControl, { label:'Keyline opacity (0–1)', value: kOpacity, min:0, max:1, step:0.01,
               onChange:(v)=>{ const n = (v===''? '' : Math.max(0, Math.min(1, parseFloat(v)||0))); setKOpacity(n);} }),
             HiddenInput({ name:'pwpl_table[card][colors][keyline][opacity]', value: kOpacity }),
+          ]);
+        })
+      ))
+    ]);
+  }
+
+  function CTABlock(){
+    const cta = (data.ui && data.ui.cta) ? data.ui.cta : {};
+    const [widthSel, setWidthSel]   = useState(cta.width || 'full');
+    const [height, setHeight]       = useState(parseInt(cta.height||48,10)||48);
+    const [padX, setPadX]           = useState(parseInt(cta.pad_x||22,10)||22);
+    const [radius, setRadius]       = useState(parseInt(cta.radius||12,10)||12);
+    const [borderW, setBorderW]     = useState(parseFloat(cta.border_width||1.5)||1.5);
+    const [minW, setMinW]           = useState(parseInt(cta.min_w||0,10)||0);
+    const [maxW, setMaxW]           = useState(parseInt(cta.max_w||0,10)||0);
+    const [lift, setLift]           = useState(parseInt(cta.lift||1,10)||1);
+
+    return h('section', { className:'pwpl-v1-block' }, [
+      SectionHeader({ title: i18n(data.i18n.sidebar.cta), description: 'CTA size and layout.' }),
+      h(Card, null, h(CardBody, null,
+        h(TabPanel, { tabs:[ { name:'sizeLayout', title:i18n(data.i18n.tabs.sizeLayout) } ] }, (tab)=>{
+          return h('div', { className:'pwpl-v1-grid' }, [
+            h('div', null, [
+              h('label', { className:'components-base-control__label' }, 'Width'),
+              h('select', { value: widthSel, onChange:(e)=> setWidthSel(e.target.value) }, [
+                h('option', { value:'auto' }, 'Auto'),
+                h('option', { value:'full' }, 'Full'),
+              ]),
+              HiddenInput({ name:'pwpl_table[ui][cta][width]', value: widthSel }),
+            ]),
+            h(NumberControl || TextControl, { label:'Height (px)', value:height, min:36, max:64, onChange:(v)=> setHeight(parseInt(v||0,10)||0) }),
+            HiddenInput({ name:'pwpl_table[ui][cta][height]', value:height }),
+            h(NumberControl || TextControl, { label:'Padding X (px)', value:padX, min:10, max:32, onChange:(v)=> setPadX(parseInt(v||0,10)||0) }),
+            HiddenInput({ name:'pwpl_table[ui][cta][pad_x]', value:padX }),
+            h(NumberControl || TextControl, { label:'Radius (px)', value:radius, min:0, max:999, onChange:(v)=> setRadius(parseInt(v||0,10)||0) }),
+            HiddenInput({ name:'pwpl_table[ui][cta][radius]', value:radius }),
+            h(NumberControl || TextControl, { label:'Border width (px)', value:borderW, min:0, max:4, step:0.5, onChange:(v)=> setBorderW(parseFloat(v||0)||0) }),
+            HiddenInput({ name:'pwpl_table[ui][cta][border_width]', value:borderW }),
+            h(NumberControl || TextControl, { label:'Min width (px)', value:minW, min:0, max:4000, onChange:(v)=> setMinW(parseInt(v||0,10)||0) }),
+            HiddenInput({ name:'pwpl_table[ui][cta][min_w]', value:minW }),
+            h(NumberControl || TextControl, { label:'Max width (px)', value:maxW, min:0, max:4000, onChange:(v)=> setMaxW(parseInt(v||0,10)||0) }),
+            HiddenInput({ name:'pwpl_table[ui][cta][max_w]', value:maxW }),
+            h(NumberControl || TextControl, { label:'Hover lift (px)', value:lift, min:0, max:3, onChange:(v)=> setLift(parseInt(v||0,10)||0) }),
+            HiddenInput({ name:'pwpl_table[ui][cta][lift]', value:lift }),
+          ]);
+        })
+      ))
+    ]);
+  }
+
+  function SpecsBlock(){
+    const specs = (data.ui && data.ui.specs) ? data.ui.specs : { style:'default', anim:{ flags:[], intensity:45, mobile:0 } };
+    const [styleSel, setStyleSel] = useState(specs.style || 'default');
+    const initFlags = (specs.anim && Array.isArray(specs.anim.flags))? specs.anim.flags : [];
+    const [flags, setFlags] = useState(new Set(initFlags));
+    const [intensity, setIntensity] = useState(parseInt((specs.anim && specs.anim.intensity)||45,10)||45);
+    const [mobile, setMobile] = useState((specs.anim && specs.anim.mobile) ? 1 : 0);
+
+    const toggleFlag = (key)=>{
+      const next = new Set(flags);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      setFlags(next);
+    };
+
+    const flagKeys = ['row','icon','divider','chip','stagger'];
+
+    return h('section', { className:'pwpl-v1-block' }, [
+      SectionHeader({ title: i18n(data.i18n.sidebar.specs), description: 'Specifications style and interaction controls.' }),
+      h(Card, null, h(CardBody, null,
+        h(TabPanel, { tabs:[
+          { name:'style', title: i18n(data.i18n.tabs.style) },
+          { name:'interact', title: i18n(data.i18n.tabs.interact) },
+        ]}, (tab)=>{
+          if (tab.name==='style'){
+            return h('div', { className:'pwpl-v1-grid' }, [
+              h('div', null, [
+                h('label', { className:'components-base-control__label' }, 'Specs style'),
+                h('select', { value:styleSel, onChange:(e)=> setStyleSel(e.target.value) }, [
+                  h('option', { value:'default' }, 'Default'),
+                  h('option', { value:'flat' }, 'Flat'),
+                  h('option', { value:'segmented' }, 'Segmented'),
+                  h('option', { value:'chips' }, 'Chips'),
+                ]),
+                HiddenInput({ name:'pwpl_table[ui][specs_style]', value: styleSel }),
+              ])
+            ]);
+          }
+          return h('div', { className:'pwpl-v1-grid' }, [
+            h('div', { style:{ display:'grid', gridTemplateColumns:'repeat(2, minmax(120px, 1fr))', gap:'10px' } },
+              flagKeys.map((k)=> h('label', { key:k, className:'components-base-control__label' }, [
+                h('input', { type:'checkbox', checked: flags.has(k), onChange:()=> toggleFlag(k) }),
+                ' ', k
+              ]))
+            ),
+            // Emit selected flags as multiple hidden inputs
+            Array.from(flags).map((k)=> HiddenInput({ key:k, name:'pwpl_table[ui][specs_anim][flags][]', value:k })),
+            h(NumberControl || TextControl, { label:'Intensity (0–100)', value:intensity, min:0, max:100, onChange:(v)=> setIntensity(parseInt(v||0,10)||0) }),
+            HiddenInput({ name:'pwpl_table[ui][specs_anim][intensity]', value:intensity }),
+            h('label', { className:'components-base-control__label' }, [
+              h('input', { type:'checkbox', checked: !!mobile, onChange:(e)=> setMobile(e.target.checked ? 1 : 0) }), ' Enable on mobile'
+            ]),
+            HiddenInput({ name:'pwpl_table[ui][specs_anim][mobile]', value: mobile ? 1 : '' }),
           ]);
         })
       ))

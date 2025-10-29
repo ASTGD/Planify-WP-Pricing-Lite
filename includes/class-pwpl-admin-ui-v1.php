@@ -49,11 +49,21 @@ class PWPL_Admin_UI_V1 {
             $layout_columns_raw= get_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS, true );
             $layout_cardw_raw  = get_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, true );
             $card_meta_raw     = get_post_meta( $post_id, PWPL_Meta::CARD_CONFIG, true );
+            $cta_raw           = get_post_meta( $post_id, PWPL_Meta::CTA_CONFIG, true );
+            $specs_style       = get_post_meta( $post_id, PWPL_Meta::SPECS_STYLE, true );
+            $anim_flags        = get_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_FLAGS, true );
+            $anim_intensity    = (int) get_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_INTENSITY, true );
+            $anim_mobile       = (int) get_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE, true );
 
             $layout_widths = $meta->sanitize_layout_widths( is_array( $layout_widths_raw ) ? $layout_widths_raw : [] );
             $layout_columns= $meta->sanitize_layout_cards( is_array( $layout_columns_raw ) ? $layout_columns_raw : [] );
             $layout_cardw  = $meta->sanitize_layout_card_widths( is_array( $layout_cardw_raw ) ? $layout_cardw_raw : [] );
             $card_config   = is_array( $card_meta_raw ) ? $meta->sanitize_card_config( $card_meta_raw ) : [];
+            $cta_config    = is_array( $cta_raw ) ? $cta_raw : [];
+            $anim_flags    = is_array( $anim_flags ) ? array_values( array_intersect( array_map( 'sanitize_key', $anim_flags ), [ 'row', 'icon', 'divider', 'chip', 'stagger' ] ) ) : [];
+            $specs_style   = in_array( $specs_style, [ 'default','flat','segmented','chips' ], true ) ? $specs_style : 'default';
+            $anim_intensity= $anim_intensity > 0 ? $anim_intensity : 45;
+            $anim_mobile   = $anim_mobile ? 1 : 0;
 
             wp_localize_script( 'pwpl-admin-v1', 'PWPL_AdminV1', [
                 'postId' => (int) $post_id,
@@ -63,12 +73,25 @@ class PWPL_Admin_UI_V1 {
                     'cardWidths' => $layout_cardw,
                 ],
                 'card' => $card_config,
+                'ui'   => [
+                    'cta'   => $cta_config,
+                    'specs' => [
+                        'style' => $specs_style,
+                        'anim'  => [
+                            'flags'     => $anim_flags,
+                            'intensity' => $anim_intensity,
+                            'mobile'    => $anim_mobile,
+                        ],
+                    ],
+                ],
                 'i18n' => [
                     'sidebar' => [
                         'tableLayout' => __( 'Table Layout', 'planify-wp-pricing-lite' ),
                         'planCard'    => __( 'Plan Card', 'planify-wp-pricing-lite' ),
                         'typography'  => __( 'Typography', 'planify-wp-pricing-lite' ),
                         'colors'      => __( 'Colors & Surfaces', 'planify-wp-pricing-lite' ),
+                        'cta'         => __( 'CTA', 'planify-wp-pricing-lite' ),
+                        'specs'       => __( 'Specs', 'planify-wp-pricing-lite' ),
                     ],
                     'tabs' => [
                         'widths'     => __( 'Widths & Columns', 'planify-wp-pricing-lite' ),
@@ -80,6 +103,9 @@ class PWPL_Admin_UI_V1 {
                         'topBg'      => __( 'Top Background', 'planify-wp-pricing-lite' ),
                         'specsBg'    => __( 'Specs Background', 'planify-wp-pricing-lite' ),
                         'keyline'    => __( 'Keyline', 'planify-wp-pricing-lite' ),
+                        'sizeLayout' => __( 'Size & Layout', 'planify-wp-pricing-lite' ),
+                        'style'      => __( 'Style', 'planify-wp-pricing-lite' ),
+                        'interact'   => __( 'Interactions', 'planify-wp-pricing-lite' ),
                     ],
                 ],
             ] );
