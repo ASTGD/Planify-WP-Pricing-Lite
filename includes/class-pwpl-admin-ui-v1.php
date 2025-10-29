@@ -47,17 +47,20 @@ class PWPL_Admin_UI_V1 {
 
             $layout_widths_raw = get_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS, true );
             $layout_columns_raw= get_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS, true );
+            $layout_cardw_raw  = get_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, true );
             $card_meta_raw     = get_post_meta( $post_id, PWPL_Meta::CARD_CONFIG, true );
 
             $layout_widths = $meta->sanitize_layout_widths( is_array( $layout_widths_raw ) ? $layout_widths_raw : [] );
             $layout_columns= $meta->sanitize_layout_cards( is_array( $layout_columns_raw ) ? $layout_columns_raw : [] );
+            $layout_cardw  = $meta->sanitize_layout_card_widths( is_array( $layout_cardw_raw ) ? $layout_cardw_raw : [] );
             $card_config   = is_array( $card_meta_raw ) ? $meta->sanitize_card_config( $card_meta_raw ) : [];
 
             wp_localize_script( 'pwpl-admin-v1', 'PWPL_AdminV1', [
                 'postId' => (int) $post_id,
                 'layout' => [
-                    'widths'  => $layout_widths,
-                    'columns' => $layout_columns,
+                    'widths'     => $layout_widths,
+                    'columns'    => $layout_columns,
+                    'cardWidths' => $layout_cardw,
                 ],
                 'card' => $card_config,
                 'i18n' => [
@@ -81,4 +84,3 @@ class PWPL_Admin_UI_V1 {
         // Hidden inputs will be rendered by the React app to ensure values submit with the post.
     }
 }
-
