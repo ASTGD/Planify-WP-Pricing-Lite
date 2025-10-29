@@ -337,6 +337,236 @@ class PWPL_Shortcode {
             }
         }
 
+        $card_meta_raw = get_post_meta( $table_id, PWPL_Meta::CARD_CONFIG, true );
+        $card_meta     = is_array( $card_meta_raw ) ? $meta_helper->sanitize_card_config( $card_meta_raw ) : [];
+        $specs_text_fallback = '';
+        
+
+        if ( ! empty( $card_meta ) ) {
+            if ( isset( $card_meta['layout'] ) && is_array( $card_meta['layout'] ) ) {
+                $layout = $card_meta['layout'];
+                if ( array_key_exists( 'radius', $layout ) ) {
+                    $style_vars['--card-radius'] = (int) $layout['radius'] . 'px';
+                }
+                if ( array_key_exists( 'border_w', $layout ) ) {
+                    $bw = (float) $layout['border_w'];
+                    if ( $bw < 0 ) { $bw = 0; }
+                    $style_vars['--card-border-width'] = $bw . 'px';
+                }
+                $pad_map = [
+                    'pad_t' => '--card-pad-t',
+                    'pad_r' => '--card-pad-r',
+                    'pad_b' => '--card-pad-b',
+                    'pad_l' => '--card-pad-l',
+                ];
+                foreach ( $pad_map as $pad_key => $var_name ) {
+                    if ( array_key_exists( $pad_key, $layout ) ) {
+                        $style_vars[ $var_name ] = (int) $layout[ $pad_key ] . 'px';
+                    }
+                }
+            }
+
+            if ( isset( $card_meta['colors'] ) && is_array( $card_meta['colors'] ) ) {
+                $colors = $card_meta['colors'];
+                // Unified top background can drive both header and CTA if provided.
+                if ( array_key_exists( 'top_bg', $colors ) && $colors['top_bg'] !== '' ) {
+                    $style_vars['--card-header-bg'] = (string) $colors['top_bg'];
+                    $style_vars['--card-cta-bg']    = (string) $colors['top_bg'];
+                }
+                if ( array_key_exists( 'header_bg', $colors ) && $colors['header_bg'] !== '' ) {
+                    $style_vars['--card-header-bg'] = (string) $colors['header_bg'];
+                }
+                if ( array_key_exists( 'cta_bg', $colors ) && $colors['cta_bg'] !== '' ) {
+                    $style_vars['--card-cta-bg'] = (string) $colors['cta_bg'];
+                }
+                if ( array_key_exists( 'specs_bg', $colors ) && $colors['specs_bg'] !== '' ) {
+                    $style_vars['--card-specs-bg'] = (string) $colors['specs_bg'];
+                    // Heuristic divider tone based on solid specs background when available (hex only).
+                    $bg = (string) $colors['specs_bg'];
+                    if ( preg_match( '/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $bg ) ) {
+                        // Expand shorthand and compute perceived brightness
+                        $hex = strtolower( $bg );
+                        if ( strlen( $hex ) === 4 ) {
+                            $hex = '#' . $hex[1] . $hex[1] . $hex[2] . $hex[2] . $hex[3] . $hex[3];
+                        }
+                        $r = hexdec( substr( $hex, 1, 2 ) );
+                        $g = hexdec( substr( $hex, 3, 2 ) );
+                        $b = hexdec( substr( $hex, 5, 2 ) );
+                        // Standard luminance approximation
+                        $brightness = ( 0.2126 * $r ) + ( 0.7152 * $g ) + ( 0.0722 * $b );
+                        $is_light = $brightness > 160; // threshold tuned for UI contrast
+                        if ( $is_light ) {
+                            $style_vars['--card-specs-divider']       = 'rgba(0,0,0,.18)';
+                            $style_vars['--card-specs-divider-hover'] = 'rgba(0,0,0,.28)';
+                        } else {
+                            $style_vars['--card-specs-divider']       = 'rgba(255,255,255,.22)';
+                            $style_vars['--card-specs-divider-hover'] = 'rgba(255,255,255,.32)';
+                        }
+                    }
+                }
+                if ( array_key_exists( 'border', $colors ) && $colors['border'] !== '' ) {
+                    $style_vars['--card-border-color'] = (string) $colors['border'];
+                }
+                if ( array_key_exists( 'specs_text', $colors ) && $colors['specs_text'] !== '' ) {
+                    $specs_text_fallback = (string) $colors['specs_text'];
+                }
+                // Specs gradient
+                if ( isset( $colors['specs_grad'] ) && is_array( $colors['specs_grad'] ) ) {
+                    $grad = $colors['specs_grad'];
+                    $g_start = isset( $grad['start'] ) ? (string) $grad['start'] : '';
+                    $g_end   = isset( $grad['end'] ) ? (string) $grad['end'] : '';
+                    $g_type  = isset( $grad['type'] ) ? sanitize_key( $grad['type'] ) : '';
+                    $g_sp    = isset( $grad['start_pos'] ) ? (int) $grad['start_pos'] : 0;
+                    $g_ep    = isset( $grad['end_pos'] ) ? (int) $grad['end_pos'] : 100;
+                    $g_angle = isset( $grad['angle'] ) ? (int) $grad['angle'] : 180;
+
+                    if ( $g_start !== '' && $g_end !== '' ) {
+                        // Emit specific variables for legacy CSS fallback
+                        $style_vars['--card-specs-grad-start'] = $g_start;
+                        $style_vars['--card-specs-grad-end']   = $g_end;
+                        $style_vars['--card-specs-grad-angle'] = $g_angle . 'deg';
+
+                        // Build a full gradient token for broader support
+                        $g_sp = max(0, min(100, $g_sp));
+                        $g_ep = max(0, min(100, $g_ep));
+                        $gradient_value = '';
+                        switch ( $g_type ) {
+                            case 'radial':
+                                $gradient_value = 'radial-gradient(circle, ' . $g_start . ' ' . $g_sp . '%, ' . $g_end . ' ' . $g_ep . '%)';
+                                break;
+                            case 'conic':
+                                $gradient_value = 'conic-gradient(' . $g_start . ' ' . $g_sp . '%, ' . $g_end . ' ' . $g_ep . '%)';
+                                break;
+                            case 'linear':
+                            default:
+                                $gradient_value = 'linear-gradient(' . $g_angle . 'deg, ' . $g_start . ' ' . $g_sp . '%, ' . $g_end . ' ' . $g_ep . '%)';
+                                break;
+                        }
+                        $style_vars['--card-specs-gradient'] = $gradient_value;
+                    }
+                }
+                // Top gradient can drive both header (as background) and CTA gradient var
+                if ( isset( $colors['top_grad'] ) && is_array( $colors['top_grad'] ) ) {
+                    $grad = $colors['top_grad'];
+                    $g_start = isset( $grad['start'] ) ? (string) $grad['start'] : '';
+                    $g_end   = isset( $grad['end'] ) ? (string) $grad['end'] : '';
+                    $g_type  = isset( $grad['type'] ) ? sanitize_key( $grad['type'] ) : '';
+                    $g_sp    = isset( $grad['start_pos'] ) ? (int) $grad['start_pos'] : 0;
+                    $g_ep    = isset( $grad['end_pos'] ) ? (int) $grad['end_pos'] : 100;
+                    $g_angle = isset( $grad['angle'] ) ? (int) $grad['angle'] : 180;
+                    if ( $g_start !== '' && $g_end !== '' ) {
+                        $g_sp = max(0, min(100, $g_sp));
+                        $g_ep = max(0, min(100, $g_ep));
+                        switch ( $g_type ) {
+                            case 'radial':
+                                $gradient_value = 'radial-gradient(circle, ' . $g_start . ' ' . $g_sp . '%, ' . $g_end . ' ' . $g_ep . '%)';
+                                break;
+                            case 'conic':
+                                $gradient_value = 'conic-gradient(' . $g_start . ' ' . $g_sp . '%, ' . $g_end . ' ' . $g_ep . '%)';
+                                break;
+                            case 'linear':
+                            default:
+                                $gradient_value = 'linear-gradient(' . $g_angle . 'deg, ' . $g_start . ' ' . $g_sp . '%, ' . $g_end . ' ' . $g_ep . '%)';
+                                break;
+                        }
+                        // Header can consume gradient via --card-header-bg. CTA uses var --card-cta-gradient.
+                        $style_vars['--card-header-bg']   = $gradient_value;
+                        $style_vars['--card-cta-gradient'] = $gradient_value;
+                    }
+                }
+                // Fallback: legacy CTA gradient support
+                if ( isset( $colors['cta_grad'] ) && is_array( $colors['cta_grad'] ) ) {
+                    $grad = $colors['cta_grad'];
+                    $g_start = isset( $grad['start'] ) ? (string) $grad['start'] : '';
+                    $g_end   = isset( $grad['end'] ) ? (string) $grad['end'] : '';
+                    $g_type  = isset( $grad['type'] ) ? sanitize_key( $grad['type'] ) : '';
+                    $g_sp    = isset( $grad['start_pos'] ) ? (int) $grad['start_pos'] : 0;
+                    $g_ep    = isset( $grad['end_pos'] ) ? (int) $grad['end_pos'] : 100;
+                    $g_angle = isset( $grad['angle'] ) ? (int) $grad['angle'] : 180;
+                    if ( $g_start !== '' && $g_end !== '' ) {
+                        $g_sp = max(0, min(100, $g_sp));
+                        $g_ep = max(0, min(100, $g_ep));
+                        switch ( $g_type ) {
+                            case 'radial':
+                                $style_vars['--card-cta-gradient'] = 'radial-gradient(circle, ' . $g_start . ' ' . $g_sp . '%, ' . $g_end . ' ' . $g_ep . '%)';
+                                break;
+                            case 'conic':
+                                $style_vars['--card-cta-gradient'] = 'conic-gradient(' . $g_start . ' ' . $g_sp . '%, ' . $g_end . ' ' . $g_ep . '%)';
+                                break;
+                            case 'linear':
+                            default:
+                                $style_vars['--card-cta-gradient'] = 'linear-gradient(' . $g_angle . 'deg, ' . $g_start . ' ' . $g_sp . '%, ' . $g_end . ' ' . $g_ep . '%)';
+                                break;
+                        }
+                    }
+                }
+                if ( isset( $colors['keyline'] ) && is_array( $colors['keyline'] ) ) {
+                    $keyline = $colors['keyline'];
+                    if ( array_key_exists( 'color', $keyline ) && $keyline['color'] !== '' ) {
+                        $style_vars['--card-keyline-color'] = (string) $keyline['color'];
+                    }
+                    if ( array_key_exists( 'opacity', $keyline ) ) {
+                        $opacity_value = (float) $keyline['opacity'];
+                        $opacity_value = max( 0, min( 1, $opacity_value ) );
+                        $style_vars['--card-keyline-opacity'] = ( $opacity_value * 100 ) . '%';
+                    }
+                }
+            }
+
+            if ( isset( $card_meta['typo'] ) && is_array( $card_meta['typo'] ) ) {
+                $typo = $card_meta['typo'];
+                $typo_map = [
+                    'title' => [
+                        'size_var'   => '--card-title-size',
+                        'weight_var' => '--card-title-weight',
+                    ],
+                    'subtitle' => [
+                        'size_var'   => '--card-subtitle-size',
+                        'weight_var' => '--card-subtitle-weight',
+                    ],
+                    'price' => [
+                        'size_var'   => '--card-price-size',
+                        'weight_var' => '--card-price-weight',
+                    ],
+                ];
+                foreach ( $typo_map as $typo_key => $vars ) {
+                    if ( ! isset( $typo[ $typo_key ] ) || ! is_array( $typo[ $typo_key ] ) ) {
+                        continue;
+                    }
+                    $entry = $typo[ $typo_key ];
+                    if ( array_key_exists( 'size', $entry ) ) {
+                        $style_vars[ $vars['size_var'] ] = (int) $entry['size'] . 'px';
+                    }
+                    if ( array_key_exists( 'weight', $entry ) ) {
+                        $style_vars[ $vars['weight_var'] ] = (int) $entry['weight'];
+                    }
+                }
+            }
+        }
+
+        // Text styles (Top and Specs)
+        if ( isset( $card_meta['text'] ) && is_array( $card_meta['text'] ) ) {
+            $text = $card_meta['text'];
+            if ( isset( $text['top'] ) && is_array( $text['top'] ) ) {
+                $t = $text['top'];
+                if ( ! empty( $t['color'] ) )  { $style_vars['--card-top-text-color'] = (string) $t['color']; }
+                if ( ! empty( $t['family'] ) ) { $style_vars['--card-top-font']       = (string) $t['family']; }
+                if ( isset( $t['size'] ) )     { $style_vars['--card-top-font-size']  = (int) $t['size'] . 'px'; }
+                if ( isset( $t['weight'] ) )   { $style_vars['--card-top-font-weight']= (int) $t['weight']; }
+            }
+            if ( isset( $text['specs'] ) && is_array( $text['specs'] ) ) {
+                $s = $text['specs'];
+                if ( ! empty( $s['color'] ) )  { $style_vars['--card-specs-text']       = (string) $s['color']; }
+                if ( ! empty( $s['family'] ) ) { $style_vars['--card-specs-font']       = (string) $s['family']; }
+                if ( isset( $s['size'] ) )     { $style_vars['--card-specs-font-size']  = (int) $s['size'] . 'px'; }
+                if ( isset( $s['weight'] ) )   { $style_vars['--card-specs-font-weight']= (int) $s['weight']; }
+            }
+        }
+
+        if ( ! isset( $style_vars['--card-specs-text'] ) && $specs_text_fallback !== '' ) {
+            $style_vars['--card-specs-text'] = $specs_text_fallback;
+        }
+
         $style_inline = '';
         $table_attr_extras = '';
         if ( $platform_filtering_enabled && $platform_allowed_order ) {
