@@ -187,6 +187,8 @@
     const items = [
       { key: 'table', label: i18n(data.i18n.sidebar.tableLayout) },
       { key: 'card',  label: i18n(data.i18n.sidebar.planCard) },
+      { key: 'typography', label: i18n(data.i18n.sidebar.typography) },
+      { key: 'colors', label: i18n(data.i18n.sidebar.colors) },
     ];
     return h('nav', { className: 'pwpl-v1-sidebar' },
       items.map(item => h('button', {
@@ -204,7 +206,130 @@
       h('main', { className: 'pwpl-v1-main' }, [
         active === 'table' ? h(TableLayoutBlock) : null,
         active === 'card'  ? h(PlanCardBlock)   : null,
+        active === 'typography' ? h(TypographyBlock) : null,
+        active === 'colors' ? h(ColorsSurfacesBlock) : null,
       ])
+    ]);
+  }
+
+  function TypographyBlock(){
+    const text = (data.card.text || {});
+    const top  = (text.top || {});
+    const typo = (data.card.typo || {});
+    const [topColor, setTopColor]   = useState(top.color || '');
+    const [topFamily, setTopFamily] = useState(top.family || '');
+    const [topSize, setTopSize]     = useState(parseInt(top.size||0,10)||0);
+    const [topWeight, setTopWeight] = useState(parseInt(top.weight||0,10)||0);
+    const t = {
+      title: typo.title || {},
+      subtitle: typo.subtitle || {},
+      price: typo.price || {},
+    };
+    const [tTitleSize,setTTitleSize]     = useState(parseInt(t.title.size||0,10)||0);
+    const [tTitleWeight,setTTitleWeight] = useState(parseInt(t.title.weight||0,10)||0);
+    const [tSubSize,setTSubSize]         = useState(parseInt(t.subtitle.size||0,10)||0);
+    const [tSubWeight,setTSubWeight]     = useState(parseInt(t.subtitle.weight||0,10)||0);
+    const [tPriceSize,setTPriceSize]     = useState(parseInt(t.price.size||0,10)||0);
+    const [tPriceWeight,setTPriceWeight] = useState(parseInt(t.price.weight||0,10)||0);
+
+    return h('section', { className: 'pwpl-v1-block' }, [
+      SectionHeader({ title: i18n(data.i18n.sidebar.typography), description: 'Typography controls for Top area and sizes/weights for title, subtitle and price.' }),
+      h(Card, null,
+        h(CardBody, null,
+          h(TabPanel, { tabs: [
+            { name: 'topText', title: i18n(data.i18n.tabs.topText) },
+            { name: 'sizes', title: i18n(data.i18n.tabs.sizes) },
+          ]}, (tab)=>{
+            if (tab.name === 'topText'){
+              return h('div', { className:'pwpl-v1-grid' }, [
+                h('div', { className:'pwpl-v1-color' }, [
+                  h('label', { className:'components-base-control__label' }, 'Top text color'),
+                  h(ColorPicker, {
+                    color: topColor || '#111214',
+                    onChangeComplete: (value)=>{ const hex = (typeof value==='string')? value : (value && value.hex) ? value.hex : ''; setTopColor(hex); },
+                    disableAlpha: true,
+                  }),
+                  HiddenInput({ name:'pwpl_table[card][text][top][color]', value: topColor })
+                ]),
+                h(TextControl, { label:'Font family', value: topFamily, onChange:setTopFamily, placeholder:'system-ui, -apple-system, sans-serif' }),
+                HiddenInput({ name:'pwpl_table[card][text][top][family]', value: topFamily }),
+                h(NumberControl || TextControl, { label:'Font size (px)', value:topSize, min:10, max:28, onChange:(v)=> setTopSize(parseInt(v||0,10)||0) }),
+                HiddenInput({ name:'pwpl_table[card][text][top][size]', value: topSize }),
+                h(NumberControl || TextControl, { label:'Font weight', value:topWeight, min:300, max:900, step:50, onChange:(v)=> setTopWeight(parseInt(v||0,10)||0) }),
+                HiddenInput({ name:'pwpl_table[card][text][top][weight]', value: topWeight }),
+              ]);
+            }
+            return h('div', { className:'pwpl-v1-grid' }, [
+              h(NumberControl || TextControl, { label:'Title size (px)', value:tTitleSize, min:16, max:36, onChange:(v)=> setTTitleSize(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][typo][title][size]', value:tTitleSize }),
+              h(NumberControl || TextControl, { label:'Title weight', value:tTitleWeight, min:600, max:800, step:50, onChange:(v)=> setTTitleWeight(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][typo][title][weight]', value:tTitleWeight }),
+
+              h(NumberControl || TextControl, { label:'Subtitle size (px)', value:tSubSize, min:12, max:18, onChange:(v)=> setTSubSize(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][typo][subtitle][size]', value:tSubSize }),
+              h(NumberControl || TextControl, { label:'Subtitle weight', value:tSubWeight, min:400, max:600, step:50, onChange:(v)=> setTSubWeight(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][typo][subtitle][weight]', value:tSubWeight }),
+
+              h(NumberControl || TextControl, { label:'Price size (px)', value:tPriceSize, min:24, max:44, onChange:(v)=> setTPriceSize(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][typo][price][size]', value:tPriceSize }),
+              h(NumberControl || TextControl, { label:'Price weight', value:tPriceWeight, min:700, max:900, step:50, onChange:(v)=> setTPriceWeight(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][typo][price][weight]', value:tPriceWeight }),
+            ]);
+          })
+        )
+      )
+    ]);
+  }
+
+  function ColorsSurfacesBlock(){
+    const colors = (data.card.colors || {});
+    const keyline = (colors.keyline || {});
+    const [topBg, setTopBg] = useState(colors.top_bg || '');
+    const [specsBg, setSpecsBg] = useState(colors.specs_bg || '');
+    const [kColor, setKColor] = useState(keyline.color || '');
+    const [kOpacity, setKOpacity] = useState(typeof keyline.opacity === 'number' ? keyline.opacity : '');
+
+    return h('section', { className:'pwpl-v1-block' }, [
+      SectionHeader({ title: i18n(data.i18n.sidebar.colors), description: 'Surface colors. Gradients can be added in a later pass.' }),
+      h(Card, null, h(CardBody, null,
+        h(TabPanel, { tabs:[
+          { name:'topBg',   title: i18n(data.i18n.tabs.topBg) },
+          { name:'specsBg', title: i18n(data.i18n.tabs.specsBg) },
+          { name:'keyline', title: i18n(data.i18n.tabs.keyline) },
+        ]}, (tab)=>{
+          if (tab.name==='topBg'){
+            return h('div', { className:'pwpl-v1-grid' }, [
+              h('div', { className:'pwpl-v1-color' }, [
+                h('label', { className:'components-base-control__label' }, 'Top background'),
+                h(ColorPicker, { color: topBg || '#fff6e0', disableAlpha:true,
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopBg(hex);} }),
+                HiddenInput({ name:'pwpl_table[card][colors][top_bg]', value: topBg }),
+              ])
+            ]);
+          }
+          if (tab.name==='specsBg'){
+            return h('div', { className:'pwpl-v1-grid' }, [
+              h('div', { className:'pwpl-v1-color' }, [
+                h('label', { className:'components-base-control__label' }, 'Specs background'),
+                h(ColorPicker, { color: specsBg || '#cf7a1a', disableAlpha:true,
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsBg(hex);} }),
+                HiddenInput({ name:'pwpl_table[card][colors][specs_bg]', value: specsBg }),
+              ])
+            ]);
+          }
+          return h('div', { className:'pwpl-v1-grid' }, [
+            h('div', { className:'pwpl-v1-color' }, [
+              h('label', { className:'components-base-control__label' }, 'Keyline color'),
+              h(ColorPicker, { color: kColor || '#1c1a16', disableAlpha:true,
+                onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setKColor(hex);} }),
+              HiddenInput({ name:'pwpl_table[card][colors][keyline][color]', value: kColor }),
+            ]),
+            h(NumberControl || TextControl, { label:'Keyline opacity (0–1)', value: kOpacity, min:0, max:1, step:0.01,
+              onChange:(v)=>{ const n = (v===''? '' : Math.max(0, Math.min(1, parseFloat(v)||0))); setKOpacity(n);} }),
+            HiddenInput({ name:'pwpl_table[card][colors][keyline][opacity]', value: kOpacity }),
+          ]);
+        })
+      ))
     ]);
   }
 

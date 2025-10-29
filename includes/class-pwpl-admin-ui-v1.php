@@ -67,12 +67,19 @@ class PWPL_Admin_UI_V1 {
                     'sidebar' => [
                         'tableLayout' => __( 'Table Layout', 'planify-wp-pricing-lite' ),
                         'planCard'    => __( 'Plan Card', 'planify-wp-pricing-lite' ),
+                        'typography'  => __( 'Typography', 'planify-wp-pricing-lite' ),
+                        'colors'      => __( 'Colors & Surfaces', 'planify-wp-pricing-lite' ),
                     ],
                     'tabs' => [
                         'widths'     => __( 'Widths & Columns', 'planify-wp-pricing-lite' ),
                         'breakpoints'=> __( 'Breakpoints', 'planify-wp-pricing-lite' ),
                         'layout'     => __( 'Layout', 'planify-wp-pricing-lite' ),
                         'border'     => __( 'Border', 'planify-wp-pricing-lite' ),
+                        'topText'    => __( 'Top Text', 'planify-wp-pricing-lite' ),
+                        'sizes'      => __( 'Sizes', 'planify-wp-pricing-lite' ),
+                        'topBg'      => __( 'Top Background', 'planify-wp-pricing-lite' ),
+                        'specsBg'    => __( 'Specs Background', 'planify-wp-pricing-lite' ),
+                        'keyline'    => __( 'Keyline', 'planify-wp-pricing-lite' ),
                     ],
                 ],
             ] );
