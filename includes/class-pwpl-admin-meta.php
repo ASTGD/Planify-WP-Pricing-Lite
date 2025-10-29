@@ -1823,7 +1823,6 @@ class PWPL_Admin_Meta {
         $card_input = isset( $input['card'] ) ? (array) $input['card'] : [];
         $card_clean = $meta->sanitize_card_config( $card_input );
         update_post_meta( $post_id, PWPL_Meta::CARD_CONFIG, $card_clean );
-
         // Trust items textarea -> array
         $trust_items_input = isset( $ui_input['trust_items'] ) ? (string) $ui_input['trust_items'] : '';
         $lines = array_filter( array_map( function( $line ) {
