@@ -182,6 +182,11 @@ class PWPL_Admin_Meta {
     }
 
     public function render_table_layout_meta( $post ) {
+        // Ensure card text config is available for the Text styles section in this box
+        $meta_helper = new PWPL_Meta();
+        $card_raw    = get_post_meta( $post->ID, PWPL_Meta::CARD_CONFIG, true );
+        $card_config = is_array( $card_raw ) ? $meta_helper->sanitize_card_config( $card_raw ) : [];
+        $card_text   = (array) ( $card_config['text'] ?? [] );
         $meta_helper = new PWPL_Meta();
         list( $layout_widths, $layout_columns, $card_widths, $breakpoint_values ) = $this->load_layout_meta( $post->ID, $meta_helper );
 
@@ -304,6 +309,67 @@ class PWPL_Admin_Meta {
                                 </label>
                             </div>
                         <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+            <div class="pwpl-field">
+                <strong><?php esc_html_e( 'Text styles', 'planify-wp-pricing-lite' ); ?></strong>
+                <p class="description"><?php esc_html_e( 'Control text color and typography for the Top section and Specs section. Leave blank to inherit theme defaults.', 'planify-wp-pricing-lite' ); ?></p>
+                <?php $card_text = is_array( $card_text ) ? $card_text : []; ?>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap:16px; margin-top:10px;">
+                    <div>
+                        <h4><?php esc_html_e( 'Top section (header + price + CTA context)', 'planify-wp-pricing-lite' ); ?></h4>
+                        <?php $top_text = isset($card_text['top']) && is_array($card_text['top']) ? $card_text['top'] : []; ?>
+                        <label style="display:flex; flex-direction:column; gap:6px;">
+                            <span><?php esc_html_e( 'Text color', 'planify-wp-pricing-lite' ); ?></span>
+                            <?php $tx = isset($top_text['color']) ? (string)$top_text['color'] : ''; $tx_hex = ($tx && preg_match('/^#/',$tx)) ? $tx : ''; ?>
+                            <input type="color" name="pwpl_table[card][text][top][color]" value="<?php echo esc_attr( $tx_hex ); ?>" data-pwpl-card-field="text.top.color" />
+                        </label>
+                        <label style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+                            <span><?php esc_html_e( 'Font family', 'planify-wp-pricing-lite' ); ?></span>
+                            <?php $fam = isset($top_text['family']) ? (string)$top_text['family'] : ''; ?>
+                            <input type="text" name="pwpl_table[card][text][top][family]" value="<?php echo esc_attr( $fam ); ?>" placeholder="system-ui, -apple-system, sans-serif" data-pwpl-card-field="text.top.family" />
+                            <span class="description" style="opacity:.75;">
+                                <?php esc_html_e( 'Enter a CSS font stack (e.g., "Inter", system-ui, sans-serif). Leave blank to inherit.', 'planify-wp-pricing-lite' ); ?>
+                            </span>
+                        </label>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; align-items:flex-end;">
+                            <label style="display:flex; flex-direction:column; gap:6px;">
+                                <span><?php esc_html_e( 'Size (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                <input type="number" min="10" max="28" step="1" name="pwpl_table[card][text][top][size]" value="<?php echo esc_attr( $top_text['size'] ?? '' ); ?>" data-pwpl-card-field="text.top.size" />
+                            </label>
+                            <label style="display:flex; flex-direction:column; gap:6px;">
+                                <span><?php esc_html_e( 'Weight', 'planify-wp-pricing-lite' ); ?></span>
+                                <input type="number" min="300" max="900" step="50" name="pwpl_table[card][text][top][weight]" value="<?php echo esc_attr( $top_text['weight'] ?? '' ); ?>" data-pwpl-card-field="text.top.weight" />
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <h4><?php esc_html_e( 'Specs section', 'planify-wp-pricing-lite' ); ?></h4>
+                        <?php $spec_text = isset($card_text['specs']) && is_array($card_text['specs']) ? $card_text['specs'] : []; ?>
+                        <label style="display:flex; flex-direction:column; gap:6px;">
+                            <span><?php esc_html_e( 'Text color', 'planify-wp-pricing-lite' ); ?></span>
+                            <?php $sx = isset($spec_text['color']) ? (string)$spec_text['color'] : ''; $sx_hex = ($sx && preg_match('/^#/',$sx)) ? $sx : ''; ?>
+                            <input type="color" name="pwpl_table[card][text][specs][color]" value="<?php echo esc_attr( $sx_hex ); ?>" data-pwpl-card-field="text.specs.color" />
+                        </label>
+                        <label style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+                            <span><?php esc_html_e( 'Font family', 'planify-wp-pricing-lite' ); ?></span>
+                            <?php $sfam = isset($spec_text['family']) ? (string)$spec_text['family'] : ''; ?>
+                            <input type="text" name="pwpl_table[card][text][specs][family]" value="<?php echo esc_attr( $sfam ); ?>" placeholder="system-ui, sans-serif" data-pwpl-card-field="text.specs.family" />
+                            <span class="description" style="opacity:.75;">
+                                <?php esc_html_e( 'Enter a CSS font stack (e.g., "Poppins", sans-serif). Leave blank to inherit.', 'planify-wp-pricing-lite' ); ?>
+                            </span>
+                        </label>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; align-items:flex-end;">
+                            <label style="display:flex; flex-direction:column; gap:6px;">
+                                <span><?php esc_html_e( 'Size (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                <input type="number" min="10" max="24" step="1" name="pwpl_table[card][text][specs][size]" value="<?php echo esc_attr( $spec_text['size'] ?? '' ); ?>" data-pwpl-card-field="text.specs.size" />
+                            </label>
+                            <label style="display:flex; flex-direction:column; gap:6px;">
+                                <span><?php esc_html_e( 'Weight', 'planify-wp-pricing-lite' ); ?></span>
+                                <input type="number" min="300" max="900" step="50" name="pwpl_table[card][text][specs][weight]" value="<?php echo esc_attr( $spec_text['weight'] ?? '' ); ?>" data-pwpl-card-field="text.specs.weight" />
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -550,6 +616,30 @@ class PWPL_Admin_Meta {
             $themes[ $theme['slug'] ] = $label;
         }
 
+        // Load card (Plan Card) configuration early so all sections can read values.
+        $card_raw    = get_post_meta( $post->ID, PWPL_Meta::CARD_CONFIG, true );
+        $card_config = is_array( $card_raw ) ? $meta_helper->sanitize_card_config( $card_raw ) : [];
+        $card_layout = (array) ( $card_config['layout'] ?? [] );
+        $card_colors = (array) ( $card_config['colors'] ?? [] );
+        $card_typo   = (array) ( $card_config['typo'] ?? [] );
+        $card_text   = (array) ( $card_config['text'] ?? [] );
+        if ( empty( $card_text ) && is_array( $card_raw ) && isset( $card_raw['text'] ) && is_array( $card_raw['text'] ) ) {
+            foreach ( $card_raw['text'] as $area_key => $area_values ) {
+                if ( ! is_array( $area_values ) ) {
+                    continue;
+                }
+                $card_text[ $area_key ] = [];
+                foreach ( $area_values as $prop_key => $prop_value ) {
+                    if ( in_array( $prop_key, [ 'size', 'weight' ], true ) ) {
+                        $card_text[ $area_key ][ $prop_key ] = (int) $prop_value;
+                    } elseif ( is_scalar( $prop_value ) ) {
+                        $card_text[ $area_key ][ $prop_key ] = sanitize_text_field( (string) $prop_value );
+                    }
+                }
+            }
+        }
+        $card_preset = (string) ( $card_config['preset'] ?? '' );
+
         $dimension_map = [
             'platform' => [
                 'label'   => __( 'Platform / OS', 'planify-wp-pricing-lite' ),
@@ -578,6 +668,34 @@ class PWPL_Admin_Meta {
         $anim_mobile = (int) get_post_meta( $post->ID, PWPL_Meta::SPECS_ANIM_MOBILE, true );
         $trust_trio  = (int) get_post_meta( $post->ID, PWPL_Meta::TRUST_TRIO_ENABLED, true );
         $sticky_cta  = (int) get_post_meta( $post->ID, PWPL_Meta::STICKY_CTA_MOBILE, true );
+        $card_split  = isset( $card_layout['split'] ) ? $card_layout['split'] : 'two_tone';
+        if ( ! in_array( $card_split, [ 'two_tone' ], true ) ) {
+            $card_split = 'two_tone';
+        }
+        $card_specs_grad = isset( $card_colors['specs_grad'] ) && is_array( $card_colors['specs_grad'] ) ? $card_colors['specs_grad'] : [];
+        $card_keyline    = isset( $card_colors['keyline'] ) && is_array( $card_colors['keyline'] ) ? $card_colors['keyline'] : [];
+        $card_typo_title = isset( $card_typo['title'] ) && is_array( $card_typo['title'] ) ? $card_typo['title'] : [];
+        $card_typo_sub   = isset( $card_typo['subtitle'] ) && is_array( $card_typo['subtitle'] ) ? $card_typo['subtitle'] : [];
+        $card_typo_price = isset( $card_typo['price'] ) && is_array( $card_typo['price'] ) ? $card_typo['price'] : [];
+        $card_pad_values = [
+            'pad_t' => $card_layout['pad_t'] ?? '',
+            'pad_r' => $card_layout['pad_r'] ?? '',
+            'pad_b' => $card_layout['pad_b'] ?? '',
+            'pad_l' => $card_layout['pad_l'] ?? '',
+        ];
+        $pad_lock = true;
+        $non_empty_pads = array_filter( $card_pad_values, function( $value ) {
+            return $value !== '' && $value !== null;
+        } );
+        if ( count( $non_empty_pads ) > 1 ) {
+            $first_pad = (int) reset( $non_empty_pads );
+            foreach ( $non_empty_pads as $pad_value ) {
+                if ( (int) $pad_value !== $first_pad ) {
+                    $pad_lock = false;
+                    break;
+                }
+            }
+        }
         ?>
         <div class="pwpl-meta pwpl-meta--table" data-pwpl-dimensions>
             <div class="pwpl-field">
@@ -710,6 +828,361 @@ class PWPL_Admin_Meta {
                 </div>
                 <p class="description"><?php esc_html_e( 'Leave colors empty to use the theme accent outline (fills on hover).', 'planify-wp-pricing-lite' ); ?></p>
             </div>
+            <div class="pwpl-field" data-pwpl-card-settings>
+                <h3 style="margin:14px 0 8px;"><?php esc_html_e( 'Plan Card', 'planify-wp-pricing-lite' ); ?></h3>
+                <p class="description"><?php esc_html_e( 'Fine-tune FireVPS plan cards. Leave any field blank to inherit the theme default.', 'planify-wp-pricing-lite' ); ?></p>
+                <div style="display:flex; flex-direction:column; gap:18px; margin-top:12px;">
+                    
+                    <div>
+                        <strong><?php esc_html_e( 'Layout', 'planify-wp-pricing-lite' ); ?></strong>
+                        <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; margin-top:8px;">
+                            <label style="display:flex; flex-direction:column; gap:6px;">
+                                <span><?php esc_html_e( 'Card radius (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                <input type="number" min="0" max="24" step="1" name="pwpl_table[card][layout][radius]" value="<?php echo esc_attr( $card_layout['radius'] ?? '' ); ?>" data-pwpl-card-field="layout.radius" />
+                            </label>
+                            <label style="display:flex; flex-direction:column; gap:6px; width:140px;">
+                                <span><?php esc_html_e( 'Border width (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                <input type="number" min="0" max="12" step="0.5" name="pwpl_table[card][layout][border_w]" value="<?php echo esc_attr( $card_layout['border_w'] ?? '' ); ?>" data-pwpl-card-field="layout.border_w" />
+                            </label>
+                            <div style="display:flex; flex-direction:column; gap:6px; min-width:260px;">
+                                <span><?php esc_html_e( 'Padding (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                <div style="display:flex; flex-wrap:wrap; gap:8px;" data-pwpl-card-pad-group>
+                                    <label style="display:flex; flex-direction:column; gap:4px; width:72px;">
+                                        <span style="font-size:12px; text-transform:uppercase; letter-spacing:0.02em; opacity:.7;"><?php esc_html_e( 'Top', 'planify-wp-pricing-lite' ); ?></span>
+                                        <input type="number" min="0" max="32" step="1" name="pwpl_table[card][layout][pad_t]" value="<?php echo esc_attr( $card_pad_values['pad_t'] ?? '' ); ?>" data-pwpl-card-field="layout.pad_t" data-pwpl-card-pad="pad_t" />
+                                    </label>
+                                    <label style="display:flex; flex-direction:column; gap:4px; width:72px;">
+                                        <span style="font-size:12px; text-transform:uppercase; letter-spacing:0.02em; opacity:.7;"><?php esc_html_e( 'Right', 'planify-wp-pricing-lite' ); ?></span>
+                                        <input type="number" min="0" max="32" step="1" name="pwpl_table[card][layout][pad_r]" value="<?php echo esc_attr( $card_pad_values['pad_r'] ?? '' ); ?>" data-pwpl-card-field="layout.pad_r" data-pwpl-card-pad="pad_r" />
+                                    </label>
+                                    <label style="display:flex; flex-direction:column; gap:4px; width:72px;">
+                                        <span style="font-size:12px; text-transform:uppercase; letter-spacing:0.02em; opacity:.7;"><?php esc_html_e( 'Bottom', 'planify-wp-pricing-lite' ); ?></span>
+                                        <input type="number" min="0" max="32" step="1" name="pwpl_table[card][layout][pad_b]" value="<?php echo esc_attr( $card_pad_values['pad_b'] ?? '' ); ?>" data-pwpl-card-field="layout.pad_b" data-pwpl-card-pad="pad_b" />
+                                    </label>
+                                    <label style="display:flex; flex-direction:column; gap:4px; width:72px;">
+                                        <span style="font-size:12px; text-transform:uppercase; letter-spacing:0.02em; opacity:.7;"><?php esc_html_e( 'Left', 'planify-wp-pricing-lite' ); ?></span>
+                                        <input type="number" min="0" max="32" step="1" name="pwpl_table[card][layout][pad_l]" value="<?php echo esc_attr( $card_pad_values['pad_l'] ?? '' ); ?>" data-pwpl-card-field="layout.pad_l" data-pwpl-card-pad="pad_l" />
+                                    </label>
+                                </div>
+                                <label style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+                                    <input type="checkbox" data-pwpl-card-pad-lock <?php checked( $pad_lock ); ?> />
+                                    <span><?php esc_html_e( 'Lock padding values together', 'planify-wp-pricing-lite' ); ?></span>
+                                </label>
+                            </div>
+                            <label style="display:flex; flex-direction:column; gap:6px;">
+                                <span><?php esc_html_e( 'Split layout', 'planify-wp-pricing-lite' ); ?></span>
+                                <select name="pwpl_table[card][layout][split]" data-pwpl-card-field="layout.split">
+                                    <option value="two_tone" <?php selected( $card_split, 'two_tone' ); ?>><?php esc_html_e( 'Two-tone (header & CTA vs. specs)', 'planify-wp-pricing-lite' ); ?></option>
+                                </select>
+                            </label>
+                        </div>
+                        <p class="description"><?php esc_html_e( 'Radius and padding apply to the entire card. Zero is allowed for flush edges.', 'planify-wp-pricing-lite' ); ?></p>
+                    </div>
+                    <div>
+                        <strong><?php esc_html_e( 'Colors & surfaces', 'planify-wp-pricing-lite' ); ?></strong>
+                        <?php $swatches = ['#ffffff','#f7f7f8','#f5a623','#d9790b','#ffcd30','#1c1a16','#6c655c']; ?>
+                        <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; align-items:flex-end;">
+                            <label style="display:flex; flex-direction:column; gap:6px; min-width:220px;">
+                                <span><?php esc_html_e( 'Top section background (header + CTA + price)', 'planify-wp-pricing-lite' ); ?></span>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <?php $top_val = isset($card_colors['top_bg']) ? (string)$card_colors['top_bg'] : ''; $top_hex = ( $top_val && preg_match('/^#/',$top_val) ) ? $top_val : '#fff6e0'; ?>
+                                    <input type="color" name="pwpl_table[card][colors][top_bg]" value="<?php echo esc_attr( $top_hex ); ?>" data-pwpl-card-field="colors.top_bg" />
+                                    <button type="button" class="button-link" data-pwpl-clear="colors.top_bg"><?php esc_html_e( 'Reset', 'planify-wp-pricing-lite' ); ?></button>
+                                </div>
+                            </label>
+                            <label style="display:flex; flex-direction:column; gap:6px; min-width:220px;">
+                                <span><?php esc_html_e( 'Specs solid fallback', 'planify-wp-pricing-lite' ); ?></span>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <?php $specs_val = isset($card_colors['specs_bg']) ? (string)$card_colors['specs_bg'] : ''; $specs_hex = ( $specs_val && preg_match('/^#/',$specs_val) ) ? $specs_val : '#cf7a1a'; ?>
+                                    <input type="color" name="pwpl_table[card][colors][specs_bg]" value="<?php echo esc_attr( $specs_hex ); ?>" data-pwpl-card-field="colors.specs_bg" />
+                                    <button type="button" class="button-link" data-pwpl-clear="colors.specs_bg"><?php esc_html_e( 'Reset', 'planify-wp-pricing-lite' ); ?></button>
+                                </div>
+                                
+                            </label>
+                            
+                        </div>
+                        
+
+                        <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+                            <span><?php esc_html_e( 'Specs gradient (optional)', 'planify-wp-pricing-lite' ); ?></span>
+                            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;" data-pwpl-gradient>
+                                <?php $g_type = isset($card_specs_grad['type']) ? $card_specs_grad['type'] : ''; ?>
+                                <label style="display:flex; flex-direction:column; gap:4px; min-width:180px;">
+                                    <span><?php esc_html_e( 'Type', 'planify-wp-pricing-lite' ); ?></span>
+                                    <select name="pwpl_table[card][colors][specs_grad][type]" data-pwpl-card-field="colors.specs_grad.type" data-pwpl-grad-type>
+                                        <option value="" <?php selected( $g_type, '' ); ?>><?php esc_html_e( 'None', 'planify-wp-pricing-lite' ); ?></option>
+                                        <option value="linear" <?php selected( $g_type, 'linear' ); ?>><?php esc_html_e( 'Linear', 'planify-wp-pricing-lite' ); ?></option>
+                                        <option value="radial" <?php selected( $g_type, 'radial' ); ?>><?php esc_html_e( 'Radial', 'planify-wp-pricing-lite' ); ?></option>
+                                        <option value="conic"  <?php selected( $g_type, 'conic' ); ?>><?php esc_html_e( 'Conic', 'planify-wp-pricing-lite' ); ?></option>
+                                    </select>
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px; min-width:180px;">
+                                    <span><?php esc_html_e( 'Start color', 'planify-wp-pricing-lite' ); ?></span>
+                                    <?php $gstart = isset($card_specs_grad['start']) ? (string)$card_specs_grad['start'] : '#cf7a1a'; ?>
+                                    <input type="color" name="pwpl_table[card][colors][specs_grad][start]" value="<?php echo esc_attr( preg_match('/^#/',$gstart) ? $gstart : '#cf7a1a' ); ?>" data-pwpl-card-field="colors.specs_grad.start" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px; min-width:180px;">
+                                    <span><?php esc_html_e( 'End color', 'planify-wp-pricing-lite' ); ?></span>
+                                    <?php $gend = isset($card_specs_grad['end']) ? (string)$card_specs_grad['end'] : '#8a3f00'; ?>
+                                    <input type="color" name="pwpl_table[card][colors][specs_grad][end]" value="<?php echo esc_attr( preg_match('/^#/',$gend) ? $gend : '#8a3f00' ); ?>" data-pwpl-card-field="colors.specs_grad.end" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px; width:160px;" data-pwpl-grad-angle>
+                                    <span><?php esc_html_e( 'Angle (deg)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="0" max="360" step="1" name="pwpl_table[card][colors][specs_grad][angle]" value="<?php echo esc_attr( $card_specs_grad['angle'] ?? 180 ); ?>" data-pwpl-card-field="colors.specs_grad.angle" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px; width:180px;">
+                                    <span><?php esc_html_e( 'Start position (%)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="range" min="0" max="100" step="1" name="pwpl_table[card][colors][specs_grad][start_pos]" value="<?php echo esc_attr( $card_specs_grad['start_pos'] ?? 0 ); ?>" data-pwpl-card-field="colors.specs_grad.start_pos" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px; width:180px;">
+                                    <span><?php esc_html_e( 'End position (%)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="range" min="0" max="100" step="1" name="pwpl_table[card][colors][specs_grad][end_pos]" value="<?php echo esc_attr( $card_specs_grad['end_pos'] ?? 100 ); ?>" data-pwpl-card-field="colors.specs_grad.end_pos" />
+                                </label>
+                                <div style="display:flex; align-items:flex-end; gap:8px;">
+                                    <button type="button" class="button-link" data-pwpl-grad-reset="colors.specs_grad."><?php esc_html_e( 'Reset gradient', 'planify-wp-pricing-lite' ); ?></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <?php $card_top_grad = isset( $card_colors['top_grad'] ) && is_array( $card_colors['top_grad'] ) ? $card_colors['top_grad'] : []; ?>
+                        <div style="display:flex; flex-direction:column; gap:6px; margin-top:10px;">
+                            <span><?php esc_html_e( 'Top gradient (optional)', 'planify-wp-pricing-lite' ); ?></span>
+                            <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;" data-pwpl-gradient-top>
+                                <?php $g_type_c = isset($card_top_grad['type']) ? $card_top_grad['type'] : ''; ?>
+                                <label style="display:flex; flex-direction:column; gap:4px; min-width:180px;">
+                                    <span><?php esc_html_e( 'Type', 'planify-wp-pricing-lite' ); ?></span>
+                                    <select name="pwpl_table[card][colors][top_grad][type]" data-pwpl-card-field="colors.top_grad.type" data-pwpl-grad-type-top>
+                                        <option value="" <?php selected( $g_type_c, '' ); ?>><?php esc_html_e( 'None', 'planify-wp-pricing-lite' ); ?></option>
+                                        <option value="linear" <?php selected( $g_type_c, 'linear' ); ?>><?php esc_html_e( 'Linear', 'planify-wp-pricing-lite' ); ?></option>
+                                        <option value="radial" <?php selected( $g_type_c, 'radial' ); ?>><?php esc_html_e( 'Radial', 'planify-wp-pricing-lite' ); ?></option>
+                                        <option value="conic"  <?php selected( $g_type_c, 'conic' ); ?>><?php esc_html_e( 'Conic', 'planify-wp-pricing-lite' ); ?></option>
+                                    </select>
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px; min-width:180px;">
+                                    <span><?php esc_html_e( 'Start color', 'planify-wp-pricing-lite' ); ?></span>
+                                    <?php $gstart_c = isset($card_top_grad['start']) ? (string)$card_top_grad['start'] : '#ffe8c4'; ?>
+                                    <input type="color" name="pwpl_table[card][colors][top_grad][start]" value="<?php echo esc_attr( preg_match('/^#/',$gstart_c) ? $gstart_c : '#ffe8c4' ); ?>" data-pwpl-card-field="colors.top_grad.start" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px; min-width:180px;">
+                                    <span><?php esc_html_e( 'End color', 'planify-wp-pricing-lite' ); ?></span>
+                                    <?php $gend_c = isset($card_top_grad['end']) ? (string)$card_top_grad['end'] : '#ffd3b1'; ?>
+                                    <input type="color" name="pwpl_table[card][colors][top_grad][end]" value="<?php echo esc_attr( preg_match('/^#/',$gend_c) ? $gend_c : '#ffd3b1' ); ?>" data-pwpl-card-field="colors.top_grad.end" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px; width:160px;" data-pwpl-grad-angle-top>
+                                    <span><?php esc_html_e( 'Angle (deg)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="0" max="360" step="1" name="pwpl_table[card][colors][top_grad][angle]" value="<?php echo esc_attr( $card_top_grad['angle'] ?? 180 ); ?>" data-pwpl-card-field="colors.top_grad.angle" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px; width:180px;">
+                                    <span><?php esc_html_e( 'Start position (%)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="range" min="0" max="100" step="1" name="pwpl_table[card][colors][top_grad][start_pos]" value="<?php echo esc_attr( $card_top_grad['start_pos'] ?? 0 ); ?>" data-pwpl-card-field="colors.top_grad.start_pos" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px; width:180px;">
+                                    <span><?php esc_html_e( 'End position (%)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="range" min="0" max="100" step="1" name="pwpl_table[card][colors][top_grad][end_pos]" value="<?php echo esc_attr( $card_top_grad['end_pos'] ?? 100 ); ?>" data-pwpl-card-field="colors.top_grad.end_pos" />
+                                </label>
+                                <div style="display:flex; align-items:flex-end; gap:8px;">
+                                    <button type="button" class="button-link" data-pwpl-grad-reset="colors.top_grad."><?php esc_html_e( 'Reset gradient', 'planify-wp-pricing-lite' ); ?></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
+                            <label style="display:flex; flex-direction:column; gap:4px; min-width:180px;">
+                                <span><?php esc_html_e( 'Keyline color', 'planify-wp-pricing-lite' ); ?></span>
+                                <?php $kline = isset($card_keyline['color']) ? (string)$card_keyline['color'] : ''; $khex = $kline && preg_match('/^#/',$kline) ? $kline : '#1c1a16'; ?>
+                                <input type="color" name="pwpl_table[card][colors][keyline][color]" value="<?php echo esc_attr( $khex ); ?>" data-pwpl-card-field="colors.keyline.color" />
+                            </label>
+                            <label style="display:flex; flex-direction:column; gap:4px; width:140px;">
+                                <span><?php esc_html_e( 'Keyline opacity (0–1)', 'planify-wp-pricing-lite' ); ?></span>
+                                <input type="number" min="0" max="1" step="0.01" name="pwpl_table[card][colors][keyline][opacity]" value="<?php echo esc_attr( $card_keyline['opacity'] ?? '' ); ?>" data-pwpl-card-field="colors.keyline.opacity" />
+                            </label>
+                            <label style="display:flex; flex-direction:column; gap:4px; min-width:180px;">
+                                <span><?php esc_html_e( 'Border color', 'planify-wp-pricing-lite' ); ?></span>
+                                <?php $bcol = isset($card_colors['border']) ? (string)$card_colors['border'] : ''; $bhex = $bcol && preg_match('/^#/',$bcol) ? $bcol : '#e5e7eb'; ?>
+                                <input type="color" name="pwpl_table[card][colors][border]" value="<?php echo esc_attr( $bhex ); ?>" data-pwpl-card-field="colors.border" />
+                            </label>
+                        </div>
+                        <p class="description"><?php esc_html_e( 'Provide a gradient start and end to override the specs background. If either is empty, the solid color fallback is used. Keylines are thin separators; leave blank to disable.', 'planify-wp-pricing-lite' ); ?></p>
+                    </div>
+                    <div>
+                        <strong><?php esc_html_e( 'Typography', 'planify-wp-pricing-lite' ); ?></strong>
+                        <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+                            <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+                                <span style="min-width:110px; font-weight:600;"><?php esc_html_e( 'Title', 'planify-wp-pricing-lite' ); ?></span>
+                                <label style="display:flex; flex-direction:column; gap:4px;">
+                                    <span><?php esc_html_e( 'Size (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="16" max="36" step="1" name="pwpl_table[card][typo][title][size]" value="<?php echo esc_attr( $card_typo_title['size'] ?? '' ); ?>" data-pwpl-card-field="typo.title.size" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px;">
+                                    <span><?php esc_html_e( 'Weight', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="600" max="800" step="50" name="pwpl_table[card][typo][title][weight]" value="<?php echo esc_attr( $card_typo_title['weight'] ?? '' ); ?>" data-pwpl-card-field="typo.title.weight" />
+                                </label>
+                            </div>
+                            <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+                                <span style="min-width:110px; font-weight:600;"><?php esc_html_e( 'Subtitle', 'planify-wp-pricing-lite' ); ?></span>
+                                <label style="display:flex; flex-direction:column; gap:4px;">
+                                    <span><?php esc_html_e( 'Size (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="12" max="18" step="1" name="pwpl_table[card][typo][subtitle][size]" value="<?php echo esc_attr( $card_typo_sub['size'] ?? '' ); ?>" data-pwpl-card-field="typo.subtitle.size" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px;">
+                                    <span><?php esc_html_e( 'Weight', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="400" max="600" step="50" name="pwpl_table[card][typo][subtitle][weight]" value="<?php echo esc_attr( $card_typo_sub['weight'] ?? '' ); ?>" data-pwpl-card-field="typo.subtitle.weight" />
+                                </label>
+                            </div>
+                            <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;">
+                                <span style="min-width:110px; font-weight:600;"><?php esc_html_e( 'Price', 'planify-wp-pricing-lite' ); ?></span>
+                                <label style="display:flex; flex-direction:column; gap:4px;">
+                                    <span><?php esc_html_e( 'Size (px)', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="24" max="44" step="1" name="pwpl_table[card][typo][price][size]" value="<?php echo esc_attr( $card_typo_price['size'] ?? '' ); ?>" data-pwpl-card-field="typo.price.size" />
+                                </label>
+                                <label style="display:flex; flex-direction:column; gap:4px;">
+                                    <span><?php esc_html_e( 'Weight', 'planify-wp-pricing-lite' ); ?></span>
+                                    <input type="number" min="700" max="900" step="50" name="pwpl_table[card][typo][price][weight]" value="<?php echo esc_attr( $card_typo_price['weight'] ?? '' ); ?>" data-pwpl-card-field="typo.price.weight" />
+                                </label>
+                            </div>
+                        </div>
+                        <p class="description"><?php esc_html_e( 'Size values are pixels. Weights accept 50-point steps (e.g., 700). Leave blank to inherit the theme stack.', 'planify-wp-pricing-lite' ); ?></p>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function(){
+                    const section = document.querySelector('[data-pwpl-card-settings]');
+                    if (!section) { return; }
+                    const padInputs = section.querySelectorAll('[data-pwpl-card-pad]');
+                    const padLock = section.querySelector('[data-pwpl-card-pad-lock]');
+                    const syncOthers = function(value, source){
+                        padInputs.forEach(function(input){
+                            if (source && input === source) {
+                                return;
+                            }
+                            input.value = value;
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                        });
+                    };
+                    padInputs.forEach(function(input){
+                        input.addEventListener('input', function(){
+                            if (!padLock || !padLock.checked) { return; }
+                            syncOthers(this.value, this);
+                        });
+                    });
+                    if (padLock) {
+                        padLock.addEventListener('change', function(){
+                            if (!padLock.checked) { return; }
+                            const first = padInputs.length ? padInputs[0].value : '';
+                            syncOthers(first, padInputs.length ? padInputs[0] : null);
+                        });
+                    }
+                    const enableField = function(path){
+                        const fields = section.querySelectorAll('[data-pwpl-card-field="' + path + '"]');
+                        fields.forEach(function(field){ field.disabled = false; field.removeAttribute('data-pwpl-cleared'); });
+                    };
+                    const disableField = function(path){
+                        const fields = section.querySelectorAll('[data-pwpl-card-field="' + path + '"]');
+                        fields.forEach(function(field){ field.disabled = true; field.setAttribute('data-pwpl-cleared','1'); });
+                    };
+                    const setFieldValue = function(path, value){
+                        const fields = section.querySelectorAll('[data-pwpl-card-field="' + path + '"]');
+                        if (!fields || !fields.length) { return; }
+                        const resolved = (value === null || typeof value === 'undefined') ? '' : value;
+                        fields.forEach(function(field){
+                            field.value = resolved;
+                            // Trigger both input and change to cover inputs and selects
+                            field.dispatchEvent(new Event('input', { bubbles: true }));
+                            field.dispatchEvent(new Event('change', { bubbles: true }));
+                            field.disabled = false;
+                            field.removeAttribute('data-pwpl-cleared');
+                        });
+                    };
+                    const fillValues = function(obj, prefix){
+                        Object.keys(obj).forEach(function(key){
+                            const next = obj[key];
+                            const path = prefix ? prefix + '.' + key : key;
+                            if (next && typeof next === 'object' && !Array.isArray(next)) {
+                                fillValues(next, path);
+                                return;
+                            }
+                            setFieldValue(path, next);
+                        });
+                    };
+                    // No presets — manual only
+
+                    // Swatch buttons: set on target path
+                    section.querySelectorAll('[data-pwpl-swatch]').forEach(function(btn){
+                        btn.addEventListener('click', function(){
+                            const hex = this.getAttribute('data-pwpl-swatch');
+                            const path = this.getAttribute('data-pwpl-target');
+                            if (!path) { return; }
+                            setFieldValue(path, hex);
+                        });
+                    });
+                    // Clear buttons (reset to empty -> default theme)
+                    section.querySelectorAll('[data-pwpl-clear]').forEach(function(btn){
+                        btn.addEventListener('click', function(){
+                            const path = this.getAttribute('data-pwpl-clear');
+                            if (!path) { return; }
+                            setFieldValue(path, '');
+                            disableField(path);
+                        });
+                    });
+                    // Re-enable a field whenever the user picks a color
+                    section.querySelectorAll('input[type="color"][data-pwpl-card-field]').forEach(function(input){
+                        input.addEventListener('input', function(){
+                            const path = this.getAttribute('data-pwpl-card-field');
+                            if (path) { enableField(path); }
+                        });
+                    });
+                    // Gradient UI toggles: show angle only for linear
+                    const gradWrap = section.querySelector('[data-pwpl-gradient]');
+                    const wireGradSection = function(wrapperSel, typeSelSel, angleWrapSel, prefix){
+                        const wrap = section.querySelector(wrapperSel);
+                        if (!wrap) return;
+                        const typeSel = wrap.querySelector(typeSelSel);
+                        const angleWrap = wrap.querySelector(angleWrapSel);
+                        const sync = function(){
+                            if (!typeSel) return;
+                            const t = typeSel.value;
+                            if (angleWrap) angleWrap.style.display = (t === 'linear' || t === '') ? '' : 'none';
+                            const gradFields = wrap.querySelectorAll('[data-pwpl-card-field^="' + prefix + '"]');
+                            gradFields.forEach(function(f){
+                                if (f === typeSel) return;
+                                if (!t) {
+                                    f.disabled = true;
+                                    f.setAttribute('data-pwpl-cleared','1');
+                                    
+                                } else {
+                                    f.disabled = false;
+                                    f.removeAttribute('data-pwpl-cleared');
+                                    
+                                }
+                            });
+                        };
+                        if (typeSel) { typeSel.addEventListener('change', sync); sync(); }
+                    };
+                    wireGradSection('[data-pwpl-gradient]', '[data-pwpl-grad-type]', '[data-pwpl-grad-angle]', 'colors.specs_grad.');
+                    wireGradSection('[data-pwpl-gradient-top]', '[data-pwpl-grad-type-top]', '[data-pwpl-grad-angle-top]', 'colors.top_grad.');
+
+                    // Gradient preset apply
+                    // Reset gradient helpers (clear fields and switch Type to None)
+                    section.querySelectorAll('[data-pwpl-grad-reset]').forEach(function(btn){
+                        btn.addEventListener('click', function(){
+                            const prefix = this.getAttribute('data-pwpl-grad-reset');
+                            if (!prefix) return;
+                            setFieldValue(prefix + 'type', '');
+                            setFieldValue(prefix + 'start', '');
+                            setFieldValue(prefix + 'end', '');
+                            setFieldValue(prefix + 'angle', '');
+                            setFieldValue(prefix + 'start_pos', '');
+                            setFieldValue(prefix + 'end_pos', '');
+                            // Trigger UI sync for the right wrapper
+                            let wrapSel = '[data-pwpl-gradient]';
+                            if (prefix.indexOf('top_grad') !== -1) wrapSel = '[data-pwpl-gradient-top]';
+                            const wrap = section.querySelector(wrapSel);
+                            const typeSel = wrap ? wrap.querySelector('[data-pwpl-grad-type], [data-pwpl-grad-type-top]') : null;
+                            if (typeSel) { typeSel.dispatchEvent(new Event('change', { bubbles: true })); }
+                        });
+                    });
+                })();
+            </script>
             <div class="pwpl-field">
                 <label style="display:flex; gap:8px; align-items:center;">
                     <input type="checkbox" name="pwpl_table[ui][trust_trio]" value="1" <?php checked( $trust_trio, 1 ); ?> />
@@ -1347,6 +1820,9 @@ class PWPL_Admin_Meta {
         ];
         update_post_meta( $post_id, PWPL_Meta::CTA_CONFIG, $out );
 
+        $card_input = isset( $input['card'] ) ? (array) $input['card'] : [];
+        $card_clean = $meta->sanitize_card_config( $card_input );
+        update_post_meta( $post_id, PWPL_Meta::CARD_CONFIG, $card_clean );
         // Trust items textarea -> array
         $trust_items_input = isset( $ui_input['trust_items'] ) ? (string) $ui_input['trust_items'] : '';
         $lines = array_filter( array_map( function( $line ) {

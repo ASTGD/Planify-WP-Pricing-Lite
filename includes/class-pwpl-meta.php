@@ -37,6 +37,7 @@ class PWPL_Meta {
     const STICKY_CTA_MOBILE       = '_pwpl_sticky_cta_mobile';
     const TRUST_ITEMS             = '_pwpl_trust_items';
     const CTA_CONFIG              = '_pwpl_cta';
+    const CARD_CONFIG             = '_pwpl_card';
 
     public function init() {
         add_action( 'init', [ $this, 'register_meta' ] );
@@ -155,6 +156,14 @@ class PWPL_Meta {
                 ];
                 return $out;
             },
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::CARD_CONFIG, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_card_config' ],
             'show_in_rest'      => false,
         ] );
 
@@ -448,6 +457,208 @@ class PWPL_Meta {
         return (bool) $value;
     }
 
+    public function sanitize_card_config( $value ) {
+        $value = is_array( $value ) ? $value : [];
+        $out   = [];
+        
+
+        $layout_input = isset( $value['layout'] ) && is_array( $value['layout'] ) ? $value['layout'] : [];
+        $layout_clean = [];
+
+        if ( array_key_exists( 'radius', $layout_input ) ) {
+            $radius_raw = $layout_input['radius'];
+            if ( $radius_raw !== '' && null !== $radius_raw ) {
+                $radius = (int) $radius_raw;
+                $layout_clean['radius'] = max( 0, min( 24, $radius ) );
+            }
+        }
+
+        // Optional card border width (px)
+        if ( array_key_exists( 'border_w', $layout_input ) ) {
+            $bw_raw = $layout_input['border_w'];
+            if ( $bw_raw !== '' && null !== $bw_raw ) {
+                $bw = (float) $bw_raw;
+                // clamp to sensible range
+                if ( $bw < 0 ) { $bw = 0; }
+                if ( $bw > 12 ) { $bw = 12; }
+                // Keep one decimal place max
+                $layout_clean['border_w'] = round( $bw, 1 );
+            }
+        }
+
+        foreach ( [ 'pad_t', 'pad_r', 'pad_b', 'pad_l' ] as $pad_key ) {
+            if ( ! array_key_exists( $pad_key, $layout_input ) ) {
+                continue;
+            }
+            $pad_raw = $layout_input[ $pad_key ];
+            if ( $pad_raw === '' || null === $pad_raw ) {
+                continue;
+            }
+            $pad = (int) $pad_raw;
+            $layout_clean[ $pad_key ] = max( 0, min( 32, $pad ) );
+        }
+
+        if ( array_key_exists( 'split', $layout_input ) ) {
+            $split = sanitize_key( $layout_input['split'] );
+            if ( in_array( $split, [ 'two_tone' ], true ) ) {
+                $layout_clean['split'] = $split;
+            }
+        }
+
+        if ( ! empty( $layout_clean ) ) {
+            $out['layout'] = $layout_clean;
+        }
+
+        $color_input = isset( $value['colors'] ) && is_array( $value['colors'] ) ? $value['colors'] : [];
+        $colors_clean = [];
+        foreach ( [ 'top_bg', 'header_bg', 'cta_bg', 'specs_bg', 'specs_text', 'border' ] as $color_key ) {
+            if ( ! array_key_exists( $color_key, $color_input ) ) {
+                continue;
+            }
+            $color_value = $this->sanitize_color_token( $color_input[ $color_key ] );
+            if ( $color_value !== '' ) {
+                $colors_clean[ $color_key ] = $color_value;
+            }
+        }
+
+        // Helper to sanitize gradient object
+        $sanitize_grad = function( $grad_input ) {
+            $grad_input = is_array( $grad_input ) ? $grad_input : [];
+            $gc = [];
+            if ( array_key_exists( 'type', $grad_input ) ) {
+                $type = sanitize_key( $grad_input['type'] );
+                if ( in_array( $type, [ 'linear', 'radial', 'conic' ], true ) ) {
+                    $gc['type'] = $type;
+                }
+            }
+            if ( array_key_exists( 'start', $grad_input ) ) {
+                $start = $this->sanitize_color_token( $grad_input['start'] );
+                if ( $start !== '' ) { $gc['start'] = $start; }
+            }
+            if ( array_key_exists( 'end', $grad_input ) ) {
+                $end = $this->sanitize_color_token( $grad_input['end'] );
+                if ( $end !== '' ) { $gc['end'] = $end; }
+            }
+            if ( array_key_exists( 'start_pos', $grad_input ) ) {
+                $sp = (int) $grad_input['start_pos'];
+                $gc['start_pos'] = max( 0, min( 100, $sp ) );
+            }
+            if ( array_key_exists( 'end_pos', $grad_input ) ) {
+                $ep = (int) $grad_input['end_pos'];
+                $gc['end_pos'] = max( 0, min( 100, $ep ) );
+            }
+            if ( array_key_exists( 'angle', $grad_input ) ) {
+                $angle = (int) $grad_input['angle'];
+                $gc['angle'] = max( 0, min( 360, $angle ) );
+            }
+            if ( empty( $gc['type'] ) || empty( $gc['start'] ) || empty( $gc['end'] ) ) {
+                return [];
+            }
+            return $gc;
+        };
+
+        $grad_clean = $sanitize_grad( isset( $color_input['specs_grad'] ) ? $color_input['specs_grad'] : [] );
+        if ( ! empty( $grad_clean ) ) { $colors_clean['specs_grad'] = $grad_clean; }
+
+        $cta_grad_clean = $sanitize_grad( isset( $color_input['cta_grad'] ) ? $color_input['cta_grad'] : [] );
+        if ( ! empty( $cta_grad_clean ) ) { $colors_clean['cta_grad'] = $cta_grad_clean; }
+
+        $top_grad_clean = $sanitize_grad( isset( $color_input['top_grad'] ) ? $color_input['top_grad'] : [] );
+        if ( ! empty( $top_grad_clean ) ) { $colors_clean['top_grad'] = $top_grad_clean; }
+
+        $keyline_input = isset( $color_input['keyline'] ) && is_array( $color_input['keyline'] ) ? $color_input['keyline'] : [];
+        $keyline_clean = [];
+        if ( array_key_exists( 'color', $keyline_input ) ) {
+            $color = $this->sanitize_color_token( $keyline_input['color'] );
+            if ( $color !== '' ) {
+                $keyline_clean['color'] = $color;
+            }
+        }
+        if ( array_key_exists( 'opacity', $keyline_input ) ) {
+            $opacity = is_numeric( $keyline_input['opacity'] ) ? (float) $keyline_input['opacity'] : null;
+            if ( null !== $opacity ) {
+                $opacity = max( 0, min( 1, $opacity ) );
+                $keyline_clean['opacity'] = round( $opacity, 3 );
+            }
+        }
+        if ( ! empty( $keyline_clean ) ) {
+            $colors_clean['keyline'] = $keyline_clean;
+        }
+
+        if ( ! empty( $colors_clean ) ) {
+            $out['colors'] = $colors_clean;
+        }
+
+        $typo_input = isset( $value['typo'] ) && is_array( $value['typo'] ) ? $value['typo'] : [];
+        $typo_clean = [];
+        $typo_ranges = [
+            'title'    => [ 'size' => [ 16, 36 ], 'weight' => [ 600, 800 ] ],
+            'subtitle' => [ 'size' => [ 12, 18 ], 'weight' => [ 400, 600 ] ],
+            'price'    => [ 'size' => [ 24, 44 ], 'weight' => [ 700, 900 ] ],
+        ];
+        foreach ( $typo_ranges as $slug => $limits ) {
+            $entry_input = isset( $typo_input[ $slug ] ) && is_array( $typo_input[ $slug ] ) ? $typo_input[ $slug ] : [];
+            $entry_clean = [];
+
+            if ( array_key_exists( 'size', $entry_input ) && $entry_input['size'] !== '' ) {
+                $size = (int) $entry_input['size'];
+                $entry_clean['size'] = max( $limits['size'][0], min( $limits['size'][1], $size ) );
+            }
+            if ( array_key_exists( 'weight', $entry_input ) && $entry_input['weight'] !== '' ) {
+                $weight = (int) $entry_input['weight'];
+                $entry_clean['weight'] = max( $limits['weight'][0], min( $limits['weight'][1], $weight ) );
+            }
+
+            if ( ! empty( $entry_clean ) ) {
+                $typo_clean[ $slug ] = $entry_clean;
+            }
+        }
+        if ( ! empty( $typo_clean ) ) {
+            $out['typo'] = $typo_clean;
+        }
+
+        // Text styles (Top and Specs)
+        $text_input = isset( $value['text'] ) && is_array( $value['text'] ) ? $value['text'] : [];
+        $text_clean = [];
+        foreach ( [ 'top', 'specs' ] as $area ) {
+            $entry = isset( $text_input[ $area ] ) && is_array( $text_input[ $area ] ) ? $text_input[ $area ] : [];
+            $clean = [];
+            if ( array_key_exists( 'color', $entry ) ) {
+                $col = $this->sanitize_color_token( $entry['color'] );
+                if ( $col !== '' ) { $clean['color'] = $col; }
+            }
+            if ( array_key_exists( 'family', $entry ) ) {
+                $family = sanitize_text_field( trim( (string) $entry['family'] ) );
+                if ( $family !== '' ) {
+                    $clean['family'] = substr( $family, 0, 200 );
+                }
+            }
+            if ( array_key_exists( 'size', $entry ) && $entry['size'] !== '' ) {
+                $size = (int) $entry['size'];
+                $clean['size'] = max( 10, min( 28, $size ) );
+            }
+            if ( array_key_exists( 'weight', $entry ) && $entry['weight'] !== '' ) {
+                $weight = (int) $entry['weight'];
+                $clean['weight'] = max( 300, min( 900, $weight ) );
+            }
+            if ( ! empty( $clean ) ) {
+                $text_clean[ $area ] = $clean;
+            }
+        }
+        if ( ! empty( $text_clean ) ) {
+            $out['text'] = $text_clean;
+        }
+
+        if ( array_key_exists( 'preset', $value ) ) {
+            $preset = sanitize_key( $value['preset'] );
+            if ( in_array( $preset, [ 'classic', 'warm', 'minimal' ], true ) ) {
+                $out['preset'] = $preset;
+            }
+        }
+
+        return $out;
+    }
+
     public function sanitize_table_size( $value ) {
         $defaults = [
             'min' => 320,
@@ -716,6 +927,26 @@ class PWPL_Meta {
         }
 
         return $value;
+    }
+
+    private function sanitize_color_token( $value ) {
+        $value = is_string( $value ) ? trim( $value ) : '';
+        if ( $value === '' ) {
+            return '';
+        }
+
+        $hex = sanitize_hex_color( $value );
+        if ( $hex ) {
+            return $hex;
+        }
+
+        $sanitized = sanitize_text_field( $value );
+        if ( $sanitized === '' ) {
+            return '';
+        }
+
+        // Allow reasonably long gradient strings and CSS color tokens
+        return substr( $sanitized, 0, 512 );
     }
 
     private function sanitize_hex( $value ) {
