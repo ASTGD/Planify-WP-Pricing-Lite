@@ -321,6 +321,8 @@
           { name:'keyline', title: i18n(data.i18n.tabs.keyline) },
         ]}, (tab)=>{
           if (tab.name==='topBg'){
+            const showGrad = !!topType;
+            const showAngle = topType === 'linear';
             return h('div', { className:'pwpl-v1-grid' }, [
               h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Top background'),
@@ -338,27 +340,29 @@
                 ]),
                 HiddenInput({ name:'pwpl_table[card][colors][top_grad][type]', value: topType }),
               ]),
-              h('div', { className:'pwpl-v1-color' }, [
+              showGrad ? h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Top gradient start'),
                 h(ColorPicker, { color: topStart || '#ffe8c4', disableAlpha:true,
                   onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopStart(hex);} }),
-                HiddenInput({ name:'pwpl_table[card][colors][top_grad][start]', value: topStart }),
-              ]),
-              h('div', { className:'pwpl-v1-color' }, [
+                HiddenInput({ name:'pwpl_table[card][colors][top_grad][start]', value: showGrad ? topStart : '' }),
+              ]) : null,
+              showGrad ? h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Top gradient end'),
                 h(ColorPicker, { color: topEnd || '#ffd3b1', disableAlpha:true,
                   onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopEnd(hex);} }),
-                HiddenInput({ name:'pwpl_table[card][colors][top_grad][end]', value: topEnd }),
-              ]),
-              h(NumberControl || TextControl, { label:'Angle (deg)', value: topAngle, min:0, max:360, onChange:(v)=> setTopAngle(parseInt(v||0,10)||0) }),
-              HiddenInput({ name:'pwpl_table[card][colors][top_grad][angle]', value: topAngle }),
-              h(NumberControl || TextControl, { label:'Start position (%)', value: topSP, min:0, max:100, onChange:(v)=> setTopSP(parseInt(v||0,10)||0) }),
-              HiddenInput({ name:'pwpl_table[card][colors][top_grad][start_pos]', value: topSP }),
-              h(NumberControl || TextControl, { label:'End position (%)', value: topEP, min:0, max:100, onChange:(v)=> setTopEP(parseInt(v||0,10)||0) }),
-              HiddenInput({ name:'pwpl_table[card][colors][top_grad][end_pos]', value: topEP }),
+                HiddenInput({ name:'pwpl_table[card][colors][top_grad][end]', value: showGrad ? topEnd : '' }),
+              ]) : null,
+              showGrad && showAngle ? h(NumberControl || TextControl, { label:'Angle (deg)', value: topAngle, min:0, max:360, onChange:(v)=> setTopAngle(parseInt(v||0,10)||0) }) : null,
+              HiddenInput({ name:'pwpl_table[card][colors][top_grad][angle]', value: (showGrad && showAngle) ? topAngle : '' }),
+              showGrad ? h(NumberControl || TextControl, { label:'Start position (%)', value: topSP, min:0, max:100, onChange:(v)=> setTopSP(parseInt(v||0,10)||0) }) : null,
+              HiddenInput({ name:'pwpl_table[card][colors][top_grad][start_pos]', value: showGrad ? topSP : '' }),
+              showGrad ? h(NumberControl || TextControl, { label:'End position (%)', value: topEP, min:0, max:100, onChange:(v)=> setTopEP(parseInt(v||0,10)||0) }) : null,
+              HiddenInput({ name:'pwpl_table[card][colors][top_grad][end_pos]', value: showGrad ? topEP : '' }),
             ]);
           }
           if (tab.name==='specsBg'){
+            const showGrad = !!specsType;
+            const showAngle = specsType === 'linear';
             return h('div', { className:'pwpl-v1-grid' }, [
               h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Specs background'),
@@ -376,24 +380,24 @@
                 ]),
                 HiddenInput({ name:'pwpl_table[card][colors][specs_grad][type]', value: specsType }),
               ]),
-              h('div', { className:'pwpl-v1-color' }, [
+              showGrad ? h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Specs gradient start'),
                 h(ColorPicker, { color: specsStart || '#cf7a1a', disableAlpha:true,
                   onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsStart(hex);} }),
-                HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start]', value: specsStart }),
-              ]),
-              h('div', { className:'pwpl-v1-color' }, [
+                HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start]', value: showGrad ? specsStart : '' }),
+              ]) : null,
+              showGrad ? h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Specs gradient end'),
                 h(ColorPicker, { color: specsEnd || '#8a3f00', disableAlpha:true,
                   onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsEnd(hex);} }),
-                HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end]', value: specsEnd }),
-              ]),
-              h(NumberControl || TextControl, { label:'Angle (deg)', value: specsAngle, min:0, max:360, onChange:(v)=> setSpecsAngle(parseInt(v||0,10)||0) }),
-              HiddenInput({ name:'pwpl_table[card][colors][specs_grad][angle]', value: specsAngle }),
-              h(NumberControl || TextControl, { label:'Start position (%)', value: specsSP, min:0, max:100, onChange:(v)=> setSpecsSP(parseInt(v||0,10)||0) }),
-              HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start_pos]', value: specsSP }),
-              h(NumberControl || TextControl, { label:'End position (%)', value: specsEP, min:0, max:100, onChange:(v)=> setSpecsEP(parseInt(v||0,10)||0) }),
-              HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end_pos]', value: specsEP }),
+                HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end]', value: showGrad ? specsEnd : '' }),
+              ]) : null,
+              showGrad && showAngle ? h(NumberControl || TextControl, { label:'Angle (deg)', value: specsAngle, min:0, max:360, onChange:(v)=> setSpecsAngle(parseInt(v||0,10)||0) }) : null,
+              HiddenInput({ name:'pwpl_table[card][colors][specs_grad][angle]', value: (showGrad && showAngle) ? specsAngle : '' }),
+              showGrad ? h(NumberControl || TextControl, { label:'Start position (%)', value: specsSP, min:0, max:100, onChange:(v)=> setSpecsSP(parseInt(v||0,10)||0) }) : null,
+              HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start_pos]', value: showGrad ? specsSP : '' }),
+              showGrad ? h(NumberControl || TextControl, { label:'End position (%)', value: specsEP, min:0, max:100, onChange:(v)=> setSpecsEP(parseInt(v||0,10)||0) }) : null,
+              HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end_pos]', value: showGrad ? specsEP : '' }),
             ]);
           }
           return h('div', { className:'pwpl-v1-grid' }, [
