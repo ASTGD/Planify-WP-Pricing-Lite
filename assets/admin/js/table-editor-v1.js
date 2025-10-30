@@ -192,6 +192,7 @@
       { key: 'cta', label: i18n(data.i18n.sidebar.cta) },
       { key: 'specs', label: i18n(data.i18n.sidebar.specs) },
       { key: 'badges', label: i18n(data.i18n.sidebar.badges) },
+      { key: 'advanced', label: i18n(data.i18n.sidebar.advanced) },
     ];
     return h('nav', { className: 'pwpl-v1-sidebar' },
       items.map(item => h('button', {
@@ -214,6 +215,7 @@
         active === 'cta' ? h(CTABlock) : null,
         active === 'specs' ? h(SpecsBlock) : null,
         active === 'badges' ? h(BadgesBlock) : null,
+        active === 'advanced' ? h(AdvancedBlock) : null,
       ])
     ]);
   }
@@ -482,6 +484,39 @@
     ]);
   }
 
+  function AdvancedBlock(){
+    const adv = (data.ui && data.ui.advanced) ? data.ui.advanced : { trust_trio:0, sticky_cta:0, trust_items:[] };
+    const [trustTrio, setTrustTrio] = useState(adv.trust_trio ? 1 : 0);
+    const [sticky, setSticky]       = useState(adv.sticky_cta ? 1 : 0);
+    const [items, setItems]         = useState(Array.isArray(adv.trust_items) ? adv.trust_items.join('\n') : '');
+
+    return h('section', { className:'pwpl-v1-block' }, [
+      SectionHeader({ title: i18n(data.i18n.sidebar.advanced), description: 'Trust row and sticky CTA controls.' }),
+      h(Card, null, h(CardBody, null,
+        h('div', { className:'pwpl-v1-grid' }, [
+          h('label', { className:'components-base-control__label' }, [
+            h('input', { type:'checkbox', checked: !!trustTrio, onChange:(e)=> setTrustTrio(e.target.checked?1:0) }), ' Show trust row under CTA'
+          ]),
+          HiddenInput({ name:'pwpl_table[ui][trust_trio]', value: trustTrio ? 1 : '' }),
+          h('label', { className:'components-base-control__label' }, [
+            h('input', { type:'checkbox', checked: !!sticky, onChange:(e)=> setSticky(e.target.checked?1:0) }), ' Enable sticky mobile summary bar'
+          ]),
+          HiddenInput({ name:'pwpl_table[ui][sticky_cta]', value: sticky ? 1 : '' }),
+          h('div', { style:{ gridColumn:'1 / -1' } }, [
+            h('label', { className:'components-base-control__label' }, 'Trust items (one per line)'),
+            h('textarea', { name:'pwpl_table[ui][trust_items]', value: items, onChange:(e)=> setItems(e.target.value), rows: 4, style:{ width:'100%' } }),
+          ]),
+        ])
+      ))
+    ]);
+  }
+
+  // Hide legacy sections once parity is achieved (non-destructive)
+  function hideLegacyOnMount(){
+    const ids = ['pwpl_table_badges']; // hide badges meta box to avoid duplicate UIs
+    ids.forEach((id)=>{ const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  }
+
   function CTABlock(){
     const cta = (data.ui && data.ui.cta) ? data.ui.cta : {};
     const [widthSel, setWidthSel]   = useState(cta.width || 'full');
@@ -593,6 +628,7 @@
       const rootApi = wp.element.createRoot(root);
       rootApi.render(h(App));
     }
+    hideLegacyOnMount();
   }
 
   if (document.readyState === 'complete' || document.readyState === 'interactive') {

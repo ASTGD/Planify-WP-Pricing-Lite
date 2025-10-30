@@ -55,6 +55,9 @@ class PWPL_Admin_UI_V1 {
             $anim_flags        = get_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_FLAGS, true );
             $anim_intensity    = (int) get_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_INTENSITY, true );
             $anim_mobile       = (int) get_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE, true );
+            $trust_trio        = (int) get_post_meta( $post_id, PWPL_Meta::TRUST_TRIO_ENABLED, true );
+            $sticky_cta        = (int) get_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE, true );
+            $trust_items       = get_post_meta( $post_id, PWPL_Meta::TRUST_ITEMS, true );
 
             $layout_widths = $meta->sanitize_layout_widths( is_array( $layout_widths_raw ) ? $layout_widths_raw : [] );
             $layout_columns= $meta->sanitize_layout_cards( is_array( $layout_columns_raw ) ? $layout_columns_raw : [] );
@@ -85,6 +88,11 @@ class PWPL_Admin_UI_V1 {
                             'mobile'    => $anim_mobile,
                         ],
                     ],
+                    'advanced' => [
+                        'trust_trio' => $trust_trio ? 1 : 0,
+                        'sticky_cta' => $sticky_cta ? 1 : 0,
+                        'trust_items'=> is_array( $trust_items ) ? array_values( $trust_items ) : [],
+                    ],
                 ],
                 'badges' => $badges_config,
                 'i18n' => [
@@ -96,6 +104,7 @@ class PWPL_Admin_UI_V1 {
                         'cta'         => __( 'CTA', 'planify-wp-pricing-lite' ),
                         'specs'       => __( 'Specs', 'planify-wp-pricing-lite' ),
                         'badges'      => __( 'Badges & Promotions', 'planify-wp-pricing-lite' ),
+                        'advanced'    => __( 'Advanced', 'planify-wp-pricing-lite' ),
                     ],
                     'tabs' => [
                         'widths'     => __( 'Widths & Columns', 'planify-wp-pricing-lite' ),
@@ -114,6 +123,7 @@ class PWPL_Admin_UI_V1 {
                         'location'   => __( 'Location', 'planify-wp-pricing-lite' ),
                         'platform'   => __( 'Platform', 'planify-wp-pricing-lite' ),
                         'priority'   => __( 'Priority', 'planify-wp-pricing-lite' ),
+                        'advanced'   => __( 'Advanced', 'planify-wp-pricing-lite' ),
                     ],
                 ],
             ] );
