@@ -549,6 +549,31 @@
     };
     hideClosest('input[name="pwpl_table[card][text][top][color]"]'); // Text styles block
     hideClosest('input[name="pwpl_table[card][colors][top_bg]"]');    // Colors & surfaces block
+
+    // Hide legacy CTA size/layout now that CTA block exists in V1
+    const ctaNames = [
+      'pwpl_table[ui][cta][height]',
+      'pwpl_table[ui][cta][pad_x]',
+      'pwpl_table[ui][cta][radius]',
+      'pwpl_table[ui][cta][border_width]',
+      'pwpl_table[ui][cta][min_w]',
+      'pwpl_table[ui][cta][max_w]',
+      'pwpl_table[ui][cta][lift]'
+    ];
+    ctaNames.forEach((n)=> hideClosest(`[name="${n}"]`));
+    // CTA width is a select; handle it separately
+    hideClosest('select[name="pwpl_table[ui][cta][width]"]');
+
+    // Hide legacy Specs style/interactions now that Specs block exists in V1
+    hideClosest('select[name="pwpl_table[ui][specs_style]"]');
+    const specAnimNames = [
+      'pwpl_table[ui][specs_anim][intensity]',
+      'pwpl_table[ui][specs_anim][mobile]'
+    ];
+    specAnimNames.forEach((n)=> hideClosest(`[name="${n}"]`));
+    // Flags checkboxes: generic selector by name starts-with
+    const flagInputs = document.querySelectorAll('input[type="checkbox"][name^="pwpl_table[ui][specs_anim][flags]"]');
+    flagInputs.forEach((inp)=>{ const block = inp.closest('.pwpl-field') || inp.closest('.pwpl-meta'); if (block) block.style.display = 'none'; });
   }
 
   function CTABlock(){
