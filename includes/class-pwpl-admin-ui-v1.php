@@ -30,6 +30,9 @@ class PWPL_Admin_UI_V1 {
             wp_enqueue_style( 'pwpl-admin-v1', PWPL_URL . 'assets/admin/css/admin-v1.css', [], filemtime( $css_path ) );
         }
 
+        // Ensure WordPress Components styles are present so TabPanel/Card look correct
+        wp_enqueue_style( 'wp-components' );
+
         // React app using WordPress components
         $js_path = PWPL_DIR . 'assets/admin/js/table-editor-v1.js';
         if ( file_exists( $js_path ) ) {

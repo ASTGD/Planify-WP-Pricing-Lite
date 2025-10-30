@@ -1,6 +1,7 @@
 .pwpl-v1{display:grid;grid-template-columns:240px 1fr;gap:16px}
 .pwpl-v1-sidebar{display:flex;flex-direction:column;gap:8px;position:sticky;top:12px;align-self:start}
 .pwpl-v1-nav{appearance:none;border:1px solid #e2e8f0;background:#fff;border-radius:8px;padding:10px 12px;text-align:left;cursor:pointer}
+.pwpl-v1-nav:hover{border-color:#cbd5e1}
 .pwpl-v1-nav.is-active{border-color:#2563eb;box-shadow:0 0 0 1px #2563eb}
 .pwpl-v1-main{display:grid;gap:16px}
 .pwpl-v1-block{background:transparent}
@@ -10,3 +11,8 @@
 .pwpl-v1-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
 .pwpl-v1-grid > .pwpl-v1-grid{grid-template-columns:repeat(3, minmax(200px,1fr))}
 .pwpl-v1-color{max-width:260px}
+
+/* Style WP components tabs more like segmented controls */
+.components-tab-panel__tabs{display:flex;gap:8px;margin:8px 0}
+.components-tab-panel__tabs .components-button{border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#111;padding:6px 10px}
+.components-tab-panel__tabs .components-button[aria-selected="true"]{border-color:#2563eb;box-shadow:0 0 0 1px #2563eb}

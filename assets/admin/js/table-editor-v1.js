@@ -301,9 +301,16 @@
     const [topType, setTopType] = useState(topGrad.type || '');
     const [topStart, setTopStart] = useState(topGrad.start || '');
     const [topEnd, setTopEnd] = useState(topGrad.end || '');
+    const [topAngle, setTopAngle] = useState(parseInt(topGrad.angle||180,10)||180);
+    const [topSP, setTopSP] = useState(parseInt(topGrad.start_pos||0,10)||0);
+    const [topEP, setTopEP] = useState(parseInt(topGrad.end_pos||100,10)||100);
+
     const [specsType, setSpecsType] = useState(specsGrad.type || '');
     const [specsStart, setSpecsStart] = useState(specsGrad.start || '');
     const [specsEnd, setSpecsEnd] = useState(specsGrad.end || '');
+    const [specsAngle, setSpecsAngle] = useState(parseInt(specsGrad.angle||180,10)||180);
+    const [specsSP, setSpecsSP] = useState(parseInt(specsGrad.start_pos||0,10)||0);
+    const [specsEP, setSpecsEP] = useState(parseInt(specsGrad.end_pos||100,10)||100);
 
     return h('section', { className:'pwpl-v1-block' }, [
       SectionHeader({ title: i18n(data.i18n.sidebar.colors), description: 'Surface colors. Gradients can be added in a later pass.' }),
@@ -343,6 +350,12 @@
                   onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopEnd(hex);} }),
                 HiddenInput({ name:'pwpl_table[card][colors][top_grad][end]', value: topEnd }),
               ]),
+              h(NumberControl || TextControl, { label:'Angle (deg)', value: topAngle, min:0, max:360, onChange:(v)=> setTopAngle(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][colors][top_grad][angle]', value: topAngle }),
+              h(NumberControl || TextControl, { label:'Start position (%)', value: topSP, min:0, max:100, onChange:(v)=> setTopSP(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][colors][top_grad][start_pos]', value: topSP }),
+              h(NumberControl || TextControl, { label:'End position (%)', value: topEP, min:0, max:100, onChange:(v)=> setTopEP(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][colors][top_grad][end_pos]', value: topEP }),
             ]);
           }
           if (tab.name==='specsBg'){
@@ -375,6 +388,12 @@
                   onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsEnd(hex);} }),
                 HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end]', value: specsEnd }),
               ]),
+              h(NumberControl || TextControl, { label:'Angle (deg)', value: specsAngle, min:0, max:360, onChange:(v)=> setSpecsAngle(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][colors][specs_grad][angle]', value: specsAngle }),
+              h(NumberControl || TextControl, { label:'Start position (%)', value: specsSP, min:0, max:100, onChange:(v)=> setSpecsSP(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start_pos]', value: specsSP }),
+              h(NumberControl || TextControl, { label:'End position (%)', value: specsEP, min:0, max:100, onChange:(v)=> setSpecsEP(parseInt(v||0,10)||0) }),
+              HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end_pos]', value: specsEP }),
             ]);
           }
           return h('div', { className:'pwpl-v1-grid' }, [
@@ -513,8 +532,19 @@
 
   // Hide legacy sections once parity is achieved (non-destructive)
   function hideLegacyOnMount(){
-    const ids = ['pwpl_table_badges']; // hide badges meta box to avoid duplicate UIs
+    // Hide legacy Badges meta box to avoid duplicate UIs
+    const ids = ['pwpl_table_badges'];
     ids.forEach((id)=>{ const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+
+    // Best-effort: hide legacy Text styles and Colors & surfaces blocks within the old meta UI
+    const hideClosest = (selector)=>{
+      const el = document.querySelector(selector);
+      if (!el) return;
+      const block = el.closest('.pwpl-field') || el.closest('.pwpl-meta') || el.parentElement;
+      if (block) block.style.display = 'none';
+    };
+    hideClosest('input[name="pwpl_table[card][text][top][color]"]'); // Text styles block
+    hideClosest('input[name="pwpl_table[card][colors][top_bg]"]');    // Colors & surfaces block
   }
 
   function CTABlock(){
