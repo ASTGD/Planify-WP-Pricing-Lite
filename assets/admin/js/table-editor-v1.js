@@ -222,6 +222,7 @@
       { key: 'specs', label: i18n(data.i18n.sidebar.specs) },
       { key: 'badges', label: i18n(data.i18n.sidebar.badges) },
       { key: 'advanced', label: i18n(data.i18n.sidebar.advanced) },
+      { key: 'filters', label: i18n(data.i18n.sidebar.filters) },
     ];
     return h('nav', { className: 'pwpl-v1-sidebar' },
       items.map(item => h('button', {
@@ -246,7 +247,62 @@
         active === 'specs' ? h(SpecsBlock) : null,
         active === 'badges' ? h(BadgesBlock) : null,
         active === 'advanced' ? h(AdvancedBlock) : null,
+        active === 'filters' ? h(FiltersBlock) : null,
       ])
+    ]);
+  }
+
+  function FiltersBlock(){
+    const initEnabled = Array.isArray(data.filters && data.filters.enabled) ? data.filters.enabled : [];
+    const [enabled, setEnabled] = useState(new Set(initEnabled));
+    const allowed = (data.filters && data.filters.allowed) ? data.filters.allowed : { platform:[], period:[], location:[] };
+    const catalog = (data.filters && data.filters.catalog) ? data.filters.catalog : { platform:[], period:[], location:[] };
+    const dims = ['platform','period','location'];
+
+    const toggleEnabled = (key)=>{
+      const next = new Set(enabled); if (next.has(key)) next.delete(key); else next.add(key); setEnabled(next);
+    };
+
+    const Section = (key)=>{
+      const current = Array.isArray(allowed[key]) ? allowed[key] : [];
+      const [vals, setVals] = useState(new Set(current));
+      function toggle(val){ const next = new Set(vals); if (next.has(val)) next.delete(val); else next.add(val); setVals(next); }
+      // Emit checkboxes and hidden inputs for each selected value
+      return h('div', { className:'pwpl-v1-grid', key:'sec-'+key }, [
+        h('div', { style:{ gridColumn:'1 / -1' } }, h('strong', null, key.charAt(0).toUpperCase()+key.slice(1))),
+        (catalog[key]||[]).map((item)=>{
+          const slug = item && item.slug ? item.slug : (item && item.value ? item.value : '');
+          const label = item && item.label ? item.label : slug;
+          const checked = vals.has(slug);
+          return h('label', { key:key+'-'+slug, className:'components-base-control__label' }, [
+            h('input', { type:'checkbox', checked, onChange:()=> toggle(slug) }), ' ', label,
+            checked ? HiddenInput({ name:`pwpl_table[allowed][${key}][]`, value: slug }) : null,
+          ]);
+        })
+      ]);
+    };
+
+    return h('section', { className:'pwpl-v1-block' }, [
+      SectionHeader({ title:'Filters', description:'Enable dimensions and choose allowed values.' }),
+      h(Card, null, h(CardBody, null,
+        h('div', { className:'pwpl-v1-grid' }, [
+          dims.map((d)=> h('label', { key:'en-'+d, className:'components-base-control__label' }, [
+            h('input', { type:'checkbox', checked: enabled.has(d), onChange:()=> toggleEnabled(d) }), ' Enable ', d
+          ])),
+          // Post enabled dimensions
+          Array.from(enabled).map((d)=> HiddenInput({ key:'dim-'+d, name:'pwpl_table[dimensions][]', value:d })),
+        ])
+      )),
+      h(Card, null, h(CardBody, null,
+        dims.map((d)=> enabled.has(d) ? Section(d) : null)
+      )),
+      // Platform allowed order (comma separated) scaffold
+      h(Card, null, h(CardBody, null,
+        h('div', { className:'pwpl-v1-grid' }, [
+          h(TextControl, { label:'Platform order (comma separated slugs)', defaultValue:(allowed.platform||[]).join(','), onChange:()=>{} }),
+          HiddenInput({ name:'pwpl_table[allowed_order][platform]', value:(allowed.platform||[]).join(',') }),
+        ])
+      )),
     ]);
   }
 

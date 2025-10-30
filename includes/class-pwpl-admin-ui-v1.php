@@ -28,7 +28,8 @@ class PWPL_Admin_UI_V1 {
         // Hide legacy boxes that are covered by V1 blocks
         remove_meta_box( 'pwpl_table_layout', 'pwpl_table', 'normal' ); // Layout & Size
         remove_meta_box( 'pwpl_table_badges', 'pwpl_table', 'side' );   // Badges & Promotions (legacy)
-        // Keep Dimensions & Variants visible until the V1 Filters block ships
+        // Remove Dimensions & Variants now that Filters block ships
+        remove_meta_box( 'pwpl_table_dimensions', 'pwpl_table', 'normal' );
     }
 
     public function enqueue_assets( $hook ) {
@@ -64,6 +65,10 @@ class PWPL_Admin_UI_V1 {
             $layout_widths_raw = get_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS, true );
             $layout_columns_raw= get_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS, true );
             $layout_cardw_raw  = get_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, true );
+            $dims_enabled      = get_post_meta( $post_id, PWPL_Meta::DIMENSION_META, true );
+            $allowed_platforms = get_post_meta( $post_id, PWPL_Meta::ALLOWED_PLATFORMS, true );
+            $allowed_periods   = get_post_meta( $post_id, PWPL_Meta::ALLOWED_PERIODS, true );
+            $allowed_locations = get_post_meta( $post_id, PWPL_Meta::ALLOWED_LOCATIONS, true );
             $card_meta_raw     = get_post_meta( $post_id, PWPL_Meta::CARD_CONFIG, true );
             $badges_raw        = get_post_meta( $post_id, PWPL_Meta::TABLE_BADGES, true );
             $cta_raw           = get_post_meta( $post_id, PWPL_Meta::CTA_CONFIG, true );
@@ -78,6 +83,16 @@ class PWPL_Admin_UI_V1 {
             $layout_widths = $meta->sanitize_layout_widths( is_array( $layout_widths_raw ) ? $layout_widths_raw : [] );
             $layout_columns= $meta->sanitize_layout_cards( is_array( $layout_columns_raw ) ? $layout_columns_raw : [] );
             $layout_cardw  = $meta->sanitize_layout_card_widths( is_array( $layout_cardw_raw ) ? $layout_cardw_raw : [] );
+            $dims_enabled  = is_array( $dims_enabled ) ? array_values( array_intersect( $dims_enabled, [ 'platform', 'period', 'location' ] ) ) : [];
+            $allowed_platforms = is_array( $allowed_platforms ) ? array_values( $allowed_platforms ) : [];
+            $allowed_periods   = is_array( $allowed_periods ) ? array_values( $allowed_periods ) : [];
+            $allowed_locations = is_array( $allowed_locations ) ? array_values( $allowed_locations ) : [];
+
+            // Catalog from settings
+            $settings = new PWPL_Settings();
+            $catalog_platforms = (array) $settings->get( 'platforms' );
+            $catalog_periods   = (array) $settings->get( 'periods' );
+            $catalog_locations = (array) $settings->get( 'locations' );
             $card_config   = is_array( $card_meta_raw ) ? $meta->sanitize_card_config( $card_meta_raw ) : [];
             $badges_config = is_array( $badges_raw ) ? $meta->sanitize_badges( $badges_raw ) : [];
             $cta_config    = is_array( $cta_raw ) ? $cta_raw : [];
@@ -94,6 +109,19 @@ class PWPL_Admin_UI_V1 {
                     'cardWidths' => $layout_cardw,
                 ],
                 'card' => $card_config,
+                'filters' => [
+                    'enabled'  => $dims_enabled,
+                    'allowed'  => [
+                        'platform' => $allowed_platforms,
+                        'period'   => $allowed_periods,
+                        'location' => $allowed_locations,
+                    ],
+                    'catalog'  => [
+                        'platform' => $catalog_platforms,
+                        'period'   => $catalog_periods,
+                        'location' => $catalog_locations,
+                    ],
+                ],
                 'ui'   => [
                     'cta'   => $cta_config,
                     'specs' => [
@@ -121,6 +149,7 @@ class PWPL_Admin_UI_V1 {
                         'specs'       => __( 'Specs', 'planify-wp-pricing-lite' ),
                         'badges'      => __( 'Badges & Promotions', 'planify-wp-pricing-lite' ),
                         'advanced'    => __( 'Advanced', 'planify-wp-pricing-lite' ),
+                        'filters'     => __( 'Filters', 'planify-wp-pricing-lite' ),
                     ],
                     'tabs' => [
                         'widths'     => __( 'Widths & Columns', 'planify-wp-pricing-lite' ),
