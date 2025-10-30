@@ -6,6 +6,35 @@
   const i18n = (s) => s || '';
   const data = w.PWPL_AdminV1 || { postId: 0, layout: { widths: {}, columns: {} }, card: {}, i18n: {} };
 
+  // Shared preview state + event bus
+  w.PWPL_PreviewVars = w.PWPL_PreviewVars || {};
+  function updatePreviewVars(patch){
+    try { Object.assign(w.PWPL_PreviewVars, patch || {}); } catch(e){}
+    document.dispatchEvent(new CustomEvent('pwpl:v1:update'));
+  }
+
+  function setDeep(target, path, value){
+    if (!path) return;
+    const parts = path.split('.');
+    let obj = target; for (let i=0;i<parts.length-1;i++){ const k=parts[i]; obj[k]=obj[k]||{}; obj=obj[k]; }
+    obj[parts[parts.length-1]] = value;
+  }
+
+  function deepClone(obj){ try { return JSON.parse(JSON.stringify(obj||{})); } catch(e){ return {}; } }
+
+  function composeGradient(g){
+    if (!g || !g.type || !g.start || !g.end) return '';
+    const sp = isFinite(g.start_pos) ? g.start_pos : 0;
+    const ep = isFinite(g.end_pos) ? g.end_pos : 100;
+    const angle = isFinite(g.angle) ? g.angle : 180;
+    switch (g.type){
+      case 'radial': return `radial-gradient(circle, ${g.start} ${sp}%, ${g.end} ${ep}%)`;
+      case 'conic': return `conic-gradient(${g.start} ${sp}%, ${g.end} ${ep}%)`;
+      case 'linear':
+      default: return `linear-gradient(${angle}deg, ${g.start} ${sp}%, ${g.end} ${ep}%)`;
+    }
+  }
+
   function HiddenInput({ name, value }){
     return h('input', { type: 'hidden', name, value: value == null ? '' : value });
   }
@@ -208,6 +237,7 @@
     return h('div', { className: 'pwpl-v1' }, [
       h(Sidebar, { active, onChange: setActive }),
       h('main', { className: 'pwpl-v1-main' }, [
+        h(PreviewPane),
         active === 'table' ? h(TableLayoutBlock) : null,
         active === 'card'  ? h(PlanCardBlock)   : null,
         active === 'typography' ? h(TypographyBlock) : null,
@@ -217,6 +247,62 @@
         active === 'badges' ? h(BadgesBlock) : null,
         active === 'advanced' ? h(AdvancedBlock) : null,
       ])
+    ]);
+  }
+
+  function PreviewPane(){
+    const [tick, setTick] = useState(0);
+    function handler(){ setTick((t)=> t+1); }
+    if (wp.element && wp.element.useEffect){ wp.element.useEffect(()=>{ document.addEventListener('pwpl:v1:update', handler); return ()=> document.removeEventListener('pwpl:v1:update', handler); },[]); }
+
+    // Merge base card config with preview patches
+    const base = deepClone(data.card);
+    const patches = w.PWPL_PreviewVars || {};
+    Object.keys(patches).forEach((k)=>{ if (k.indexOf('card.')===0){ setDeep(base, k.replace(/^card\./,''), patches[k]); } });
+
+    const topGrad = (base.colors && base.colors.top_grad) || {};
+    const specsGrad = (base.colors && base.colors.specs_grad) || {};
+
+    const headerBg = (topGrad && topGrad.type) ? composeGradient(topGrad) : (base.colors ? base.colors.top_bg : '');
+    const specsBg  = (specsGrad && specsGrad.type) ? composeGradient(specsGrad) : (base.colors ? base.colors.specs_bg : '');
+
+    const topColor = (base.text && base.text.top && base.text.top.color) || '#111214';
+    const topFont  = (base.text && base.text.top && base.text.top.family) || 'system-ui, -apple-system, sans-serif';
+    const topSize  = (base.text && base.text.top && base.text.top.size) || 0;
+    const topWeight= (base.text && base.text.top && base.text.top.weight) || 0;
+
+    const radius   = (base.layout && base.layout.radius) || 16;
+    const borderW  = (base.layout && base.layout.border_w) || 0;
+    const borderC  = (base.colors && base.colors.border) || 'transparent';
+
+    const vars = {
+      '--card-top-text-color': topColor,
+      '--card-top-font': topFont,
+      '--card-top-font-size': topSize? (topSize + 'px') : undefined,
+      '--card-top-font-weight': topWeight || undefined,
+      '--card-radius': radius + 'px',
+      '--card-border-width': (borderW||0) + 'px',
+      '--card-border-color': borderC,
+    };
+
+    const headStyle = { background: headerBg || '#fff8e6', color: topColor, fontFamily: topFont };
+    const specsStyle = { background: specsBg || '#cf7a1a' };
+    const cardStyle = { borderRadius: (radius||16) + 'px', border: (borderW||0) + 'px solid ' + (borderC||'transparent') };
+
+    return h('section', { className:'pwpl-v1-block' }, [
+      SectionHeader({ title:'Preview', description:'Live preview of key settings (approximate).' }),
+      h('div', { className:'pwpl-v1-preview' },
+        h('div', { className:'pwpl-v1-card', style: cardStyle }, [
+          h('div', { className:'pwpl-v1-card-top', style: headStyle }, [
+            h('div', { className:'pwpl-v1-title' }, 'Starter Plan'),
+            h('div', { className:'pwpl-v1-price' }, [ h('span', null, '$'), h('strong', null, '12.99'), h('span', null, '/mo') ])
+          ]),
+          h('div', { className:'pwpl-v1-specs', style: specsStyle }, [
+            h('div', { className:'pwpl-v1-spec' }, [ h('span', null, 'Memory'), h('strong', null, '2GB DDR4') ]),
+            h('div', { className:'pwpl-v1-spec' }, [ h('span', null, 'Storage'), h('strong', null, '25GB SSD') ]),
+          ])
+        ])
+      )
     ]);
   }
 
@@ -252,18 +338,18 @@
               return h('div', { className:'pwpl-v1-grid' }, [
                 h('div', { className:'pwpl-v1-color' }, [
                   h('label', { className:'components-base-control__label' }, 'Top text color'),
-                  h(ColorPicker, {
-                    color: topColor || '#111214',
-                    onChangeComplete: (value)=>{ const hex = (typeof value==='string')? value : (value && value.hex) ? value.hex : ''; setTopColor(hex); },
-                    disableAlpha: true,
-                  }),
+                h(ColorPicker, {
+                  color: topColor || '#111214',
+                  onChangeComplete: (value)=>{ const hex = (typeof value==='string')? value : (value && value.hex) ? value.hex : ''; setTopColor(hex); updatePreviewVars({ 'card.text.top.color': hex }); },
+                  disableAlpha: true,
+                }),
                   HiddenInput({ name:'pwpl_table[card][text][top][color]', value: topColor })
                 ]),
-                h(TextControl, { label:'Font family', value: topFamily, onChange:setTopFamily, placeholder:'system-ui, -apple-system, sans-serif' }),
+                h(TextControl, { label:'Font family', value: topFamily, onChange:(v)=>{ setTopFamily(v); updatePreviewVars({ 'card.text.top.family': v }); }, placeholder:'system-ui, -apple-system, sans-serif' }),
                 HiddenInput({ name:'pwpl_table[card][text][top][family]', value: topFamily }),
-                h(NumberControl || TextControl, { label:'Font size (px)', value:topSize, min:10, max:28, onChange:(v)=> setTopSize(parseInt(v||0,10)||0) }),
+                h(NumberControl || TextControl, { label:'Font size (px)', value:topSize, min:10, max:28, onChange:(v)=> { const n=parseInt(v||0,10)||0; setTopSize(n); updatePreviewVars({ 'card.text.top.size': n }); } }),
                 HiddenInput({ name:'pwpl_table[card][text][top][size]', value: topSize }),
-                h(NumberControl || TextControl, { label:'Font weight', value:topWeight, min:300, max:900, step:50, onChange:(v)=> setTopWeight(parseInt(v||0,10)||0) }),
+                h(NumberControl || TextControl, { label:'Font weight', value:topWeight, min:300, max:900, step:50, onChange:(v)=> { const n=parseInt(v||0,10)||0; setTopWeight(n); updatePreviewVars({ 'card.text.top.weight': n }); } }),
                 HiddenInput({ name:'pwpl_table[card][text][top][weight]', value: topWeight }),
               ]);
             }
@@ -327,12 +413,12 @@
               h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Top background'),
                 h(ColorPicker, { color: topBg || '#fff6e0', disableAlpha:true,
-                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopBg(hex);} }),
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopBg(hex); updatePreviewVars({ 'card.colors.top_bg': hex }); } }),
                 HiddenInput({ name:'pwpl_table[card][colors][top_bg]', value: topBg }),
               ]),
               h('div', null, [
                 h('label', { className:'components-base-control__label' }, 'Top gradient type'),
-                h('select', { value: topType, onChange:(e)=> setTopType(e.target.value) }, [
+                h('select', { value: topType, onChange:(e)=> { setTopType(e.target.value); updatePreviewVars({ 'card.colors.top_grad.type': e.target.value||'' }); } }, [
                   h('option', { value:'' }, 'None'),
                   h('option', { value:'linear' }, 'Linear'),
                   h('option', { value:'radial' }, 'Radial'),
@@ -343,13 +429,13 @@
               showGrad ? h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Top gradient start'),
                 h(ColorPicker, { color: topStart || '#ffe8c4', disableAlpha:true,
-                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopStart(hex);} }),
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopStart(hex); updatePreviewVars({ 'card.colors.top_grad.start': hex }); } }),
                 HiddenInput({ name:'pwpl_table[card][colors][top_grad][start]', value: showGrad ? topStart : '' }),
               ]) : null,
               showGrad ? h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Top gradient end'),
                 h(ColorPicker, { color: topEnd || '#ffd3b1', disableAlpha:true,
-                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopEnd(hex);} }),
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setTopEnd(hex); updatePreviewVars({ 'card.colors.top_grad.end': hex }); } }),
                 HiddenInput({ name:'pwpl_table[card][colors][top_grad][end]', value: showGrad ? topEnd : '' }),
               ]) : null,
               showGrad && showAngle ? h(NumberControl || TextControl, { label:'Angle (deg)', value: topAngle, min:0, max:360, onChange:(v)=> setTopAngle(parseInt(v||0,10)||0) }) : null,
@@ -367,12 +453,12 @@
               h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Specs background'),
                 h(ColorPicker, { color: specsBg || '#cf7a1a', disableAlpha:true,
-                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsBg(hex);} }),
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsBg(hex); updatePreviewVars({ 'card.colors.specs_bg': hex }); } }),
                 HiddenInput({ name:'pwpl_table[card][colors][specs_bg]', value: specsBg }),
               ]),
               h('div', null, [
                 h('label', { className:'components-base-control__label' }, 'Specs gradient type'),
-                h('select', { value: specsType, onChange:(e)=> setSpecsType(e.target.value) }, [
+                h('select', { value: specsType, onChange:(e)=> { setSpecsType(e.target.value); updatePreviewVars({ 'card.colors.specs_grad.type': e.target.value||'' }); } }, [
                   h('option', { value:'' }, 'None'),
                   h('option', { value:'linear' }, 'Linear'),
                   h('option', { value:'radial' }, 'Radial'),
@@ -383,13 +469,13 @@
               showGrad ? h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Specs gradient start'),
                 h(ColorPicker, { color: specsStart || '#cf7a1a', disableAlpha:true,
-                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsStart(hex);} }),
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsStart(hex); updatePreviewVars({ 'card.colors.specs_grad.start': hex }); } }),
                 HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start]', value: showGrad ? specsStart : '' }),
               ]) : null,
               showGrad ? h('div', { className:'pwpl-v1-color' }, [
                 h('label', { className:'components-base-control__label' }, 'Specs gradient end'),
                 h(ColorPicker, { color: specsEnd || '#8a3f00', disableAlpha:true,
-                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsEnd(hex);} }),
+                  onChangeComplete:(value)=>{ const hex=(typeof value==='string')?value:(value&&value.hex)?value.hex:''; setSpecsEnd(hex); updatePreviewVars({ 'card.colors.specs_grad.end': hex }); } }),
                 HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end]', value: showGrad ? specsEnd : '' }),
               ]) : null,
               showGrad && showAngle ? h(NumberControl || TextControl, { label:'Angle (deg)', value: specsAngle, min:0, max:360, onChange:(v)=> setSpecsAngle(parseInt(v||0,10)||0) }) : null,
@@ -549,6 +635,13 @@
     };
     hideClosest('input[name="pwpl_table[card][text][top][color]"]'); // Text styles block
     hideClosest('input[name="pwpl_table[card][colors][top_bg]"]');    // Colors & surfaces block
+    // Typography sizes/weights
+    const typoNames = [
+      'pwpl_table[card][typo][title][size]','pwpl_table[card][typo][title][weight]',
+      'pwpl_table[card][typo][subtitle][size]','pwpl_table[card][typo][subtitle][weight]',
+      'pwpl_table[card][typo][price][size]','pwpl_table[card][typo][price][weight]'
+    ];
+    typoNames.forEach((n)=> hideClosest(`[name="${n}"]`));
 
     // Hide legacy CTA size/layout now that CTA block exists in V1
     const ctaNames = [

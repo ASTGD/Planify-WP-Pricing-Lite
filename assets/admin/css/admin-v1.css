@@ -19,3 +19,12 @@
 .components-tab-panel__tabs .components-button{border:1px solid #e5e7eb;border-radius:999px;background:#fff;color:#111;padding:6px 12px;line-height:1}
 .components-tab-panel__tabs .components-button:hover{border-color:#cbd5e1}
 .components-tab-panel__tabs .components-button[aria-selected="true"]{border-color:#2563eb;box-shadow:0 0 0 1px #2563eb}
+
+/* Preview */
+.pwpl-v1-preview{padding:var(--pwpl-s-4);background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px}
+.pwpl-v1-card{overflow:hidden;background:#fff}
+.pwpl-v1-card-top{padding:var(--pwpl-s-4)}
+.pwpl-v1-price{font-size:20px;font-weight:700}
+.pwpl-v1-specs{padding:var(--pwpl-s-4);color:#fff}
+.pwpl-v1-spec{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.18)}
+.pwpl-v1-spec:last-child{border-bottom:0}
