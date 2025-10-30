@@ -623,7 +623,7 @@
   // Hide legacy sections once parity is achieved (non-destructive)
   function hideLegacyOnMount(){
     // Hide legacy Badges meta box to avoid duplicate UIs
-    const ids = ['pwpl_table_badges'];
+    const ids = ['pwpl_table_badges', 'pwpl_table_layout'];
     ids.forEach((id)=>{ const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     // Best-effort: hide legacy Text styles and Colors & surfaces blocks within the old meta UI

@@ -4,6 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class PWPL_Admin_UI_V1 {
     public function init() {
         add_action( 'add_meta_boxes', [ $this, 'add_meta_boxes_v1' ] );
+        // Remove legacy meta boxes that V1 replaces (server-side so they don't flash)
+        add_action( 'add_meta_boxes', [ $this, 'remove_legacy_meta_boxes' ], 100 );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
     }
 
@@ -16,6 +18,17 @@ class PWPL_Admin_UI_V1 {
             'normal',
             'high'
         );
+    }
+
+    public function remove_legacy_meta_boxes() {
+        $screen = get_current_screen();
+        if ( ! $screen || $screen->post_type !== 'pwpl_table' ) {
+            return;
+        }
+        // Hide legacy boxes that are covered by V1 blocks
+        remove_meta_box( 'pwpl_table_layout', 'pwpl_table', 'normal' ); // Layout & Size
+        remove_meta_box( 'pwpl_table_badges', 'pwpl_table', 'side' );   // Badges & Promotions (legacy)
+        // Keep Dimensions & Variants visible until the V1 Filters block ships
     }
 
     public function enqueue_assets( $hook ) {
