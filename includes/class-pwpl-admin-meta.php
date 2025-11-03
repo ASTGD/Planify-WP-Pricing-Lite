@@ -1638,7 +1638,10 @@ class PWPL_Admin_Meta {
     }
 
     public function save_table( $post_id ) {
-        if ( ! isset( $_POST['pwpl_table_nonce'] ) || ! wp_verify_nonce( $_POST['pwpl_table_nonce'], 'pwpl_save_table_' . $post_id ) ) {
+        $plugin_nonce_ok = isset( $_POST['pwpl_table_nonce'] ) && wp_verify_nonce( $_POST['pwpl_table_nonce'], 'pwpl_save_table_' . $post_id );
+        // Allow save when Gutenberg posts via core post update nonce as part of the editor flow
+        $core_nonce_ok   = isset( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'update-post_' . $post_id );
+        if ( ! $plugin_nonce_ok && ! $core_nonce_ok ) {
             return;
         }
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -1896,7 +1899,9 @@ class PWPL_Admin_Meta {
     }
 
     public function save_plan( $post_id ) {
-        if ( ! isset( $_POST['pwpl_plan_nonce'] ) || ! wp_verify_nonce( $_POST['pwpl_plan_nonce'], 'pwpl_save_plan_' . $post_id ) ) {
+        $plugin_nonce_ok = isset( $_POST['pwpl_plan_nonce'] ) && wp_verify_nonce( $_POST['pwpl_plan_nonce'], 'pwpl_save_plan_' . $post_id );
+        $core_nonce_ok   = isset( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'update-post_' . $post_id );
+        if ( ! $plugin_nonce_ok && ! $core_nonce_ok ) {
             return;
         }
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
