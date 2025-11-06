@@ -168,6 +168,7 @@
   function TableLayoutBlock(props){
     const [globalWidth, setGlobalWidth] = useState(parseInt(data.layout.widths.global || 0, 10) || 0);
     const [globalColumns, setGlobalColumns] = useState(parseInt(data.layout.columns.global || 0, 10) || 0);
+    const [globalCardMin, setGlobalCardMin] = useState(parseInt((data.layout.cardWidths && data.layout.cardWidths.global) || 0, 10) || 0);
     const deviceOrder = ['xxl','xl','lg','md','sm'];
     const [widths, setWidths] = useState(Object.assign({xxl:0,xl:0,lg:0,md:0,sm:0}, data.layout.widths||{}));
     const [columns, setColumns] = useState(Object.assign({xxl:0,xl:0,lg:0,md:0,sm:0}, data.layout.columns||{}));
@@ -197,9 +198,16 @@
                   onChange: (val) => setGlobalColumns(parseInt(val || 0, 10) || 0),
                   min: 0, max: 20,
                 }),
+                h(NumberControl || TextControl, {
+                  label: 'Global card minimum width (px)',
+                  value: globalCardMin,
+                  onChange: (val) => setGlobalCardMin(parseInt(val || 0, 10) || 0),
+                  min: 0, max: 4000,
+                }),
                 // Hidden inputs that actually submit with the post
                 HiddenInput({ name: 'pwpl_table[layout][widths][global]', value: globalWidth }),
                 HiddenInput({ name: 'pwpl_table[layout][columns][global]', value: globalColumns }),
+                HiddenInput({ name: 'pwpl_table[layout][card_widths][global]', value: globalCardMin }),
               ]);
             }
             return h('div', { className: 'pwpl-v1-grid' }, deviceOrder.map((key)=>{
