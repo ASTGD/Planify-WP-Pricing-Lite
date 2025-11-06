@@ -656,6 +656,8 @@ class PWPL_Shortcode {
         $template_path = function_exists( 'pwpl_locate_theme_file' ) ? pwpl_locate_theme_file( $table_theme, $template_rel ) : false;
 
         if ( $template_path ) {
+            // Ensure theme assets are enqueued and capture handles
+            $table_theme_package = $this->enqueue_theme_assets( $table_theme );
             $table_subtitle_meta = get_post_meta( $table_id, '_pwpl_table_subtitle', true );
             $table_subtitle_raw  = is_string( $table_subtitle_meta ) ? trim( wp_strip_all_tags( $table_subtitle_meta ) ) : '';
             if ( '' === $table_subtitle_raw ) {
@@ -746,6 +748,22 @@ class PWPL_Shortcode {
             ];
 
             $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );
+
+            // Robust inline CSS injection via wp_add_inline_style (survives content sanitizers)
+            if ( $style_inline && $dom_id ) {
+                $target_handle = '';
+                if ( ! empty( $table_theme_package['assets']['css'][0]['handle'] ) ) {
+                    $target_handle = $table_theme_package['assets']['css'][0]['handle'];
+                } elseif ( wp_style_is( 'pwpl-frontend-themes', 'enqueued' ) ) {
+                    $target_handle = 'pwpl-frontend-themes';
+                } else {
+                    $target_handle = 'pwpl-frontend';
+                }
+                if ( $target_handle ) {
+                    $css = '#' . sanitize_html_class( $dom_id ) . '{' . $style_inline . '}';
+                    wp_add_inline_style( $target_handle, $css );
+                }
+            }
 
             $plan_entries = [];
             foreach ( $plans as $plan_post ) {
@@ -1083,9 +1101,11 @@ class PWPL_Shortcode {
         $assets = $this->theme_loader->get_assets( $theme );
 
         if ( ! empty( $assets['css'] ) ) {
-            foreach ( $assets['css'] as $style ) {
+            foreach ( $assets['css'] as $i => $style ) {
                 $version = file_exists( $style['path'] ) ? filemtime( $style['path'] ) : PWPL_VERSION;
                 wp_enqueue_style( $style['handle'], $style['url'], [], $version );
+                // Keep the actual enqueued handle for later inline CSS injection
+                $assets['css'][$i]['enqueued'] = true;
             }
         }
 
@@ -1096,6 +1116,8 @@ class PWPL_Shortcode {
             }
         }
 
+        // Attach asset map so caller can know the enqueued handles
+        $theme['assets'] = $assets;
         $this->enqueued_themes[ $slug ] = $theme;
         return $theme;
     }
