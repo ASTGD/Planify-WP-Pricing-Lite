@@ -716,7 +716,9 @@ class PWPL_Shortcode {
                 'tabs_glass_tint'  => (string) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_TINT, true ),
                 'tabs_glass_intensity' => (int) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_INTENSITY, true ),
                 'tabs_glass_frost'     => (int) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_FROST, true ),
-                'cards_glass'          => (bool) get_post_meta( $table_id, PWPL_Meta::CARDS_GLASS, true ),
+                // Temporarily disable glass cards globally; prevents theme from forcing
+                // transparent specs backgrounds that hide user-selected colors.
+                'cards_glass'          => false,
                 'specs_style'         => (string) get_post_meta( $table_id, PWPL_Meta::SPECS_STYLE, true ),
                 'specs_anim'           => (function($table_id){
                     $preset = get_post_meta( $table_id, PWPL_Meta::SPECS_ANIM_PRESET, true );
