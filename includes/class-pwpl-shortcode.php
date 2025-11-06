@@ -140,7 +140,17 @@ class PWPL_Shortcode {
         }
 
         $table_theme = get_post_meta( $table_id, PWPL_Meta::TABLE_THEME, true );
-        $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
+        $table_theme = $meta_helper->sanitize_theme( $table_theme ?: '' );
+        // Prefer FireVPS as default when available and no explicit non-classic theme selected.
+        if ( ! $table_theme || $table_theme === 'classic' ) {
+            $loader = new PWPL_Theme_Loader();
+            $available = array_map( function($t){ return sanitize_key( $t['slug'] ?? '' ); }, (array) $loader->get_available_themes() );
+            if ( in_array( 'firevps', $available, true ) ) {
+                $table_theme = 'firevps';
+            } elseif ( ! $table_theme ) {
+                $table_theme = 'classic';
+            }
+        }
 
         $table_theme_package = $this->enqueue_theme_assets( $table_theme );
         $table_manifest      = is_array( $table_theme_package['manifest'] ?? null ) ? $table_theme_package['manifest'] : [];

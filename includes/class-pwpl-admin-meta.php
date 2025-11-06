@@ -606,7 +606,12 @@ class PWPL_Admin_Meta {
 
         $meta_helper   = new PWPL_Meta();
         $table_theme   = get_post_meta( $post->ID, PWPL_Meta::TABLE_THEME, true );
-        $table_theme   = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
+        $table_theme   = $meta_helper->sanitize_theme( $table_theme ?: '' );
+        if ( ! $table_theme || $table_theme === 'classic' ) {
+            $maybe = array_map( function($t){ return sanitize_key( $t['slug'] ?? '' ); }, (array) ( new PWPL_Theme_Loader() )->get_available_themes() );
+            if ( in_array( 'firevps', $maybe, true ) ) { $table_theme = 'firevps'; }
+            elseif ( ! $table_theme ) { $table_theme = 'classic'; }
+        }
         $theme_loader  = new PWPL_Theme_Loader();
         $available_themes = $theme_loader->get_available_themes();
         $themes = [];
