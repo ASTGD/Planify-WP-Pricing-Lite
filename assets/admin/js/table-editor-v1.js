@@ -461,8 +461,16 @@
   }
 
   function App(){
-    const [active, setActive] = useState('table');
-    if (useEffect){ useEffect(()=>{ try { bindAggregateAutoSync(); } catch(e){} }, []); }
+    const postId = parseInt(data.postId || 0, 10) || 0;
+    const LS_KEY = 'pwpl_v1_active_tab_' + postId;
+    const initialTab = (function(){
+      try { const v = window.localStorage && window.localStorage.getItem(LS_KEY); return v || 'table'; } catch(e){ return 'table'; }
+    })();
+    const [active, setActive] = useState(initialTab);
+    if (useEffect){
+      useEffect(()=>{ try { bindAggregateAutoSync(); } catch(e){} }, []);
+      useEffect(()=>{ try { window.localStorage && window.localStorage.setItem(LS_KEY, active); } catch(e){} }, [active]);
+    }
     return h('div', { className: 'pwpl-v1' }, [
       h(TopBar),
       h(Sidebar, { active, onChange: setActive }),
