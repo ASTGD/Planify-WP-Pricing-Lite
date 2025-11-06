@@ -6,6 +6,12 @@ $table      = is_array( $table ?? null ) ? $table : [];
 $plans      = is_array( $plans ?? null ) ? array_filter( $plans ) : [];
 $manifest   = is_array( $table['manifest'] ?? null ) ? $table['manifest'] : [];
 $theme_slug = sanitize_key( $table['theme'] ?? 'classic' );
+$dom_id_raw = $table['dom_id'] ?? '';
+$dom_id     = $dom_id_raw ? sanitize_html_class( $dom_id_raw ) : '';
+$style_block = '';
+if ( ! empty( $table['style_block'] ) && is_string( $table['style_block'] ) ) {
+    $style_block = $table['style_block'];
+}
 
 $classes = [ 'pwpl-table', 'pwpl-table--theme-' . $theme_slug ];
 if ( ! empty( $manifest['containerClass'] ) ) {
@@ -47,12 +53,14 @@ $badges_json       = wp_json_encode( $table['badges'] ?? [] );
 $labels_json       = wp_json_encode( $table['dimension_labels'] ?? [] );
 $availability_json = wp_json_encode( $table['availability'] ?? [] );
 
-$wrapper_attrs = [
-	'data-table-id'         => (int) ( $table['id'] ?? 0 ),
-	'data-table-theme'      => $theme_slug,
-	'data-badges'           => $badges_json ?: '{}',
-	'data-dimension-labels' => $labels_json ?: '{}',
-];
+$wrapper_attrs = [];
+if ( $dom_id ) {
+    $wrapper_attrs['id'] = $dom_id;
+}
+$wrapper_attrs['data-table-id']         = (int) ( $table['id'] ?? 0 );
+$wrapper_attrs['data-table-theme']      = $theme_slug;
+$wrapper_attrs['data-badges']           = $badges_json ?: '{}';
+$wrapper_attrs['data-dimension-labels'] = $labels_json ?: '{}';
 
 if ( $specs_style && $specs_style !== 'default' ) {
     $wrapper_attrs['data-fvps-specs-style'] = $specs_style;
@@ -133,6 +141,7 @@ if ( $tabs_glass_enabled ) {
     $style_combined .= $style_vars;
 }
 ?>
+<?php if ( $style_block ) { echo $style_block; } ?>
 <div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"<?php
 foreach ( $wrapper_attrs as $attr => $value ) {
     printf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );

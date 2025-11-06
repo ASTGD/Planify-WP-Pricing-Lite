@@ -48,6 +48,10 @@ class PWPL_Shortcode {
             ],
         ] );
 
+        static $render_instance = 0;
+        $render_instance++;
+        $dom_id = 'pwpl-table-' . $table_id . '-' . $render_instance;
+
         $dimensions = get_post_meta( $table_id, PWPL_Meta::DIMENSION_META, true );
         if ( ! is_array( $dimensions ) ) {
             $dimensions = [];
@@ -136,7 +140,17 @@ class PWPL_Shortcode {
         }
 
         $table_theme = get_post_meta( $table_id, PWPL_Meta::TABLE_THEME, true );
-        $table_theme = $meta_helper->sanitize_theme( $table_theme ?: 'classic' );
+        $table_theme = $meta_helper->sanitize_theme( $table_theme ?: '' );
+        // Prefer FireVPS as default when available and no explicit non-classic theme selected.
+        if ( ! $table_theme || $table_theme === 'classic' ) {
+            $loader = new PWPL_Theme_Loader();
+            $available = array_map( function($t){ return sanitize_key( $t['slug'] ?? '' ); }, (array) $loader->get_available_themes() );
+            if ( in_array( 'firevps', $available, true ) ) {
+                $table_theme = 'firevps';
+            } elseif ( ! $table_theme ) {
+                $table_theme = 'classic';
+            }
+        }
 
         $table_theme_package = $this->enqueue_theme_assets( $table_theme );
         $table_manifest      = is_array( $table_theme_package['manifest'] ?? null ) ? $table_theme_package['manifest'] : [];
@@ -628,6 +642,19 @@ class PWPL_Shortcode {
 
         $table_style_attr = $style_inline ? ' style="' . esc_attr( $style_inline ) . '"' : '';
 
+        $style_block = '';
+        if ( $style_inline ) {
+            $style_block_css = wp_strip_all_tags( $style_inline, true );
+            if ( '' !== $style_block_css ) {
+                $style_block = sprintf(
+                    '<style id="%s">#%s{%s}</style>',
+                    esc_attr( $dom_id . '-vars' ),
+                    esc_attr( $dom_id ),
+                    esc_html( $style_block_css )
+                );
+            }
+        }
+
         $template_rel = 'template.php';
         if ( ! empty( $table_manifest['template'] ) ) {
             $template_rel_candidate = ltrim( (string) $table_manifest['template'], '/' );
@@ -639,6 +666,8 @@ class PWPL_Shortcode {
         $template_path = function_exists( 'pwpl_locate_theme_file' ) ? pwpl_locate_theme_file( $table_theme, $template_rel ) : false;
 
         if ( $template_path ) {
+            // Ensure theme assets are enqueued and capture handles
+            $table_theme_package = $this->enqueue_theme_assets( $table_theme );
             $table_subtitle_meta = get_post_meta( $table_id, '_pwpl_table_subtitle', true );
             $table_subtitle_raw  = is_string( $table_subtitle_meta ) ? trim( wp_strip_all_tags( $table_subtitle_meta ) ) : '';
             if ( '' === $table_subtitle_raw ) {
@@ -680,6 +709,7 @@ class PWPL_Shortcode {
 
             $table_context = [
                 'id'               => $table_id,
+                'dom_id'           => $dom_id,
                 'theme'            => $table_theme,
                 'title'            => $table_title_raw,
                 'subtitle'         => $table_subtitle_raw,
@@ -692,12 +722,15 @@ class PWPL_Shortcode {
                 'dimensions'       => $tabs_context,
                 'availability'     => $availability_payload,
                 'style'            => $style_inline,
+                'style_block'      => $style_block,
                 'badge_shadow'     => $badge_shadow,
                 'tabs_glass'       => (bool) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS, true ),
                 'tabs_glass_tint'  => (string) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_TINT, true ),
                 'tabs_glass_intensity' => (int) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_INTENSITY, true ),
                 'tabs_glass_frost'     => (int) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_FROST, true ),
-                'cards_glass'          => (bool) get_post_meta( $table_id, PWPL_Meta::CARDS_GLASS, true ),
+                // Temporarily disable glass cards globally; prevents theme from forcing
+                // transparent specs backgrounds that hide user-selected colors.
+                'cards_glass'          => false,
                 'specs_style'         => (string) get_post_meta( $table_id, PWPL_Meta::SPECS_STYLE, true ),
                 'specs_anim'           => (function($table_id){
                     $preset = get_post_meta( $table_id, PWPL_Meta::SPECS_ANIM_PRESET, true );
@@ -725,6 +758,22 @@ class PWPL_Shortcode {
             ];
 
             $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );
+
+            // Robust inline CSS injection via wp_add_inline_style (survives content sanitizers)
+            if ( $style_inline && $dom_id ) {
+                $target_handle = '';
+                if ( ! empty( $table_theme_package['assets']['css'][0]['handle'] ) ) {
+                    $target_handle = $table_theme_package['assets']['css'][0]['handle'];
+                } elseif ( wp_style_is( 'pwpl-frontend-themes', 'enqueued' ) ) {
+                    $target_handle = 'pwpl-frontend-themes';
+                } else {
+                    $target_handle = 'pwpl-frontend';
+                }
+                if ( $target_handle ) {
+                    $css = '#' . sanitize_html_class( $dom_id ) . '{' . $style_inline . '}';
+                    wp_add_inline_style( $target_handle, $css );
+                }
+            }
 
             $plan_entries = [];
             foreach ( $plans as $plan_post ) {
@@ -876,9 +925,13 @@ class PWPL_Shortcode {
             return ob_get_clean();
         }
 
+        $dom_id_attr = sanitize_html_class( $dom_id );
         ob_start();
+        if ( $style_block ) {
+            echo $style_block;
+        }
         ?>
-        <div class="<?php echo esc_attr( $table_class_attr ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php echo $table_attr_extras; foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } echo $table_style_attr; ?>>
+        <div id="<?php echo esc_attr( $dom_id_attr ); ?>" class="<?php echo esc_attr( $table_class_attr ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php echo $table_attr_extras; foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } echo $table_style_attr; ?>>
             <div class="pwpl-table__header">
                 <h3 class="pwpl-table__title"><?php echo $table_title; ?></h3>
             </div>
@@ -1058,9 +1111,11 @@ class PWPL_Shortcode {
         $assets = $this->theme_loader->get_assets( $theme );
 
         if ( ! empty( $assets['css'] ) ) {
-            foreach ( $assets['css'] as $style ) {
+            foreach ( $assets['css'] as $i => $style ) {
                 $version = file_exists( $style['path'] ) ? filemtime( $style['path'] ) : PWPL_VERSION;
                 wp_enqueue_style( $style['handle'], $style['url'], [], $version );
+                // Keep the actual enqueued handle for later inline CSS injection
+                $assets['css'][$i]['enqueued'] = true;
             }
         }
 
@@ -1071,6 +1126,8 @@ class PWPL_Shortcode {
             }
         }
 
+        // Attach asset map so caller can know the enqueued handles
+        $theme['assets'] = $assets;
         $this->enqueued_themes[ $slug ] = $theme;
         return $theme;
     }

@@ -450,7 +450,11 @@ class PWPL_Meta {
         }
 
         $allowed = array_unique( $allowed );
-        return in_array( $value, $allowed, true ) ? $value : 'classic';
+        if ( in_array( $value, $allowed, true ) ) {
+            return $value;
+        }
+        // Prefer FireVPS as a modern default if bundled/overridden; else fallback to classic
+        return in_array( 'firevps', $allowed, true ) ? 'firevps' : 'classic';
     }
 
     public function sanitize_feature_flag( $value ) {
