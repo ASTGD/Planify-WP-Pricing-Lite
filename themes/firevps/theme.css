@@ -876,9 +876,19 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   white-space: nowrap;
-  color: color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 100%, #000 0%);
-  background: color-mix(in oklab, var(--fvps-color-accent, #f5a623) 18%, #fff 82%);
-  border: 1px solid color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 24%, #000 0%);
+  /* Prefer per-table overrides, then CTA colors, then brand accent */
+  color: var(
+    --fvps-price-badge-text,
+    var(--cta-color, color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 100%, #000 0%))
+  );
+  background: var(
+    --fvps-price-badge-bg,
+    var(--cta-bg, color-mix(in oklab, var(--fvps-color-accent, #f5a623) 18%, #fff 82%))
+  );
+  border: 1px solid var(
+    --fvps-price-badge-border,
+    color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 24%, #000 0%)
+  );
 }
 
 .pwpl-table--theme-firevps .pwpl-price-currency {
