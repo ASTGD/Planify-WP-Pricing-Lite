@@ -176,6 +176,7 @@ class PWPL_Admin_UI_V1 {
     }
 
     public function render_editor_v1( $post ) {
+        wp_nonce_field( 'pwpl_save_table_' . $post->ID, 'pwpl_table_nonce' );
         echo '<div id="pwpl-admin-v1-root"></div>';
         // Hidden inputs will be rendered by the React app to ensure values submit with the post.
     }

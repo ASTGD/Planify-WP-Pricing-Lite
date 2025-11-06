@@ -48,6 +48,10 @@ class PWPL_Shortcode {
             ],
         ] );
 
+        static $render_instance = 0;
+        $render_instance++;
+        $dom_id = 'pwpl-table-' . $table_id . '-' . $render_instance;
+
         $dimensions = get_post_meta( $table_id, PWPL_Meta::DIMENSION_META, true );
         if ( ! is_array( $dimensions ) ) {
             $dimensions = [];
@@ -628,6 +632,19 @@ class PWPL_Shortcode {
 
         $table_style_attr = $style_inline ? ' style="' . esc_attr( $style_inline ) . '"' : '';
 
+        $style_block = '';
+        if ( $style_inline ) {
+            $style_block_css = wp_strip_all_tags( $style_inline, true );
+            if ( '' !== $style_block_css ) {
+                $style_block = sprintf(
+                    '<style id="%s">#%s{%s}</style>',
+                    esc_attr( $dom_id . '-vars' ),
+                    esc_attr( $dom_id ),
+                    esc_html( $style_block_css )
+                );
+            }
+        }
+
         $template_rel = 'template.php';
         if ( ! empty( $table_manifest['template'] ) ) {
             $template_rel_candidate = ltrim( (string) $table_manifest['template'], '/' );
@@ -680,6 +697,7 @@ class PWPL_Shortcode {
 
             $table_context = [
                 'id'               => $table_id,
+                'dom_id'           => $dom_id,
                 'theme'            => $table_theme,
                 'title'            => $table_title_raw,
                 'subtitle'         => $table_subtitle_raw,
@@ -692,6 +710,7 @@ class PWPL_Shortcode {
                 'dimensions'       => $tabs_context,
                 'availability'     => $availability_payload,
                 'style'            => $style_inline,
+                'style_block'      => $style_block,
                 'badge_shadow'     => $badge_shadow,
                 'tabs_glass'       => (bool) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS, true ),
                 'tabs_glass_tint'  => (string) get_post_meta( $table_id, PWPL_Meta::TABS_GLASS_TINT, true ),
@@ -876,9 +895,13 @@ class PWPL_Shortcode {
             return ob_get_clean();
         }
 
+        $dom_id_attr = sanitize_html_class( $dom_id );
         ob_start();
+        if ( $style_block ) {
+            echo $style_block;
+        }
         ?>
-        <div class="<?php echo esc_attr( $table_class_attr ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php echo $table_attr_extras; foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } echo $table_style_attr; ?>>
+        <div id="<?php echo esc_attr( $dom_id_attr ); ?>" class="<?php echo esc_attr( $table_class_attr ); ?>" data-table-id="<?php echo esc_attr( $table_id ); ?>" data-table-theme="<?php echo esc_attr( $table_theme ); ?>" data-badges="<?php echo esc_attr( $table_badges_json ); ?>" data-dimension-labels="<?php echo esc_attr( $dimension_labels_json ); ?>"<?php echo $table_attr_extras; foreach ( $active_values as $dim => $value ) { echo ' data-active-' . esc_attr( $dim ) . '="' . esc_attr( $value ) . '"'; } echo $table_style_attr; ?>>
             <div class="pwpl-table__header">
                 <h3 class="pwpl-table__title"><?php echo $table_title; ?></h3>
             </div>

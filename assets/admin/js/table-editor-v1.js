@@ -7,6 +7,74 @@
   const data = w.PWPL_AdminV1 || { postId: 0, layout: { widths: {}, columns: {} }, card: {}, i18n: {} };
   const PREVIEW_ENABLED = false; // Disabled for now
 
+  // -----------------------------
+  // Persistent form aggregator
+  // -----------------------------
+  const AGGREGATE_ID = 'pwpl-v1-aggregate';
+  function ensureAggregateContainer(){
+    const form = document.getElementById('post');
+    if (!form) return null;
+    let agg = document.getElementById(AGGREGATE_ID);
+    if (!agg){
+      agg = document.createElement('div');
+      agg.id = AGGREGATE_ID;
+      agg.style.display = 'none';
+      form.appendChild(agg);
+    }
+    return agg;
+  }
+  function syncAggregateAll(){
+    const root = document.getElementById('pwpl-admin-v1-root') || document;
+    const selector = [
+      'input[name^="pwpl_table[" ]',
+      'input[name^="pwpl_table_badges[" ]'
+    ].join(',');
+    const nodes = root.querySelectorAll(selector);
+    const byName = new Map();
+    nodes.forEach(function(node){
+      if (!node || !node.name) return;
+      const name = node.name;
+      const value = node.value == null ? '' : String(node.value);
+      if (!byName.has(name)) byName.set(name, []);
+      byName.get(name).push(value);
+    });
+    const agg = ensureAggregateContainer();
+    if (!agg) return;
+    byName.forEach(function(values, name){
+      // Remove previous mirrors for this name
+      agg.querySelectorAll('input[name="' + CSS.escape(name) + '"]').forEach(function(el){ el.remove(); });
+      // Recreate full set
+      values.forEach(function(v){
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = v;
+        agg.appendChild(input);
+      });
+    });
+  }
+  function bindAggregateAutoSync(){
+    const root = document.getElementById('pwpl-admin-v1-root') || document;
+    // Initial sync
+    try { syncAggregateAll(); } catch(e){}
+    // Listen to value changes bubbling from inputs
+    function onAnyInput(){ try { syncAggregateAll(); } catch(e){} }
+    root.addEventListener('input', onAnyInput, true);
+    root.addEventListener('change', onAnyInput, true);
+    // Observe DOM for hidden inputs appearing/disappearing (tab switches)
+    if ('MutationObserver' in window){
+      const mo = new MutationObserver(function(){
+        syncAggregateAll();
+      });
+      mo.observe(root, { childList: true, subtree: true });
+    }
+    // Ensure aggregate is present on submit
+    const form = document.getElementById('post');
+    if (form){
+      form.addEventListener('submit', function(){ try { syncAggregateAll(); } catch(e){} }, true);
+    }
+  }
+
   // Shared preview state + event bus (no-op when preview disabled)
   w.PWPL_PreviewVars = w.PWPL_PreviewVars || {};
   function updatePreviewVars(patch){ if (!PREVIEW_ENABLED) return; try { Object.assign(w.PWPL_PreviewVars, patch || {}); } catch(e){} document.dispatchEvent(new CustomEvent('pwpl:v1:update')); }
@@ -327,9 +395,39 @@
       } catch(e){}
     }
 
+    function submitClassicUpdate(){
+      try {
+        const form = document.getElementById('post');
+        if (!form) return false;
+        const original = document.getElementById('original_post_status');
+        const current = original ? String(original.value) : '';
+        if (current !== 'publish'){
+          const st = document.getElementById('post_status');
+          if (st) { st.value = 'publish'; }
+        }
+        const publishBtn = document.getElementById('publish');
+        if (publishBtn) {
+          publishBtn.click();
+        } else if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.submit();
+        }
+        return true;
+      } catch(e){}
+      return false;
+    }
+
     async function publishOrUpdate(){
       if (saving) return;
       setSaving(true);
+
+      try { syncAggregateAll(); } catch(e){}
+
+      if (submitClassicUpdate()){
+        return;
+      }
+
       let ok = false;
       try {
         if (w.wp && wp.data && wp.data.dispatch){
@@ -344,21 +442,11 @@
           }
         }
       } catch(e){}
+
       if (!ok){
-        try {
-          const form = document.getElementById('post');
-          if (form){
-            const original = document.getElementById('original_post_status');
-            const current = original ? String(original.value) : '';
-            if (current !== 'publish'){
-              const st = document.getElementById('post_status'); if (st) st.value = 'publish';
-            }
-            const publishBtn = document.getElementById('publish');
-            if (publishBtn){ publishBtn.click(); ok = true; }
-            else { form.submit(); ok = true; }
-          }
-        } catch(e){}
+        ok = submitClassicUpdate();
       }
+
       setSaving(false);
       setStatus(detectStatus());
     }
@@ -374,6 +462,7 @@
 
   function App(){
     const [active, setActive] = useState('table');
+    if (useEffect){ useEffect(()=>{ try { bindAggregateAutoSync(); } catch(e){} }, []); }
     return h('div', { className: 'pwpl-v1' }, [
       h(TopBar),
       h(Sidebar, { active, onChange: setActive }),
