@@ -14,7 +14,10 @@
 .pwpl-v1-title{margin:0 0 4px;font-size:16px}
 .pwpl-v1-desc{margin:0;color:#64748b}
 .pwpl-v1-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--pwpl-s-4)}
-.pwpl-v1-grid > .pwpl-v1-grid{grid-template-columns:repeat(3, minmax(200px,1fr))}
+/* Generic 3-col row grid */
+.pwpl-v1-row-3{display:grid;grid-template-columns:repeat(3,minmax(200px,1fr));gap:var(--pwpl-s-4)}
+/* Breakpoints: stack rows vertically so fields don't overflow horizontally */
+.pwpl-v1-breakpoints{display:grid;grid-template-columns:1fr;gap:var(--pwpl-s-3)}
 .pwpl-v1-color{max-width:260px}
 
 /* Style WP components tabs more like segmented controls */

@@ -210,7 +210,7 @@
                 HiddenInput({ name: 'pwpl_table[layout][card_widths][global]', value: globalCardMin }),
               ]);
             }
-            return h('div', { className: 'pwpl-v1-grid' }, deviceOrder.map((key)=>{
+            return h('div', { className: 'pwpl-v1-breakpoints' }, deviceOrder.map((key)=>{
               const w = parseInt(widths[key]||0,10)||0;
               const c = parseInt(columns[key]||0,10)||0;
               const cw= parseInt(cardW[key]||0,10)||0;
@@ -223,7 +223,7 @@
               const setCW = (val)=>{
                 const v = parseInt(val||0,10)||0; const next = Object.assign({}, cardW, {[key]:v}); setCardW(next);
               };
-              return h('div', { key, className:'pwpl-v1-grid' }, [
+              return h('div', { key, className:'pwpl-v1-row-3' }, [
                 h('div', null, [
                   h(NumberControl || TextControl, { label: key.toUpperCase()+ ' width (px)', value:w, min:0, max:4000, onChange:setW }),
                   HiddenInput({ name: `pwpl_table[layout][widths][${key}]`, value:w })
