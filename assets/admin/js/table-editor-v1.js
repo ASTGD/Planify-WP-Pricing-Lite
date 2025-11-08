@@ -170,6 +170,13 @@
     const [globalColumns, setGlobalColumns] = useState(parseInt(data.layout.columns.global || 0, 10) || 0);
     const [globalCardMin, setGlobalCardMin] = useState(parseInt((data.layout.cardWidths && data.layout.cardWidths.global) || 0, 10) || 0);
     const deviceOrder = ['xxl','xl','lg','md','sm'];
+    const DEVICE_LABELS = {
+      xxl: 'Big screens (≥ 1536px)',
+      xl:  'Desktop (1280–1535px)',
+      lg:  'Laptop (1024–1279px)',
+      md:  'Tablet (768–1023px)',
+      sm:  'Mobile (≤ 767px)'
+    };
     const [widths, setWidths] = useState(Object.assign({xxl:0,xl:0,lg:0,md:0,sm:0}, data.layout.widths||{}));
     const [columns, setColumns] = useState(Object.assign({xxl:0,xl:0,lg:0,md:0,sm:0}, data.layout.columns||{}));
     const [cardW, setCardW] = useState(Object.assign({xxl:0,xl:0,lg:0,md:0,sm:0}, data.layout.cardWidths||{}));
@@ -223,17 +230,18 @@
               const setCW = (val)=>{
                 const v = parseInt(val||0,10)||0; const next = Object.assign({}, cardW, {[key]:v}); setCardW(next);
               };
+              const readable = DEVICE_LABELS[key] || key.toUpperCase();
               return h('div', { key, className:'pwpl-v1-row-3' }, [
                 h('div', null, [
-                  h(NumberControl || TextControl, { label: key.toUpperCase()+ ' width (px)', value:w, min:0, max:4000, onChange:setW }),
+                  h(NumberControl || TextControl, { label: readable + ' — width (px)', value:w, min:0, max:4000, onChange:setW }),
                   HiddenInput({ name: `pwpl_table[layout][widths][${key}]`, value:w })
                 ]),
                 h('div', null, [
-                  h(NumberControl || TextControl, { label: key.toUpperCase()+ ' columns', value:c, min:0, max:20, onChange:setC }),
+                  h(NumberControl || TextControl, { label: readable + ' — columns', value:c, min:0, max:20, onChange:setC }),
                   HiddenInput({ name: `pwpl_table[layout][columns][${key}]`, value:c })
                 ]),
                 h('div', null, [
-                  h(NumberControl || TextControl, { label: key.toUpperCase()+ ' card min width (px)', value:cw, min:0, max:4000, onChange:setCW }),
+                  h(NumberControl || TextControl, { label: readable + ' — card min width (px)', value:cw, min:0, max:4000, onChange:setCW }),
                   HiddenInput({ name: `pwpl_table[layout][card_widths][${key}]`, value:cw })
                 ]),
               ]);
