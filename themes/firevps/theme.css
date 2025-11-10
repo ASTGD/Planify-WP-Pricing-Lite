@@ -876,9 +876,10 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   white-space: nowrap;
-  color: color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 100%, #000 0%);
-  background: color-mix(in oklab, var(--fvps-color-accent, #f5a623) 18%, #fff 82%);
-  border: 1px solid color-mix(in oklab, var(--fvps-color-accent-strong, #d9790b) 24%, #000 0%);
+  /* High-contrast Green defaults; still overridable via CSS vars */
+  color: var(--fvps-price-badge-text, #065F46);
+  background: var(--fvps-price-badge-bg, #DCFCE7);
+  border: 1px solid var(--fvps-price-badge-border, #34D399);
 }
 
 .pwpl-table--theme-firevps .pwpl-price-currency {

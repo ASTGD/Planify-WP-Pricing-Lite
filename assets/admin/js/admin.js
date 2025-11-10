@@ -147,6 +147,25 @@
     togglePlanBadgeFields();
     $(document).on('change', '#pwpl_plan_badges_override_enabled', togglePlanBadgeFields);
 
+    // On some environments, HTML5 constraint validation blocks submit and the page
+    // appears to just jump. For our CPTs, allow seamless submit by disabling
+    // validation and submitting explicitly when clicking the classic Publish button.
+    $(document).on('click', '#publish', function(){
+      var $screen = (typeof get_current_screen === 'function') ? get_current_screen() : null;
+      var postType = $screen && $screen.post_type ? $screen.post_type : ( $('#post_type').val() || '' );
+      if (postType !== 'pwpl_table' && postType !== 'pwpl_plan') {
+        return; // do not interfere with other screens
+      }
+      var $form = $('#post');
+      if (!$form.length) {
+        return;
+      }
+      // Allow WP to handle sanitization server-side; keep the clicked button
+      // value so status becomes "publish" instead of draft.
+      $form.attr('novalidate', 'novalidate');
+      // Do NOT prevent default; letting the native submit include the
+      // clicked button (name="publish").
+    });
     function syncRangePair($range, $number) {
       if (!$range || !$range.length || !$number || !$number.length) {
         return;
