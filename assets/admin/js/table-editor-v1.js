@@ -1,7 +1,7 @@
 (function(w){
   const wp = w.wp || window.wp || {};
   const element = wp.element || {};
-  const { createElement: h, useState, useEffect } = element;
+  const { createElement: h, useState, useEffect, useRef } = element;
 
   const REQUIRED_COMPONENTS = [ 'Card', 'CardBody', 'TabPanel', 'TextControl', 'ColorPicker' ];
   const getWPComponents = () => (w.wp && w.wp.components) || {};
@@ -10,6 +10,176 @@
     return REQUIRED_COMPONENTS.every((key) => typeof cmp[ key ] === 'function');
   };
   const classNames = (base, extra) => extra ? base + ' ' + extra : base;
+  const clampChannel = (value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) {
+      return 0;
+    }
+    return Math.max(0, Math.min(255, Math.round(num)));
+  };
+  const clampAlpha = (value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) {
+      return 1;
+    }
+    if (num <= 0) {
+      return 0;
+    }
+    if (num >= 1) {
+      return 1;
+    }
+    return Number(num.toFixed(2));
+  };
+  const rgbaString = (rgb = {}) => {
+    const { r = 0, g = 0, b = 0, a = 1 } = rgb;
+    return `rgba(${clampChannel(r)}, ${clampChannel(g)}, ${clampChannel(b)}, ${clampAlpha(a)})`;
+  };
+  const parseCssColor = (value) => {
+    if (typeof value !== 'string') {
+      return { r: 0, g: 0, b: 0, a: 1 };
+    }
+    const raw = value.trim();
+    const rgbaMatch = raw.match(/^rgba?\(([^)]+)\)/i);
+    if (rgbaMatch) {
+      const parts = rgbaMatch[1].split(',').map((v) => v.trim());
+      const r = clampChannel(parseFloat(parts[0]));
+      const g = clampChannel(parseFloat(parts[1]));
+      const b = clampChannel(parseFloat(parts[2]));
+      const a = parts[3] !== undefined ? clampAlpha(parseFloat(parts[3])) : 1;
+      return { r, g, b, a };
+    }
+    if (/^#/.test(raw) || /^[0-9a-f]{3,8}$/i.test(raw)) {
+      const rgb = hexToRgb(raw);
+      return { ...rgb, a: 1 };
+    }
+    return { r: 0, g: 0, b: 0, a: 1 };
+  };
+  const rgbaFromHsv = (h, s, v, a = 1) => {
+    const { r, g, b } = hsvToRgb(h, s, v);
+    return rgbaString({ r, g, b, a });
+  };
+  const normalizeColorValue = (value, allowAlpha = false) => {
+    if (value == null) {
+      return '';
+    }
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return '';
+      }
+      if (/^#/.test(trimmed) || /^rgb(a)?\(/i.test(trimmed)) {
+        return trimmed;
+      }
+      if (/^[0-9a-f]{3,8}$/i.test(trimmed)) {
+        return '#' + trimmed;
+      }
+      return trimmed;
+    }
+    if (typeof value === 'object') {
+      if (allowAlpha && value.rgb) {
+        return rgbaString(value.rgb);
+      }
+      if (typeof value.hex === 'string') {
+        return value.hex;
+      }
+      if (typeof value.color === 'string') {
+        return normalizeColorValue(value.color, allowAlpha);
+      }
+    }
+    return '';
+  };
+  const clamp01 = (value) => {
+    if (!Number.isFinite(value)) {
+      return 0;
+    }
+    if (value <= 0) {
+      return 0;
+    }
+    if (value >= 1) {
+      return 1;
+    }
+    return value;
+  };
+  const hexToRgb = (hex) => {
+    if (typeof hex !== 'string') {
+      return { r: 0, g: 0, b: 0 };
+    }
+    let raw = hex.trim();
+    if (!raw) {
+      return { r: 0, g: 0, b: 0 };
+    }
+    if (raw[0] === '#') {
+      raw = raw.slice(1);
+    }
+    if (raw.length === 3) {
+      raw = raw.split('').map((c) => c + c).join('');
+    }
+    if (raw.length !== 6) {
+      return { r: 0, g: 0, b: 0 };
+    }
+    const r = parseInt(raw.slice(0, 2), 16);
+    const g = parseInt(raw.slice(2, 4), 16);
+    const b = parseInt(raw.slice(4, 6), 16);
+    if ([r, g, b].some((v) => Number.isNaN(v))) {
+      return { r: 0, g: 0, b: 0 };
+    }
+    return { r, g, b };
+  };
+  const rgbToHex = ({ r = 0, g = 0, b = 0 }) => {
+    const toHex = (value) => {
+      const clamped = Math.max(0, Math.min(255, Math.round(value)));
+      return clamped.toString(16).padStart(2, '0');
+    };
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+  const rgbToHsv = (r = 0, g = 0, b = 0) => {
+    const rn = r / 255;
+    const gn = g / 255;
+    const bn = b / 255;
+    const max = Math.max(rn, gn, bn);
+    const min = Math.min(rn, gn, bn);
+    const delta = max - min;
+    let h = 0;
+    if (delta !== 0) {
+      if (max === rn) {
+        h = ((gn - bn) / delta) % 6;
+      } else if (max === gn) {
+        h = (bn - rn) / delta + 2;
+      } else {
+        h = (rn - gn) / delta + 4;
+      }
+      h *= 60;
+      if (h < 0) {
+        h += 360;
+      }
+    }
+    const s = max === 0 ? 0 : delta / max;
+    const v = max;
+    return { h, s, v };
+  };
+  const hsvToRgb = (h = 0, s = 0, v = 0) => {
+    const hh = ((h % 360) + 360) % 360;
+    const c = v * s;
+    const x = c * (1 - Math.abs((hh / 60) % 2 - 1));
+    const m = v - c;
+    let rp = 0, gp = 0, bp = 0;
+    if (hh >= 0 && hh < 60) { rp = c; gp = x; bp = 0; }
+    else if (hh >= 60 && hh < 120) { rp = x; gp = c; bp = 0; }
+    else if (hh >= 120 && hh < 180) { rp = 0; gp = c; bp = x; }
+    else if (hh >= 180 && hh < 240) { rp = 0; gp = x; bp = c; }
+    else if (hh >= 240 && hh < 300) { rp = x; gp = 0; bp = c; }
+    else { rp = c; gp = 0; bp = x; }
+    return {
+      r: Math.round((rp + m) * 255),
+      g: Math.round((gp + m) * 255),
+      b: Math.round((bp + m) * 255),
+    };
+  };
+  const hsvToHex = (h = 0, s = 0, v = 0) => rgbToHex(hsvToRgb(h, s, v));
+  const hexToHsv = (hex) => {
+    const rgb = hexToRgb(hex);
+    return rgbToHsv(rgb.r, rgb.g, rgb.b);
+  };
 
   const FallbackCard = (props = {}) => {
     const { className = '', children, ...rest } = props;
@@ -113,27 +283,69 @@
       } ),
     ] );
   };
-  const ColorPaletteControl = typeof BaseColorPalette === 'function' ? BaseColorPalette : PaletteFallback;
+  let ColorPaletteControl = typeof BaseColorPalette === 'function' ? BaseColorPalette : null;
 
+  // Inlined accordion implementation (used unless a shared global exists)
   const BaseAccordion = w.PWPL_Accordion;
   const BaseAccordionItem = w.PWPL_AccordionItem;
   const AccordionFallback = function AccordionFallback( props ) {
-    const { children, searchValue, onSearchChange } = props || {};
-    return h('div', null, [
-      h('div', null, [
-        h('label', null, 'Search Options'),
-        h('input', {
-          type: 'search',
-          value: searchValue || '',
-          onChange: ( event ) => onSearchChange && onSearchChange( event.target.value ),
-        }),
+    const { children, searchValue, onSearchChange, onSearchKeyDown, onClear } = props || {};
+    const handleKeyDown = (event) => {
+      if (typeof onSearchKeyDown === 'function') {
+        onSearchKeyDown(event);
+      }
+    };
+    return h('div', { className: 'pwpl-acc' }, [
+      h('div', { className: 'pwpl-acc__toolbar' }, [
+        h('div', { className: 'pwpl-acc__search' }, [
+          h('span', { className: 'pwpl-acc__search-label' }, 'Search'),
+          h('div', { className: 'pwpl-acc__search-field' }, [
+            h('input', {
+              type: 'search',
+              value: searchValue || '',
+              onChange: ( event ) => onSearchChange && onSearchChange( event.target.value ),
+              onKeyDown: handleKeyDown,
+              placeholder: 'Filter settings…',
+            }),
+            h('button', { type: 'button', className: 'pwpl-acc__search-clear', onClick: () => onClear && onClear() }, 'Clear')
+          ]),
+        ]),
       ]),
-      children
+      h('div', { className: 'pwpl-acc__list' }, children)
     ]);
   };
   const AccordionItemFallback = function AccordionItemFallback( props ) {
-    const { title, children } = props || {};
-    return h('div', null, [ h('h3', null, title ), children ]);
+    const { id, title, isOpen, onToggle, hidden, children } = props || {};
+    const open = !!isOpen;
+    const itemCls = ['pwpl-acc__item', open ? 'is-open' : '', hidden ? 'is-hidden' : ''].filter(Boolean).join(' ');
+    const panelId = (id || 'acc-item') + '__panel';
+    const btnId = (id || 'acc-item') + '__btn';
+    const handleKey = (event) => {
+      if (event.key === ' ' || event.key === 'Enter'){
+        event.preventDefault();
+        if (typeof onToggle === 'function') onToggle(id);
+      }
+    };
+    return h('div', { className: itemCls, id }, [
+      h('button', {
+        id: btnId,
+        type: 'button',
+        className: 'pwpl-acc__btn',
+        'aria-expanded': open,
+        'aria-controls': panelId,
+        onClick: () => typeof onToggle === 'function' && onToggle(id),
+        onKeyDown: handleKey,
+      }, [
+        h('div', { className: 'pwpl-acc__head' }, [
+          h('div', { className: 'pwpl-acc__title-wrap' }, [
+            h('span', { className: 'pwpl-acc__title' }, title || ''),
+          ]),
+          h('div', { className: 'pwpl-acc__summary-chips' }),
+        ]),
+        h('span', { className: 'pwpl-acc__chev', 'aria-hidden': 'true' }, '⌄')
+      ]),
+      h('div', { className: ['pwpl-acc__panel', open ? 'is-open' : ''].join(' '), id: panelId, role: 'region', 'aria-labelledby': btnId }, children)
+    ]);
   };
   const Accordion = typeof BaseAccordion === 'function' ? BaseAccordion : AccordionFallback;
   const AccordionItem = typeof BaseAccordionItem === 'function' ? BaseAccordionItem : AccordionItemFallback;
@@ -550,6 +762,613 @@
     ]);
   }
 
+  const BACKGROUND_TABS = [
+    { id: 'color', label: 'Background Color' },
+    { id: 'gradient', label: 'Background Gradient' },
+  ];
+  const GRADIENT_TYPE_OPTIONS = [
+    { label: 'Linear', value: 'linear' },
+    { label: 'Radial', value: 'radial' },
+    { label: 'Conic', value: 'conic' },
+  ];
+  const clampPercent = (value, fallback = 0) => {
+    const num = parseFloat(value);
+    if (!Number.isFinite(num)) {
+      return fallback;
+    }
+    return Math.max(0, Math.min(100, num));
+  };
+  const buildGradientPreviewStyle = ({
+    type = 'linear',
+    start,
+    end,
+    angle,
+    startPos,
+    endPos,
+  } = {}) => {
+    const startColor = start || '#2563eb';
+    const endColor = end || '#34d399';
+    const startStop = clampPercent(startPos, 0);
+    const endStop = clampPercent(endPos, 100);
+    const angleValue = Number.isFinite(parseFloat(angle)) ? parseFloat(angle) : 180;
+    switch (type) {
+      case 'radial':
+        return {
+          backgroundImage: `radial-gradient(circle, ${startColor} ${startStop}%, ${endColor} ${endStop}%)`,
+        };
+      case 'conic':
+        return {
+          backgroundImage: `conic-gradient(from ${angleValue}deg, ${startColor}, ${endColor})`,
+        };
+      default:
+        return {
+          backgroundImage: `linear-gradient(${angleValue}deg, ${startColor} ${startStop}%, ${endColor} ${endStop}%)`,
+        };
+    }
+  };
+  const DEFAULT_CUSTOM_COLOR = '#2563eb';
+
+  function BackgroundColorPanel({
+    label = 'Background color',
+    value = '',
+    onChange,
+  } = {}){
+    const normalizedValue = normalizeColorValue(value);
+    const parsed = parseCssColor(normalizedValue || DEFAULT_CUSTOM_COLOR);
+    const initialHsv = rgbToHsv(parsed.r, parsed.g, parsed.b);
+    const [isEditing, setIsEditing] = useState(false);
+    const [draftHue, setDraftHue] = useState(initialHsv.h || 0);
+    const [draftSat, setDraftSat] = useState(initialHsv.s || 0);
+    const [draftVal, setDraftVal] = useState(initialHsv.v || 0);
+    const [draftAlpha, setDraftAlpha] = useState(parsed.a != null ? parsed.a : 1);
+    const [draggingCanvas, setDraggingCanvas] = useState(false);
+    const canvasRef = useRef(null);
+    const [hexField, setHexField] = useState(hsvToHex(initialHsv.h || 0, initialHsv.s || 0, initialHsv.v || 0).toUpperCase());
+    const aRailRef = useRef(null);
+    const satRailRef = useRef(null);
+    const [copied, setCopied] = useState(false);
+    const [showSaved, setShowSaved] = useState(false);
+    const savedTickRef = useRef(null);
+
+    useEffect(() => {
+      const normalized = normalizeColorValue(value);
+      const col = parseCssColor(normalized || DEFAULT_CUSTOM_COLOR);
+      const hsv = rgbToHsv(col.r, col.g, col.b);
+      setDraftHue(hsv.h || 0);
+      setDraftSat(hsv.s || 0);
+      setDraftVal(hsv.v || 0);
+      setDraftAlpha(col.a != null ? clampAlpha(col.a) : 1);
+      setHexField(hsvToHex(hsv.h || 0, hsv.s || 0, hsv.v || 0).toUpperCase());
+      if (!normalized) {
+        setIsEditing(false);
+      }
+    }, [value]);
+
+    const emitChange = (next) => {
+      const normalized = normalizeColorValue(next);
+      if (typeof onChange === 'function') {
+        onChange(normalized);
+      }
+    };
+
+    const openEditor = () => {
+      const col = parseCssColor(normalizedValue || DEFAULT_CUSTOM_COLOR);
+      const hsv = rgbToHsv(col.r, col.g, col.b);
+      setDraftHue(hsv.h || 0);
+      setDraftSat(hsv.s || 0);
+      setDraftVal(hsv.v || 0);
+      setDraftAlpha(col.a != null ? clampAlpha(col.a) : 1);
+      setHexField(hsvToHex(hsv.h || 0, hsv.s || 0, hsv.v || 0).toUpperCase());
+      try { document.body.classList.add('pwpl-bg-editing'); } catch(e) {}
+      setIsEditing(true);
+    };
+
+    const handleAddClick = () => {
+      openEditor();
+    };
+
+    const handleSwatchClick = (swatchValue) => {
+      const normalized = normalizeColorValue(swatchValue);
+      const col = parseCssColor(normalized || DEFAULT_CUSTOM_COLOR);
+      const hsv = rgbToHsv(col.r, col.g, col.b);
+      setDraftHue(hsv.h || 0);
+      setDraftSat(hsv.s || 0);
+      setDraftVal(hsv.v || 0);
+      setDraftAlpha(col.a != null ? clampAlpha(col.a) : 1);
+      setHexField(hsvToHex(hsv.h || 0, hsv.s || 0, hsv.v || 0).toUpperCase());
+      emitChange(normalized);
+      setIsEditing(false);
+    };
+
+    const handleSave = () => {
+      const hex = hsvToHex(draftHue || 0, draftSat || 0, draftVal || 0);
+      const out = (draftAlpha != null && draftAlpha < 1) ? rgbaFromHsv(draftHue || 0, draftSat || 0, draftVal || 0, draftAlpha) : hex;
+      emitChange(out);
+      if (savedTickRef.current) {
+        clearTimeout(savedTickRef.current);
+      }
+      setShowSaved(true);
+      savedTickRef.current = setTimeout(() => setShowSaved(false), 1500);
+      setCopied(false);
+      try { document.body.classList.remove('pwpl-bg-editing'); } catch(e) {}
+      setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+      const col = parseCssColor(normalizedValue || DEFAULT_CUSTOM_COLOR);
+      const hsv = rgbToHsv(col.r, col.g, col.b);
+      setDraftHue(hsv.h || 0);
+      setDraftSat(hsv.s || 0);
+      setDraftVal(hsv.v || 0);
+      setDraftAlpha(col.a != null ? clampAlpha(col.a) : 1);
+      setHexField(hsvToHex(hsv.h || 0, hsv.s || 0, hsv.v || 0).toUpperCase());
+      setShowSaved(false);
+      setCopied(false);
+      try { document.body.classList.remove('pwpl-bg-editing'); } catch(e) {}
+      setIsEditing(false);
+    };
+
+    const handleFillClick = () => {
+      if (!isEditing) {
+        openEditor();
+      }
+    };
+
+    const currentDraftHex = hsvToHex(draftHue || 0, draftSat || 0, draftVal || 0);
+    useEffect(() => {
+      setHexField(currentDraftHex.toUpperCase());
+    }, [currentDraftHex]);
+
+    const valueMatchesSwatch = DEFAULT_COLOR_SWATCHES.some((swatch) => {
+      if (!swatch.value || !normalizedValue) {
+        return false;
+      }
+      return swatch.value.toLowerCase() === normalizedValue.toLowerCase();
+    });
+    const isCustomActive = isEditing || (!!normalizedValue && !valueMatchesSwatch);
+
+    const handleCanvasPointer = (event) => {
+      if (!canvasRef || !canvasRef.current) {
+        return;
+      }
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = clamp01((event.clientX - rect.left) / rect.width);
+      const y = clamp01((event.clientY - rect.top) / rect.height);
+      // Panel X controls Hue (0..360), Y controls Brightness/Value (1..0)
+      setDraftHue(x * 360);
+      setDraftVal(1 - y);
+    };
+
+    const handleCanvasPointerDown = (event) => {
+      event.preventDefault();
+      if (!isEditing) {
+        openEditor();
+      }
+      setDraggingCanvas(true);
+      handleCanvasPointer(event);
+    };
+
+    useEffect(() => {
+      if (!draggingCanvas) {
+        return undefined;
+      }
+      const handleMove = (event) => handleCanvasPointer(event);
+      const handleUp = () => setDraggingCanvas(false);
+      document.addEventListener('pointermove', handleMove);
+      document.addEventListener('pointerup', handleUp);
+      return () => {
+        document.removeEventListener('pointermove', handleMove);
+        document.removeEventListener('pointerup', handleUp);
+      };
+    }, [draggingCanvas]);
+
+    // Rail pointer utilities
+    const getRailValue = (event, ref) => {
+      if (!ref || !ref.current) return 0;
+      const rect = ref.current.getBoundingClientRect();
+      let y = (event.clientY - rect.top) / rect.height;
+      y = Math.max(0, Math.min(1, y));
+      return y;
+    };
+    const [dragSatRail, setDragSatRail] = useState(false);
+    const [dragAlphaRail, setDragAlphaRail] = useState(false);
+    const onSatDown = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setDragSatRail(true);
+      const y = getRailValue(event, satRailRef);
+      setDraftSat(1 - y);
+    };
+    const onAlphaDown = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setDragAlphaRail(true);
+      const y = getRailValue(event, aRailRef);
+      setDraftAlpha(1 - y);
+    };
+    useEffect(() => {
+      if (!dragSatRail && !dragAlphaRail) {
+        return undefined;
+      }
+      const handleMove = (event) => {
+        if (dragSatRail) {
+          const y = getRailValue(event, satRailRef);
+          setDraftSat(1 - y);
+        }
+        if (dragAlphaRail) {
+          const y = getRailValue(event, aRailRef);
+          setDraftAlpha(1 - y);
+        }
+      };
+      const handleUp = () => {
+        setDragSatRail(false);
+        setDragAlphaRail(false);
+      };
+      document.addEventListener('pointermove', handleMove);
+      document.addEventListener('pointerup', handleUp);
+      return () => {
+        document.removeEventListener('pointermove', handleMove);
+        document.removeEventListener('pointerup', handleUp);
+      };
+    }, [dragSatRail, dragAlphaRail]);
+
+    useEffect(() => () => { try { document.body.classList.remove('pwpl-bg-editing'); } catch(e) {} }, []);
+
+    const handleHexFieldChange = (event) => {
+      const raw = event && event.target ? event.target.value : '';
+      setHexField(raw.toUpperCase());
+      const normalized = normalizeColorValue(raw);
+      if (/^#[0-9A-Fa-f]{6}$/.test(normalized)) {
+        const hsv = hexToHsv(normalized);
+        setDraftHue(hsv.h || 0);
+        setDraftSat(hsv.s || 0);
+        setDraftVal(hsv.v || 0);
+      }
+    };
+
+    const swatchButtons = DEFAULT_COLOR_SWATCHES.map((swatch) => {
+      const swatchValue = swatch.value || '';
+      const isActive = (normalizedValue || '') === swatchValue;
+      const className = classNames('pwpl-bgctrl__swatch', isActive ? 'is-active' : '', !swatchValue ? 'is-none' : '');
+      return h('button', {
+        key: `bgcolor-${swatch.label}`,
+        type: 'button',
+        className,
+        style: swatchValue ? { backgroundColor: swatchValue } : undefined,
+        'aria-pressed': isActive,
+        onClick: () => handleSwatchClick(swatchValue),
+        title: swatch.value ? `${swatch.label} (${swatch.value})` : 'No color',
+      }, swatch.value ? null : h('span', { className: 'pwpl-bgctrl__swatch-clear', 'aria-hidden': 'true' }, '×'));
+    });
+
+    const rootClass = classNames('pwpl-bgctrl__color', isEditing ? 'is-editing' : '');
+    // Panel = saturation across at current value (brightness): hsv(h, 0..1, v)
+    const baseHueBand = 'linear-gradient(90deg, #ff0000 0%, #ffff00 16%, #00ff00 33%, #00ffff 50%, #0000ff 66%, #ff00ff 83%, #ff0000 100%)';
+    const valueOverlay = 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.9) 100%)';
+    const satOverlay = `linear-gradient(0deg, rgba(255,255,255,${1 - (draftSat || 0)}), rgba(255,255,255,${1 - (draftSat || 0)}))`;
+    const pickerBg = [baseHueBand, valueOverlay, satOverlay].join(', ');
+    const pointerStyle = {
+      left: `${((draftHue || 0) / 360) * 100}%`,
+      top: `${(1 - (draftVal || 0)) * 100}%`,
+    };
+    const displayValue = (draftAlpha != null && draftAlpha < 1)
+      ? rgbaFromHsv(draftHue || 0, draftSat || 0, draftVal || 0, draftAlpha)
+      : hexField;
+
+    const handleCopyValue = (event) => {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      if (!displayValue) {
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(displayValue).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1200);
+        }).catch(() => {});
+      }
+    };
+
+    const handlePanelKeyDown = (event) => {
+      if (!isEditing) {
+        return;
+      }
+      const stepHue = 4;
+      const stepVal = 0.02;
+      switch (event.key) {
+        case 'ArrowRight':
+          event.preventDefault();
+          setDraftHue((prev) => (((prev || 0) + stepHue) % 360));
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          setDraftHue((prev) => {
+            const next = ((prev || 0) - stepHue);
+            return next < 0 ? (next + 360) : next;
+          });
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          setDraftVal((prev) => Math.min(1, (prev || 0) + stepVal));
+          break;
+        case 'ArrowDown':
+          event.preventDefault();
+          setDraftVal((prev) => Math.max(0, (prev || 0) - stepVal));
+          break;
+        case 'Escape':
+          event.preventDefault();
+          handleCancel();
+          break;
+        case 'Enter':
+          event.preventDefault();
+          handleSave();
+          break;
+        default:
+          break;
+      }
+    };
+
+    useEffect(() => () => {
+      if (savedTickRef.current) {
+        clearTimeout(savedTickRef.current);
+      }
+    }, []);
+
+    return h('div', { className: rootClass }, [
+      h('div', {
+        ref: canvasRef,
+        className: classNames('pwpl-bgctrl__fill', isEditing ? 'is-editing' : ''),
+        style: isEditing ? { backgroundImage: pickerBg } : { background: normalizedValue || '#f8fafc' },
+        onClick: (!isEditing) ? handleFillClick : undefined,
+        onPointerDown: isEditing ? handleCanvasPointerDown : undefined,
+        role: isEditing ? 'application' : 'button',
+        tabIndex: 0,
+        onKeyDown: isEditing ? handlePanelKeyDown : (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleFillClick();
+          }
+        },
+      }, isEditing ? [
+        h('button', {
+          type: 'button',
+          className: classNames('pwpl-bgctrl__pill', copied ? 'is-copied' : '', showSaved ? 'is-saved' : ''),
+          onClick: handleCopyValue,
+        }, [
+          h('span', { className: 'pwpl-bgctrl__pill-value' }, displayValue),
+          showSaved ? h('span', { className: 'pwpl-bgctrl__pill-tick', 'aria-hidden': 'true' }, '✓') : null,
+          copied ? h('span', { className: 'pwpl-bgctrl__pill-copy' }, 'Copied!') : null,
+        ]),
+        h('div', { className: 'pwpl-bgctrl__rails' }, [
+          h('div', {
+            className: 'pwpl-bgctrl__rail pwpl-bgctrl__rail--sat',
+            ref: satRailRef,
+            onPointerDown: onSatDown,
+            tabIndex: 0,
+            role: 'slider',
+            'aria-valuenow': Math.round((draftSat || 0) * 100),
+            onKeyDown: (event) => {
+              if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                setDraftSat((prev) => Math.min(1, (prev || 0) + 0.05));
+              } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                setDraftSat((prev) => Math.max(0, (prev || 0) - 0.05));
+              }
+            },
+            style: { background: `linear-gradient(to bottom, ${hsvToHex(draftHue || 0, 1, draftVal || 0)}, #ffffff)` },
+          }, h('span', { className: 'pwpl-bgctrl__rail-thumb', style: { top: `${(1 - (draftSat || 0)) * 100}%` } })),
+          h('div', {
+            className: 'pwpl-bgctrl__rail pwpl-bgctrl__rail--alpha',
+            ref: aRailRef,
+            onPointerDown: onAlphaDown,
+            tabIndex: 0,
+            role: 'slider',
+            'aria-valuenow': Math.round((draftAlpha || 0) * 100),
+            onKeyDown: (event) => {
+              if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                setDraftAlpha((prev) => Math.min(1, (prev || 0) + 0.05));
+              } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                setDraftAlpha((prev) => Math.max(0, (prev || 0) - 0.05));
+              }
+            },
+          }, [
+            h('span', { className: 'pwpl-bgctrl__rail-check' }),
+            h('span', { className: 'pwpl-bgctrl__rail-overlay', style: { background: `linear-gradient(to bottom, ${rgbaFromHsv(draftHue || 0, draftSat || 0, draftVal || 0, 1)}, ${rgbaFromHsv(draftHue || 0, draftSat || 0, draftVal || 0, 0)})` } }),
+            h('span', { className: 'pwpl-bgctrl__rail-thumb', style: { top: `${(1 - (draftAlpha || 0)) * 100}%` } }),
+          ]),
+        ]),
+        h('span', { className: 'pwpl-bgctrl__pointer', style: pointerStyle }),
+      ] : (normalizedValue ?
+        h('span', { className: 'pwpl-bgctrl__fill-text is-active' }, normalizedValue.toUpperCase()) :
+        h('button', {
+          type: 'button',
+          className: 'pwpl-bgctrl__add-btn',
+          onClick: handleAddClick,
+        }, '+ ' + (label ? `Add ${label.toLowerCase()}` : 'Add color'))
+      )),
+      isEditing ? h('div', { className: 'pwpl-bgctrl__actions' }, [
+        h('button', { type: 'button', className: 'button button-primary pwpl-bgctrl__action', onClick: handleSave }, 'Save color'),
+        h('button', { type: 'button', className: 'button pwpl-bgctrl__action', onClick: handleCancel }, 'Cancel'),
+      ]) : h('div', { className: 'pwpl-bgctrl__swatches-row' }, [
+        h('button', {
+          type: 'button',
+          className: classNames('pwpl-bgctrl__swatch', 'is-custom', isCustomActive ? 'is-active' : ''),
+          onClick: handleAddClick,
+          'aria-pressed': isCustomActive,
+        }, 'Custom'),
+        ...swatchButtons,
+      ]),
+    ]);
+  }
+
+  function BackgroundTabsSection({
+    id,
+    label = '',
+    colorLabel = '',
+    colorValue = '',
+    onColorChange,
+    colorName,
+    gradient = {},
+  } = {}){
+    const gradientNames = gradient.names || {};
+    const gradientType = gradient.type || '';
+    const defaultType = gradient.defaultType || 'linear';
+    const [activeTab, setActiveTab] = useState(gradientType ? 'gradient' : 'color');
+
+    useEffect(() => {
+      const next = gradientType ? 'gradient' : 'color';
+      if (next !== activeTab) {
+        setActiveTab(next);
+      }
+    }, [gradientType]);
+
+    const handleTabChange = (tabId) => {
+      if (tabId === activeTab) {
+        return;
+      }
+      if (tabId === 'color') {
+        setActiveTab('color');
+        if (typeof gradient.onTypeChange === 'function') {
+          gradient.onTypeChange('');
+        }
+        return;
+      }
+      setActiveTab('gradient');
+      if (!gradient.type && typeof gradient.onTypeChange === 'function') {
+        gradient.onTypeChange(defaultType);
+      }
+    };
+
+    const colorPanel = h('div', { className: 'pwpl-bgctrl__panel is-color' }, [
+      h(BackgroundColorPanel, {
+        label: colorLabel || 'Background color',
+        value: colorValue,
+        onChange: onColorChange,
+      }),
+    ]);
+
+    const gradientActive = activeTab === 'gradient' && !!gradient.type;
+    const gradientPreviewStyle = buildGradientPreviewStyle({
+      type: gradient.type || defaultType,
+      start: gradient.start,
+      end: gradient.end,
+      angle: gradient.angle,
+      startPos: gradient.startPos,
+      endPos: gradient.endPos,
+    });
+    const gradientOptions = gradient.typeOptions || GRADIENT_TYPE_OPTIONS;
+    const previewLabel = (!gradient.start && !gradient.end) ? 'Add gradient colors' : null;
+    const renderRangeControl = (config, shouldRender) => {
+      if (!config || !config.name) {
+        return null;
+      }
+      if (shouldRender) {
+        return RangeValueRow(config);
+      }
+      return HiddenInput({ name: config.name, value: '' });
+    };
+    const gradientPanel = h('div', { className: 'pwpl-bgctrl__panel is-gradient' }, [
+      h('div', { className: 'pwpl-bgctrl__preview', style: gradientPreviewStyle },
+        previewLabel ? h('span', { className: 'pwpl-bgctrl__preview-text' }, previewLabel) : null
+      ),
+      h('div', { className: 'pwpl-bgctrl__gradient-swatches' }, [
+        h('div', { className: 'pwpl-bgctrl__gradient-field' },
+          h(ColorPaletteControl, {
+            label: 'Start color',
+            value: gradient.start || '',
+            onChange: gradient.onStartChange,
+            allowAlpha: false,
+          })
+        ),
+        h('div', { className: 'pwpl-bgctrl__gradient-field' },
+          h(ColorPaletteControl, {
+            label: 'End color',
+            value: gradient.end || '',
+            onChange: gradient.onEndChange,
+            allowAlpha: false,
+          })
+        ),
+      ]),
+      h('div', { className: 'pwpl-bgctrl__field' }, [
+        h('label', { className: 'components-base-control__label' }, 'Gradient Type'),
+        h('select', {
+          className: 'pwpl-v1-select',
+          value: gradient.type || defaultType,
+          onChange: (event) => {
+            const nextType = event && event.target ? event.target.value : '';
+            if (typeof gradient.onTypeChange === 'function') {
+              gradient.onTypeChange(nextType);
+            }
+          },
+        }, gradientOptions.map((option) =>
+          h('option', { key: option.value, value: option.value }, option.label)
+        )),
+      ]),
+      renderRangeControl({
+        label: 'Gradient direction',
+        name: gradientNames.angle,
+        value: gradient.angle,
+        onChange: gradient.onAngleChange,
+        min: 0,
+        max: 360,
+        step: 1,
+        unit: '°',
+      }, gradientActive && gradient.showAngle),
+      renderRangeControl({
+        label: 'Start position (%)',
+        name: gradientNames.startPos,
+        value: gradient.startPos,
+        onChange: gradient.onStartPosChange,
+        min: 0,
+        max: 100,
+        step: 1,
+        unit: '%',
+      }, gradientActive),
+      renderRangeControl({
+        label: 'End position (%)',
+        name: gradientNames.endPos,
+        value: gradient.endPos,
+        onChange: gradient.onEndPosChange,
+        min: 0,
+        max: 100,
+        step: 1,
+        unit: '%',
+      }, gradientActive),
+    ]);
+
+    const tabs = h('div', { className: 'pwpl-bgctrl__tabs', role: 'tablist' },
+      BACKGROUND_TABS.map((tab) => h('button', {
+        key: tab.id,
+        type: 'button',
+        role: 'tab',
+        className: classNames('pwpl-bgctrl__tab', activeTab === tab.id ? 'is-active' : ''),
+        'aria-selected': activeTab === tab.id,
+        onClick: () => handleTabChange(tab.id),
+      }, tab.label))
+    );
+
+    const hiddenFields = [
+      colorName ? HiddenInput({ name: colorName, value: colorValue || '' }) : null,
+      gradientNames.type ? HiddenInput({ name: gradientNames.type, value: gradientActive ? (gradient.type || defaultType) : '' }) : null,
+      gradientNames.start ? HiddenInput({ name: gradientNames.start, value: gradientActive ? (gradient.start || '') : '' }) : null,
+      gradientNames.end ? HiddenInput({ name: gradientNames.end, value: gradientActive ? (gradient.end || '') : '' }) : null,
+    ];
+
+    return h('div', { className: 'pwpl-bgctrl', id }, [
+      h('div', { className: 'pwpl-bgctrl__head' }, [
+        h('span', { className: 'pwpl-bgctrl__title' }, label || 'Background'),
+      ]),
+      tabs,
+      activeTab === 'gradient' ? gradientPanel : colorPanel,
+      ...hiddenFields,
+    ]);
+  }
+
   const ENABLE_TYPO_STYLE_FLAGS = true;
   const ENABLE_TYPO_ALIGNMENT = true;
   const ENABLE_TYPO_TRACKING = true;
@@ -599,6 +1418,131 @@
     { label: 'Violet', value: '#a855f7' },
     { label: 'No color', value: '' },
   ];
+  function InlineColorPalette( props = {} ) {
+    const {
+      label,
+      value,
+      onChange,
+      allowAlpha = false,
+      className = '',
+      placeholder = allowAlpha ? 'rgba(0,0,0,1)' : '#000000',
+      'aria-label': ariaLabel,
+    } = props;
+    const normalizedValue = normalizeColorValue(value, allowAlpha);
+    const [isOpen, setIsOpen] = useState(false);
+    const [draft, setDraft] = useState(normalizedValue);
+
+    useEffect(() => {
+      setDraft(normalizedValue);
+    }, [normalizedValue]);
+
+    const commit = (nextValue) => {
+      const normalized = normalizeColorValue(nextValue, allowAlpha);
+      if (typeof onChange === 'function') {
+        onChange(normalized);
+      }
+    };
+
+    const handleSwatchSelect = (nextValue) => {
+      setDraft(nextValue);
+      commit(nextValue);
+    };
+
+    const togglePopover = () => setIsOpen((open) => !open);
+    const handleInputChange = (event) => {
+      const next = event && event.target ? event.target.value : event;
+      setDraft(next || '');
+    };
+    const applyDraft = () => {
+      commit(draft);
+      setIsOpen(false);
+    };
+    const cancelDraft = () => {
+      setDraft(normalizedValue);
+      setIsOpen(false);
+    };
+    const handlePickerChange = (next) => {
+      const normalized = normalizeColorValue(next, allowAlpha);
+      setDraft(normalized);
+      commit(normalized);
+    };
+
+    useEffect(() => {
+      if (!isOpen) {
+        return undefined;
+      }
+      const handleKeyDown = (event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          cancelDraft();
+        }
+      };
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, normalizedValue]);
+
+    const activeValue = normalizeColorValue(draft || normalizedValue, allowAlpha);
+    const pickerColor = activeValue || '#2563eb';
+    const swatchButtons = DEFAULT_COLOR_SWATCHES.map((swatch) => {
+      const swatchValue = swatch.value || '';
+      const isActive = activeValue === swatchValue;
+      const btnClass = [
+        'pwpl-swatch__btn',
+        isActive ? 'pwpl-swatch--selected' : '',
+        swatchValue === '' ? 'pwpl-swatch--none' : '',
+      ].filter(Boolean).join(' ');
+      return h('button', {
+        key: swatchValue || 'none',
+        type: 'button',
+        className: btnClass,
+        style: swatchValue ? { backgroundColor: swatchValue } : undefined,
+        'aria-pressed': isActive,
+        onClick: () => handleSwatchSelect(swatchValue),
+        title: swatchValue ? `${swatch.label} (${swatchValue})` : 'No color',
+      }, swatchValue ? null : h('span', { 'aria-hidden': 'true' }, '×'));
+    });
+
+    return h('div', { className: classNames('pwpl-palette', className) }, [
+      label ? h('div', { className: 'pwpl-palette__label' }, label) : null,
+      h('div', {
+        className: 'pwpl-palette__row',
+        role: 'listbox',
+        'aria-label': ariaLabel || label || 'Color palette',
+      }, [
+        ...swatchButtons,
+        h('button', {
+          type: 'button',
+          className: 'pwpl-palette__custom',
+          onClick: togglePopover,
+          'aria-pressed': isOpen,
+        }, 'Custom'),
+      ]),
+      isOpen ? h('div', { className: 'pwpl-palette__popover' }, [
+        h('div', { className: 'pwpl-palette__header' }, [
+          h('input', {
+            type: 'text',
+            value: draft || '',
+            onChange: handleInputChange,
+            placeholder,
+          }),
+          h('button', { type: 'button', className: 'pwpl-palette__ok', onClick: applyDraft }, 'Apply'),
+          h('button', { type: 'button', className: 'pwpl-palette__cancel', onClick: cancelDraft }, 'Cancel'),
+        ]),
+        h(ColorPicker, {
+          color: pickerColor,
+          onChangeComplete: handlePickerChange,
+          onChange: handlePickerChange,
+          disableAlpha: !allowAlpha,
+        }),
+      ]) : null,
+    ]);
+  }
+  if (!ColorPaletteControl) {
+    ColorPaletteControl = InlineColorPalette;
+    if (!w.PWPL_ColorPalette) {
+      w.PWPL_ColorPalette = InlineColorPalette;
+    }
+  }
 
   function SegmentedButtonGroup({ items = [], role = 'group', className = '', ariaLabel }){
     if (!items.length) {
@@ -863,16 +1807,6 @@
           allowAlpha: false,
           'aria-label': `${label} text color`,
         })),
-        h('div', { className: 'pwpl-typo__swatches' },
-          DEFAULT_COLOR_SWATCHES.map((swatch) => h('button', {
-            type: 'button',
-            key: `${idKey}-${swatch.value || 'none'}`,
-            className: classNames('pwpl-typo__swatch', (color || '') === (swatch.value || '') ? 'is-active' : '', !swatch.value ? 'is-none' : ''),
-            'aria-label': swatch.value ? `${swatch.label} (${swatch.value})` : `${swatch.label} (reset color)`,
-            style: { '--pwpl-swatch-color': swatch.value || 'transparent' },
-            onClick: () => handleColorChange(swatch.value || ''),
-          }, swatch.value ? null : h('span', { className: 'pwpl-typo__swatch-clear' }, '×')))
-        ),
       ]));
     }
 
@@ -2485,121 +3419,79 @@
       openFirstMatch(sections);
     };
 
-    const showTopGrad = !!topType;
     const showTopAngle = topType === 'linear';
-    const topSection = h('div', { className:'pwpl-v1-grid' }, [
-      paletteField('Top background', topBg, handleColorChange(setTopBg, 'card.colors.top_bg')),
-      HiddenInput({ name:'pwpl_table[card][colors][top_bg]', value: topBg }),
-      h('div', null, [
-        h('label', { className:'components-base-control__label' }, 'Top gradient type'),
-        h('select', {
-          value: topType,
-          onChange:(e)=> {
-            const next = e.target.value;
-            setTopType(next);
-            updatePreviewVars({ 'card.colors.top_grad.type': next || '' });
-          }
-        }, [
-          h('option', { value:'' }, 'None'),
-          h('option', { value:'linear' }, 'Linear'),
-          h('option', { value:'radial' }, 'Radial'),
-          h('option', { value:'conic' }, 'Conic'),
-        ]),
-        HiddenInput({ name:'pwpl_table[card][colors][top_grad][type]', value: topType }),
-      ]),
-      showTopGrad ? paletteField('Top gradient start', topStart, handleColorChange(setTopStart, 'card.colors.top_grad.start')) : null,
-      HiddenInput({ name:'pwpl_table[card][colors][top_grad][start]', value: showTopGrad ? topStart : '' }),
-      showTopGrad ? paletteField('Top gradient end', topEnd, handleColorChange(setTopEnd, 'card.colors.top_grad.end')) : null,
-      HiddenInput({ name:'pwpl_table[card][colors][top_grad][end]', value: showTopGrad ? topEnd : '' }),
-      showTopGrad && showTopAngle ? RangeValueRow({
-        label: 'Angle (deg)',
-        name: 'pwpl_table[card][colors][top_grad][angle]',
-        value: topAngle,
-        onChange: setTopAngle,
-        min: 0,
-        max: 360,
-        step: 1,
-        unit: '°',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][top_grad][angle]', value: '' }),
-      showTopGrad ? RangeValueRow({
-        label: 'Start position (%)',
-        name: 'pwpl_table[card][colors][top_grad][start_pos]',
-        value: topSP,
-        onChange: setTopSP,
-        min: 0,
-        max: 100,
-        step: 1,
-        unit: '%',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][top_grad][start_pos]', value: '' }),
-      showTopGrad ? RangeValueRow({
-        label: 'End position (%)',
-        name: 'pwpl_table[card][colors][top_grad][end_pos]',
-        value: topEP,
-        onChange: setTopEP,
-        min: 0,
-        max: 100,
-        step: 1,
-        unit: '%',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][top_grad][end_pos]', value: '' }),
-    ]);
+    const topSection = BackgroundTabsSection({
+      id: 'pwpl-bg-top',
+      label: 'Top Background',
+      colorLabel: 'Top background',
+      colorValue: topBg,
+      onColorChange: handleColorChange(setTopBg, 'card.colors.top_bg'),
+      colorName: 'pwpl_table[card][colors][top_bg]',
+      gradient: {
+        type: topType,
+        defaultType: 'linear',
+        onTypeChange: (next) => {
+          setTopType(next);
+          updatePreviewVars({ 'card.colors.top_grad.type': next || '' });
+        },
+        names: {
+          type: 'pwpl_table[card][colors][top_grad][type]',
+          start: 'pwpl_table[card][colors][top_grad][start]',
+          end: 'pwpl_table[card][colors][top_grad][end]',
+          angle: 'pwpl_table[card][colors][top_grad][angle]',
+          startPos: 'pwpl_table[card][colors][top_grad][start_pos]',
+          endPos: 'pwpl_table[card][colors][top_grad][end_pos]',
+        },
+        start: topStart,
+        onStartChange: handleColorChange(setTopStart, 'card.colors.top_grad.start'),
+        end: topEnd,
+        onEndChange: handleColorChange(setTopEnd, 'card.colors.top_grad.end'),
+        angle: topAngle,
+        onAngleChange: setTopAngle,
+        showAngle: showTopAngle,
+        startPos: topSP,
+        onStartPosChange: setTopSP,
+        endPos: topEP,
+        onEndPosChange: setTopEP,
+      },
+    });
 
-    const showSpecsGrad = !!specsType;
     const showSpecsAngle = specsType === 'linear';
-    const specsSection = h('div', { className:'pwpl-v1-grid' }, [
-      paletteField('Specs background', specsBg, handleColorChange(setSpecsBg, 'card.colors.specs_bg')),
-      HiddenInput({ name:'pwpl_table[card][colors][specs_bg]', value: specsBg }),
-      h('div', null, [
-        h('label', { className:'components-base-control__label' }, 'Specs gradient type'),
-        h('select', {
-          value: specsType,
-          onChange:(e)=> {
-            const next = e.target.value;
-            setSpecsType(next);
-            updatePreviewVars({ 'card.colors.specs_grad.type': next || '' });
-          }
-        }, [
-          h('option', { value:'' }, 'None'),
-          h('option', { value:'linear' }, 'Linear'),
-          h('option', { value:'radial' }, 'Radial'),
-          h('option', { value:'conic' }, 'Conic'),
-        ]),
-        HiddenInput({ name:'pwpl_table[card][colors][specs_grad][type]', value: specsType }),
-      ]),
-      showSpecsGrad ? paletteField('Specs gradient start', specsStart, handleColorChange(setSpecsStart, 'card.colors.specs_grad.start')) : null,
-      HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start]', value: showSpecsGrad ? specsStart : '' }),
-      showSpecsGrad ? paletteField('Specs gradient end', specsEnd, handleColorChange(setSpecsEnd, 'card.colors.specs_grad.end')) : null,
-      HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end]', value: showSpecsGrad ? specsEnd : '' }),
-      showSpecsGrad && showSpecsAngle ? RangeValueRow({
-        label: 'Angle (deg)',
-        name: 'pwpl_table[card][colors][specs_grad][angle]',
-        value: specsAngle,
-        onChange: setSpecsAngle,
-        min: 0,
-        max: 360,
-        step: 1,
-        unit: '°',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][specs_grad][angle]', value: '' }),
-      showSpecsGrad ? RangeValueRow({
-        label: 'Start position (%)',
-        name: 'pwpl_table[card][colors][specs_grad][start_pos]',
-        value: specsSP,
-        onChange: setSpecsSP,
-        min: 0,
-        max: 100,
-        step: 1,
-        unit: '%',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start_pos]', value: '' }),
-      showSpecsGrad ? RangeValueRow({
-        label: 'End position (%)',
-        name: 'pwpl_table[card][colors][specs_grad][end_pos]',
-        value: specsEP,
-        onChange: setSpecsEP,
-        min: 0,
-        max: 100,
-        step: 1,
-        unit: '%',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end_pos]', value: '' }),
-    ]);
+    const specsSection = BackgroundTabsSection({
+      id: 'pwpl-bg-specs',
+      label: 'Specs Background',
+      colorLabel: 'Specs background',
+      colorValue: specsBg,
+      onColorChange: handleColorChange(setSpecsBg, 'card.colors.specs_bg'),
+      colorName: 'pwpl_table[card][colors][specs_bg]',
+      gradient: {
+        type: specsType,
+        defaultType: 'linear',
+        onTypeChange: (next) => {
+          setSpecsType(next);
+          updatePreviewVars({ 'card.colors.specs_grad.type': next || '' });
+        },
+        names: {
+          type: 'pwpl_table[card][colors][specs_grad][type]',
+          start: 'pwpl_table[card][colors][specs_grad][start]',
+          end: 'pwpl_table[card][colors][specs_grad][end]',
+          angle: 'pwpl_table[card][colors][specs_grad][angle]',
+          startPos: 'pwpl_table[card][colors][specs_grad][start_pos]',
+          endPos: 'pwpl_table[card][colors][specs_grad][end_pos]',
+        },
+        start: specsStart,
+        onStartChange: handleColorChange(setSpecsStart, 'card.colors.specs_grad.start'),
+        end: specsEnd,
+        onEndChange: handleColorChange(setSpecsEnd, 'card.colors.specs_grad.end'),
+        angle: specsAngle,
+        onAngleChange: setSpecsAngle,
+        showAngle: showSpecsAngle,
+        startPos: specsSP,
+        onStartPosChange: setSpecsSP,
+        endPos: specsEP,
+        onEndPosChange: setSpecsEP,
+      },
+    });
 
     const keylineSection = h('div', { className:'pwpl-v1-grid' }, [
       paletteField('Keyline color', kColor, handleColorChange(setKColor)),
