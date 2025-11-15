@@ -3,7 +3,7 @@
   const element = wp.element || {};
   const { createElement: h, useState, useEffect, useRef } = element;
 
-  const REQUIRED_COMPONENTS = [ 'Card', 'CardBody', 'TabPanel', 'TextControl', 'ColorPicker' ];
+  const REQUIRED_COMPONENTS = [ 'Card', 'CardBody', 'TabPanel', 'TextControl' ];
   const getWPComponents = () => (w.wp && w.wp.components) || {};
   const hasRequiredComponents = () => {
     const cmp = getWPComponents();
@@ -176,6 +176,18 @@
     };
   };
   const hsvToHex = (h = 0, s = 0, v = 0) => rgbToHex(hsvToRgb(h, s, v));
+  const rgbaToHex8 = (r = 0, g = 0, b = 0, a = 1) => {
+    const toHex = (value) => {
+      const clamped = Math.max(0, Math.min(255, Math.round(value)));
+      return clamped.toString(16).padStart(2, '0');
+    };
+    const alphaByte = Math.max(0, Math.min(255, Math.round(clamp01(a) * 255)));
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}${toHex(alphaByte)}`;
+  };
+  const hsvToHex8 = (h = 0, s = 0, v = 0, a = 1) => {
+    const { r, g, b } = hsvToRgb(h, s, v);
+    return rgbaToHex8(r, g, b, a);
+  };
   const hexToHsv = (hex) => {
     const rgb = hexToRgb(hex);
     return rgbToHsv(rgb.r, rgb.g, rgb.b);
@@ -210,24 +222,6 @@
   };
   const FallbackNumberControl = (props = {}) => {
     return FallbackTextControl( { ...props, type: 'number' } );
-  };
-  const FallbackColorPicker = (props = {}) => {
-    const { color, onChangeComplete, onChange, className = '' } = props;
-    const handleChange = ( event ) => {
-      const next = event && event.target ? event.target.value : event;
-      if ( typeof onChangeComplete === 'function' ) {
-        onChangeComplete( next );
-      } else if ( typeof onChange === 'function' ) {
-        onChange( next );
-      }
-    };
-    return h('input', {
-      type: 'text',
-      value: typeof color === 'string' ? color : '',
-      onChange: handleChange,
-      placeholder: '#FFFFFF',
-      className: classNames( 'pwpl-colorpicker-fallback components-color-picker__input', className ),
-    });
   };
   const FallbackRangeControl = (props = {}) => {
     const { value, onChange, min, max, step, disabled, className = '' } = props;
@@ -265,7 +259,6 @@
   const TabPanel = createComponentProxy( 'TabPanel', FallbackTabPanel );
   const TextControl = createComponentProxy( 'TextControl', FallbackTextControl );
   const NumberControl = createComponentProxy( '__experimentalNumberControl', FallbackNumberControl );
-  const ColorPicker = createComponentProxy( 'ColorPicker', FallbackColorPicker );
   const RangeControl = createComponentProxy( 'RangeControl', FallbackRangeControl );
   const BaseColorPalette = w.PWPL_ColorPalette;
   const PaletteFallback = function PaletteFallback( props ) {
@@ -812,6 +805,9 @@
     label = 'Background color',
     value = '',
     onChange,
+    autoOpen = false,
+    onAfterSave,
+    onAfterCancel,
   } = {}){
     const normalizedValue = normalizeColorValue(value);
     const parsed = parseCssColor(normalizedValue || DEFAULT_CUSTOM_COLOR);
@@ -829,6 +825,7 @@
     const [copied, setCopied] = useState(false);
     const [showSaved, setShowSaved] = useState(false);
     const savedTickRef = useRef(null);
+    const autoOpenRef = useRef(false);
 
     useEffect(() => {
       const normalized = normalizeColorValue(value);
@@ -862,6 +859,12 @@
       try { document.body.classList.add('pwpl-bg-editing'); } catch(e) {}
       setIsEditing(true);
     };
+    useEffect(() => {
+      if (autoOpen && !autoOpenRef.current) {
+        autoOpenRef.current = true;
+        openEditor();
+      }
+    }, [autoOpen]);
 
     const handleAddClick = () => {
       openEditor();
@@ -892,6 +895,9 @@
       setCopied(false);
       try { document.body.classList.remove('pwpl-bg-editing'); } catch(e) {}
       setIsEditing(false);
+      if (typeof onAfterSave === 'function') {
+        onAfterSave(out);
+      }
     };
 
     const handleCancel = () => {
@@ -906,6 +912,9 @@
       setCopied(false);
       try { document.body.classList.remove('pwpl-bg-editing'); } catch(e) {}
       setIsEditing(false);
+      if (typeof onAfterCancel === 'function') {
+        onAfterCancel();
+      }
     };
 
     const handleFillClick = () => {
@@ -914,7 +923,15 @@
       }
     };
 
-    const currentDraftHex = hsvToHex(draftHue || 0, draftSat || 0, draftVal || 0);
+    const rawHue = Number.isFinite(draftHue) ? draftHue : 0;
+    const safeHue = ((rawHue % 360) + 360) % 360;
+    const pointerHue = Math.max(0, Math.min(360, rawHue));
+    const safeSat = clamp01(draftSat || 0);
+    const safeVal = clamp01(draftVal || 0);
+    const safeAlpha = clamp01(draftAlpha != null ? draftAlpha : 1);
+    const currentDraftHex = hsvToHex(safeHue, safeSat, safeVal);
+    const currentDraftHex8 = hsvToHex8(safeHue, safeSat, safeVal, safeAlpha).toUpperCase();
+    const currentDraftRgba = rgbaFromHsv(safeHue, safeSat, safeVal, safeAlpha);
     useEffect(() => {
       setHexField(currentDraftHex.toUpperCase());
     }, [currentDraftHex]);
@@ -1041,34 +1058,96 @@
       }, swatch.value ? null : h('span', { className: 'pwpl-bgctrl__swatch-clear', 'aria-hidden': 'true' }, '×'));
     });
 
-    const rootClass = classNames('pwpl-bgctrl__color', isEditing ? 'is-editing' : '');
-    // Panel = saturation across at current value (brightness): hsv(h, 0..1, v)
-    const baseHueBand = 'linear-gradient(90deg, #ff0000 0%, #ffff00 16%, #00ff00 33%, #00ffff 50%, #0000ff 66%, #ff00ff 83%, #ff0000 100%)';
-    const valueOverlay = 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.9) 100%)';
-    const satOverlay = `linear-gradient(0deg, rgba(255,255,255,${1 - (draftSat || 0)}), rgba(255,255,255,${1 - (draftSat || 0)}))`;
-    const pickerBg = [baseHueBand, valueOverlay, satOverlay].join(', ');
-    const pointerStyle = {
-      left: `${((draftHue || 0) / 360) * 100}%`,
-      top: `${(1 - (draftVal || 0)) * 100}%`,
+    // Editor-specific swatches: apply to draft (do not commit / close)
+    const applyDraftFromColor = (colorValue) => {
+      const normalized = normalizeColorValue(colorValue);
+      const col = parseCssColor(normalized || DEFAULT_CUSTOM_COLOR);
+      const hsv = rgbToHsv(col.r, col.g, col.b);
+      setDraftHue(hsv.h || 0);
+      setDraftSat(hsv.s || 0);
+      setDraftVal(hsv.v || 0);
+      setDraftAlpha(col.a != null ? clampAlpha(col.a) : 1);
+      setHexField(hsvToHex(hsv.h || 0, hsv.s || 0, hsv.v || 0).toUpperCase());
     };
-    const displayValue = (draftAlpha != null && draftAlpha < 1)
-      ? rgbaFromHsv(draftHue || 0, draftSat || 0, draftVal || 0, draftAlpha)
-      : hexField;
+    const swatchButtonsEditing = DEFAULT_COLOR_SWATCHES.map((swatch) => {
+      const swatchValue = swatch.value || '';
+      const isActive = (!!swatchValue && swatchValue.toLowerCase() === currentDraftHex.toLowerCase());
+      const className = classNames('pwpl-bgctrl__swatch', isActive ? 'is-active' : '', !swatchValue ? 'is-none' : '');
+      return h('button', {
+        key: `bgcolor-edit-${swatch.label}`,
+        type: 'button',
+        className,
+        style: swatchValue ? { backgroundColor: swatchValue } : undefined,
+        'aria-pressed': isActive,
+        onClick: () => applyDraftFromColor(swatchValue),
+        title: swatch.value ? `${swatch.label} (${swatch.value})` : 'No color',
+      }, swatch.value ? null : h('span', { className: 'pwpl-bgctrl__swatch-clear', 'aria-hidden': 'true' }, '×'));
+    });
+
+    const rootClass = classNames('pwpl-bgctrl__color', isEditing ? 'is-editing' : '');
+    const baseHueBand = 'linear-gradient(90deg, #f00 0%, #ff0 16%, #0f0 33%, #0ff 50%, #00f 66%, #f0f 83%, #f00 100%)';
+    const valueOverlay = 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)';
+    const satFade = Math.max(0, Math.min(1, 1 - safeSat));
+    const satOverlay = `linear-gradient(0deg, rgba(255,255,255,${satFade}), rgba(255,255,255,${satFade}))`;
+    // Order matters: top-most first. Put saturation overlay on top,
+    // then fixed value darkening, with the hue band at the bottom.
+    const pickerBg = [satOverlay, valueOverlay, baseHueBand].join(', ');
+    const pointerStyle = {
+      left: `${(pointerHue / 360) * 100}%`,
+      top: `${(1 - safeVal) * 100}%`,
+    };
+    // Show HEX for both cases; if alpha < 1 use 8-digit HEX (#RRGGBBAA)
+    const displayValue = safeAlpha < 1 ? currentDraftHex8 : hexField;
+    const saturationGradientStart = hsvToHex(safeHue, 1, safeVal);
+    const saturationTrack = `linear-gradient(to bottom, ${saturationGradientStart}, #ffffff)`;
+    const alphaGradient = `linear-gradient(to bottom, ${rgbaFromHsv(safeHue, safeSat, safeVal, 1)}, ${rgbaFromHsv(safeHue, safeSat, safeVal, 0)})`;
+
+    const copyText = (text) => {
+      if (!text) return false;
+      const markCopied = () => { setCopied(true); setTimeout(() => setCopied(false), 1200); };
+      const fallback = (val) => {
+        try {
+          const el = document.createElement('textarea');
+          el.value = String(val || '');
+          el.setAttribute('readonly', '');
+          el.style.position = 'absolute';
+          el.style.left = '-9999px';
+          document.body.appendChild(el);
+          el.select();
+          el.setSelectionRange(0, el.value.length);
+          document.execCommand('copy');
+          document.body.removeChild(el);
+          markCopied();
+          return true;
+        } catch (e) { return false; }
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          markCopied();
+        }).catch(() => { fallback(text); });
+        return true;
+      }
+      return fallback(text);
+    };
 
     const handleCopyValue = (event) => {
       if (event) {
         event.preventDefault();
         event.stopPropagation();
       }
-      if (!displayValue) {
-        return;
+      copyText(displayValue);
+    };
+    const handleCopyOverlayValue = (event) => {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
       }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(displayValue).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1200);
-        }).catch(() => {});
-      }
+      const base = normalizedValue || currentDraftHex;
+      const col = parseCssColor(base);
+      const out = (col.a != null && col.a < 1)
+        ? rgbaToHex8(col.r, col.g, col.b, col.a).toUpperCase()
+        : rgbToHex({ r: col.r, g: col.g, b: col.b }).toUpperCase();
+      copyText(out);
     };
 
     const handlePanelKeyDown = (event) => {
@@ -1132,14 +1211,28 @@
           }
         },
       }, isEditing ? [
-        h('button', {
-          type: 'button',
-          className: classNames('pwpl-bgctrl__pill', copied ? 'is-copied' : '', showSaved ? 'is-saved' : ''),
-          onClick: handleCopyValue,
+        h('div', {
+          className: 'pwpl-bgctrl__pill-row',
+          onPointerDown: (event) => event.stopPropagation(),
         }, [
-          h('span', { className: 'pwpl-bgctrl__pill-value' }, displayValue),
-          showSaved ? h('span', { className: 'pwpl-bgctrl__pill-tick', 'aria-hidden': 'true' }, '✓') : null,
-          copied ? h('span', { className: 'pwpl-bgctrl__pill-copy' }, 'Copied!') : null,
+          h('span', {
+            className: 'pwpl-bgctrl__swatch-preview',
+            'aria-hidden': 'true',
+          }, h('span', {
+            className: 'pwpl-bgctrl__swatch-preview-fill',
+            style: { background: currentDraftRgba },
+          })),
+          h('button', {
+            type: 'button',
+            className: classNames('pwpl-bgctrl__pill', copied ? 'is-copied' : '', showSaved ? 'is-saved' : ''),
+            onClick: handleCopyValue,
+            onPointerUp: handleCopyValue,
+            title: 'Click to copy color',
+          }, [
+            h('span', { className: 'pwpl-bgctrl__pill-value' }, displayValue),
+            showSaved ? h('span', { className: 'pwpl-bgctrl__pill-tick', 'aria-hidden': 'true' }, '✓') : null,
+            copied ? h('span', { className: 'pwpl-bgctrl__pill-copy' }, 'Copied!') : null,
+          ]),
         ]),
         h('div', { className: 'pwpl-bgctrl__rails' }, [
           h('div', {
@@ -1148,7 +1241,10 @@
             onPointerDown: onSatDown,
             tabIndex: 0,
             role: 'slider',
-            'aria-valuenow': Math.round((draftSat || 0) * 100),
+            'aria-label': 'Saturation',
+            'aria-valuemin': 0,
+            'aria-valuemax': 100,
+            'aria-valuenow': Math.round(safeSat * 100),
             onKeyDown: (event) => {
               if (event.key === 'ArrowUp') {
                 event.preventDefault();
@@ -1158,15 +1254,18 @@
                 setDraftSat((prev) => Math.max(0, (prev || 0) - 0.05));
               }
             },
-            style: { background: `linear-gradient(to bottom, ${hsvToHex(draftHue || 0, 1, draftVal || 0)}, #ffffff)` },
-          }, h('span', { className: 'pwpl-bgctrl__rail-thumb', style: { top: `${(1 - (draftSat || 0)) * 100}%` } })),
+            style: { backgroundImage: saturationTrack },
+          }, h('span', { className: 'pwpl-bgctrl__rail-thumb', style: { top: `${(1 - safeSat) * 100}%` } })),
           h('div', {
             className: 'pwpl-bgctrl__rail pwpl-bgctrl__rail--alpha',
             ref: aRailRef,
             onPointerDown: onAlphaDown,
             tabIndex: 0,
             role: 'slider',
-            'aria-valuenow': Math.round((draftAlpha || 0) * 100),
+            'aria-label': 'Alpha',
+            'aria-valuemin': 0,
+            'aria-valuemax': 100,
+            'aria-valuenow': Math.round(safeAlpha * 100),
             onKeyDown: (event) => {
               if (event.key === 'ArrowUp') {
                 event.preventDefault();
@@ -1178,23 +1277,50 @@
             },
           }, [
             h('span', { className: 'pwpl-bgctrl__rail-check' }),
-            h('span', { className: 'pwpl-bgctrl__rail-overlay', style: { background: `linear-gradient(to bottom, ${rgbaFromHsv(draftHue || 0, draftSat || 0, draftVal || 0, 1)}, ${rgbaFromHsv(draftHue || 0, draftSat || 0, draftVal || 0, 0)})` } }),
-            h('span', { className: 'pwpl-bgctrl__rail-thumb', style: { top: `${(1 - (draftAlpha || 0)) * 100}%` } }),
+            h('span', { className: 'pwpl-bgctrl__rail-overlay', style: { backgroundImage: alphaGradient } }),
+            h('span', { className: 'pwpl-bgctrl__rail-thumb', style: { top: `${(1 - safeAlpha) * 100}%` } }),
           ]),
         ]),
         h('span', { className: 'pwpl-bgctrl__pointer', style: pointerStyle }),
       ] : (normalizedValue ?
-        h('span', { className: 'pwpl-bgctrl__fill-text is-active' }, normalizedValue.toUpperCase()) :
+        h('button', {
+          type: 'button',
+          className: classNames('pwpl-bgctrl__pill','pwpl-bgctrl__pill--overlay', copied ? 'is-copied' : ''),
+          onPointerDown: (e) => e.stopPropagation(),
+          onClick: handleCopyOverlayValue,
+          onPointerUp: handleCopyOverlayValue,
+          title: 'Click to copy color',
+        }, [
+          (function(){
+            const col = parseCssColor(normalizedValue);
+            const label = (col.a != null && col.a < 1)
+              ? rgbaToHex8(col.r, col.g, col.b, col.a).toUpperCase()
+              : rgbToHex({ r: col.r, g: col.g, b: col.b }).toUpperCase();
+            return h('span', { className: 'pwpl-bgctrl__pill-value' }, label);
+          })(),
+          copied ? h('span', { className: 'pwpl-bgctrl__pill-copy' }, 'Copied!') : null,
+        ]) :
         h('button', {
           type: 'button',
           className: 'pwpl-bgctrl__add-btn',
           onClick: handleAddClick,
         }, '+ ' + (label ? `Add ${label.toLowerCase()}` : 'Add color'))
       )),
-      isEditing ? h('div', { className: 'pwpl-bgctrl__actions' }, [
-        h('button', { type: 'button', className: 'button button-primary pwpl-bgctrl__action', onClick: handleSave }, 'Save color'),
-        h('button', { type: 'button', className: 'button pwpl-bgctrl__action', onClick: handleCancel }, 'Cancel'),
-      ]) : h('div', { className: 'pwpl-bgctrl__swatches-row' }, [
+      isEditing ? [
+        h('div', { className: 'pwpl-bgctrl__swatches-row' }, [
+          h('button', {
+            type: 'button',
+            className: classNames('pwpl-bgctrl__swatch', 'is-custom', isCustomActive ? 'is-active' : ''),
+            onClick: handleAddClick,
+            'aria-pressed': isCustomActive,
+          }, 'Custom'),
+          ...swatchButtonsEditing,
+        ]),
+        h('div', { className: 'pwpl-bgctrl__actions' }, [
+          h('button', { type: 'button', className: 'button button-primary pwpl-bgctrl__action', onClick: handleSave }, 'Save color'),
+          h('button', { type: 'button', className: 'button pwpl-bgctrl__action', onClick: handleCancel }, 'Cancel'),
+        ])
+      ] : h('div', { className: 'pwpl-bgctrl__swatches-row' }, [
         h('button', {
           type: 'button',
           className: classNames('pwpl-bgctrl__swatch', 'is-custom', isCustomActive ? 'is-active' : ''),
@@ -1282,7 +1408,8 @@
             label: 'Start color',
             value: gradient.start || '',
             onChange: gradient.onStartChange,
-            allowAlpha: false,
+            allowAlpha: true,
+            className: 'pwpl-inlinecolor--compact',
           })
         ),
         h('div', { className: 'pwpl-bgctrl__gradient-field' },
@@ -1290,7 +1417,8 @@
             label: 'End color',
             value: gradient.end || '',
             onChange: gradient.onEndChange,
-            allowAlpha: false,
+            allowAlpha: true,
+            className: 'pwpl-inlinecolor--compact',
           })
         ),
       ]),
@@ -1418,131 +1546,81 @@
     { label: 'Violet', value: '#a855f7' },
     { label: 'No color', value: '' },
   ];
-  function InlineColorPalette( props = {} ) {
+  function InlineColorPalette(props = {}) {
     const {
       label,
       value,
       onChange,
-      allowAlpha = false,
+      allowAlpha = true,
       className = '',
-      placeholder = allowAlpha ? 'rgba(0,0,0,1)' : '#000000',
-      'aria-label': ariaLabel,
     } = props;
-    const normalizedValue = normalizeColorValue(value, allowAlpha);
-    const [isOpen, setIsOpen] = useState(false);
-    const [draft, setDraft] = useState(normalizedValue);
-
-    useEffect(() => {
-      setDraft(normalizedValue);
-    }, [normalizedValue]);
-
+    const normalizedValue = normalizeColorValue(value, allowAlpha) || '';
+    const [isEditing, setIsEditing] = useState(false);
+    const previewColor = normalizedValue ? rgbaString(parseCssColor(normalizedValue)) : 'transparent';
+    const normalizedLower = normalizedValue.toLowerCase();
     const commit = (nextValue) => {
       const normalized = normalizeColorValue(nextValue, allowAlpha);
       if (typeof onChange === 'function') {
         onChange(normalized);
       }
     };
-
-    const handleSwatchSelect = (nextValue) => {
-      setDraft(nextValue);
-      commit(nextValue);
+    const handleOpen = () => setIsEditing(true);
+    const handleClose = () => setIsEditing(false);
+    const handleSwatchClick = (swatchValue) => {
+      commit(swatchValue || '');
+      setIsEditing(false);
     };
-
-    const togglePopover = () => setIsOpen((open) => !open);
-    const handleInputChange = (event) => {
-      const next = event && event.target ? event.target.value : event;
-      setDraft(next || '');
-    };
-    const applyDraft = () => {
-      commit(draft);
-      setIsOpen(false);
-    };
-    const cancelDraft = () => {
-      setDraft(normalizedValue);
-      setIsOpen(false);
-    };
-    const handlePickerChange = (next) => {
-      const normalized = normalizeColorValue(next, allowAlpha);
-      setDraft(normalized);
-      commit(normalized);
-    };
-
-    useEffect(() => {
-      if (!isOpen) {
-        return undefined;
-      }
-      const handleKeyDown = (event) => {
-        if (event.key === 'Escape') {
-          event.preventDefault();
-          cancelDraft();
-        }
-      };
-      document.addEventListener('keydown', handleKeyDown);
-      return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, normalizedValue]);
-
-    const activeValue = normalizeColorValue(draft || normalizedValue, allowAlpha);
-    const pickerColor = activeValue || '#2563eb';
+    const hasSwatchMatch = DEFAULT_COLOR_SWATCHES.some((swatch) => {
+      const swatchValue = normalizeColorValue(swatch.value || '', allowAlpha);
+      return swatchValue.toLowerCase() === normalizedLower;
+    });
     const swatchButtons = DEFAULT_COLOR_SWATCHES.map((swatch) => {
       const swatchValue = swatch.value || '';
-      const isActive = activeValue === swatchValue;
-      const btnClass = [
-        'pwpl-swatch__btn',
-        isActive ? 'pwpl-swatch--selected' : '',
-        swatchValue === '' ? 'pwpl-swatch--none' : '',
-      ].filter(Boolean).join(' ');
+      const normalizedSwatch = normalizeColorValue(swatchValue, allowAlpha);
+      const isActive = normalizedSwatch.toLowerCase() === normalizedLower;
+      const btnClass = classNames('pwpl-bgctrl__swatch', isActive ? 'is-active' : '', !swatchValue ? 'is-none' : '');
       return h('button', {
-        key: swatchValue || 'none',
+        key: swatchValue || swatch.label || 'none',
         type: 'button',
         className: btnClass,
         style: swatchValue ? { backgroundColor: swatchValue } : undefined,
         'aria-pressed': isActive,
-        onClick: () => handleSwatchSelect(swatchValue),
+        onClick: () => handleSwatchClick(swatchValue),
         title: swatchValue ? `${swatch.label} (${swatchValue})` : 'No color',
-      }, swatchValue ? null : h('span', { 'aria-hidden': 'true' }, '×'));
+      }, swatch.value ? null : h('span', { className: 'pwpl-bgctrl__swatch-clear', 'aria-hidden': 'true' }, '×'));
     });
-
-    return h('div', { className: classNames('pwpl-palette', className) }, [
-      label ? h('div', { className: 'pwpl-palette__label' }, label) : null,
-      h('div', {
-        className: 'pwpl-palette__row',
-        role: 'listbox',
-        'aria-label': ariaLabel || label || 'Color palette',
-      }, [
+    const customButton = h('button', {
+      type: 'button',
+      className: classNames('pwpl-bgctrl__swatch', 'is-custom', (!hasSwatchMatch || isEditing) ? 'is-active' : ''),
+      onClick: handleOpen,
+      'aria-pressed': !hasSwatchMatch || isEditing,
+    }, 'Custom');
+    const containerExtra = (className ? className : '') + (isEditing ? ((className ? ' ' : '') + 'is-open') : '');
+    return h('div', { className: classNames('pwpl-inlinecolor', containerExtra) }, [
+      label ? h('div', { className: 'pwpl-inlinecolor__label' }, label) : null,
+      h('button', {
+        type: 'button',
+        className: 'pwpl-inlinecolor__preview',
+        onClick: handleOpen,
+        'aria-label': label ? `${label} color` : 'Edit color',
+      }, h('span', { className: 'pwpl-inlinecolor__preview-fill', style: { background: previewColor } })),
+      isEditing ? h('div', { className: 'pwpl-inlinecolor__editor' },
+        h(BackgroundColorPanel, {
+          label,
+          value: normalizedValue,
+          onChange: commit,
+          autoOpen: true,
+          onAfterSave: handleClose,
+          onAfterCancel: handleClose,
+        })
+      ) : h('div', { className: 'pwpl-inlinecolor__swatches' }, [
         ...swatchButtons,
-        h('button', {
-          type: 'button',
-          className: 'pwpl-palette__custom',
-          onClick: togglePopover,
-          'aria-pressed': isOpen,
-        }, 'Custom'),
+        customButton,
       ]),
-      isOpen ? h('div', { className: 'pwpl-palette__popover' }, [
-        h('div', { className: 'pwpl-palette__header' }, [
-          h('input', {
-            type: 'text',
-            value: draft || '',
-            onChange: handleInputChange,
-            placeholder,
-          }),
-          h('button', { type: 'button', className: 'pwpl-palette__ok', onClick: applyDraft }, 'Apply'),
-          h('button', { type: 'button', className: 'pwpl-palette__cancel', onClick: cancelDraft }, 'Cancel'),
-        ]),
-        h(ColorPicker, {
-          color: pickerColor,
-          onChangeComplete: handlePickerChange,
-          onChange: handlePickerChange,
-          disableAlpha: !allowAlpha,
-        }),
-      ]) : null,
     ]);
   }
-  if (!ColorPaletteControl) {
-    ColorPaletteControl = InlineColorPalette;
-    if (!w.PWPL_ColorPalette) {
-      w.PWPL_ColorPalette = InlineColorPalette;
-    }
-  }
+  ColorPaletteControl = InlineColorPalette;
+  w.PWPL_ColorPalette = InlineColorPalette;
 
   function SegmentedButtonGroup({ items = [], role = 'group', className = '', ariaLabel }){
     if (!items.length) {
@@ -1614,6 +1692,7 @@
     showStyle = true,
     weightOptions = TYPO_WEIGHT_OPTIONS,
     flagValueMap = {},
+    layoutVariant = '',
   } = {}){
     const resolvedSizeRange = Object.assign({ min: 8, max: 120, step: 1, unit: 'px', placeholder: 'inherit' }, sizeRange || {});
     const resolvedTrackingRange = Object.assign({ min: -2, max: 20, step: 0.5, unit: 'px', placeholder: '0px' }, trackingRange || {});
@@ -1720,6 +1799,21 @@
     };
 
     const children = [];
+    const layoutBasics = [];
+    const layoutStyles = [];
+    const pushNode = (node, bucket) => {
+      if (layoutVariant === 'title-two-col') {
+        if (bucket === 'basics') {
+          layoutBasics.push(node);
+          return;
+        }
+        if (bucket === 'styles') {
+          layoutStyles.push(node);
+          return;
+        }
+      }
+      children.push(node);
+    };
     const fontField = h('label', { className: 'pwpl-typo__field', htmlFor: familyInputId }, [
       h('span', { className: 'pwpl-typo__label' }, `${label} Font`),
       fontOptions.length ? h('select', {
@@ -1753,7 +1847,12 @@
         placeholder: 'inherit',
       }) : null,
     ]);
-    children.push(h('div', { className: 'pwpl-typo__row' }, [fontField, weightFieldOptions]));
+    if (layoutVariant === 'title-two-col') {
+      pushNode(h('div', { className: 'pwpl-typo__row' }, [fontField]), 'basics');
+      pushNode(h('div', { className: 'pwpl-typo__row' }, [weightFieldOptions]), 'styles');
+    } else {
+      pushNode(h('div', { className: 'pwpl-typo__row' }, [fontField, weightFieldOptions]));
+    }
 
     if (ENABLE_TYPO_STYLE_FLAGS && showStyle) {
       const styleItems = [
@@ -1763,10 +1862,10 @@
         { id: `${idKey}-underline`, label: 'U', ariaLabel: `${label} underline`, isActive: underlineActive, onClick: () => toggleFlag('underline', underline, setUnderline) },
         { id: `${idKey}-strike`, label: 'S', ariaLabel: `${label} strikethrough`, isActive: strikeActive, onClick: () => toggleFlag('strike', strike, setStrike) },
       ];
-      children.push(h('div', { className: 'pwpl-typo__group' }, [
+      pushNode(h('div', { className: 'pwpl-typo__group' }, [
         h('span', { className: 'pwpl-typo__label' }, `${label} Font Style`),
         h(SegmentedButtonGroup, { items: styleItems, ariaLabel: `${label} font style` }),
-      ]));
+      ]), layoutVariant === 'title-two-col' ? 'styles' : undefined);
     }
 
     if (ENABLE_TYPO_ALIGNMENT && showAlignment) {
@@ -1780,15 +1879,15 @@
         { id: `${idKey}-align-center`, value: 'center', ariaLabel: `${label} align center`, isActive: align === 'center', onClick: () => handleAlignChange('center'), content: alignIcon('center') },
         { id: `${idKey}-align-right`, value: 'right', ariaLabel: `${label} align right`, isActive: align === 'right', onClick: () => handleAlignChange('right'), content: alignIcon('right') },
       ];
-      children.push(h('div', { className: 'pwpl-typo__group' }, [
+      pushNode(h('div', { className: 'pwpl-typo__group' }, [
         h('span', { className: 'pwpl-typo__label' }, `${label} Text Alignment`),
         h(SegmentedButtonGroup, { items: alignItems, role: 'radiogroup', className: 'pwpl-typo__seg--align', ariaLabel: `${label} alignment` }),
-      ]));
+      ]), layoutVariant === 'title-two-col' ? 'styles' : undefined);
     }
 
     if (showColor) {
       const colorTabs = ['Saved', 'Global', 'Recent'];
-      children.push(h('div', { className: 'pwpl-typo__colors' }, [
+      const colorNode = h('div', { className: 'pwpl-typo__colors' }, [
         h('div', { className: 'pwpl-typo__color-head' }, [
           h('span', { className: 'pwpl-typo__label' }, `${label} Text Color`),
           h('div', { className: 'pwpl-typo__color-tabs' },
@@ -1804,13 +1903,14 @@
           label: null,
           value: color,
           onChange: handleColorChange,
-          allowAlpha: false,
-          'aria-label': `${label} text color`,
+          allowAlpha: true,
+          className: 'pwpl-inlinecolor--compact',
         })),
-      ]));
+      ]);
+      pushNode(colorNode, 'basics');
     }
 
-    children.push(RangeValueRow({
+    const sizeNode = RangeValueRow({
       label: `${label} Text Size`,
       name: names.size || null,
       value: size,
@@ -1820,10 +1920,11 @@
       step: resolvedSizeRange.step,
       placeholder: resolvedSizeRange.placeholder,
       unit: resolvedSizeRange.unit,
-    }));
+    });
+    pushNode(sizeNode, layoutVariant === 'title-two-col' ? 'basics' : undefined);
 
     if (ENABLE_TYPO_TRACKING && showTracking) {
-      children.push(RangeValueRow({
+      const trackingNode = RangeValueRow({
         label: `${label} Letter Spacing`,
         name: names.tracking || null,
         value: tracking,
@@ -1834,11 +1935,12 @@
         placeholder: resolvedTrackingRange.placeholder,
         unit: resolvedTrackingRange.unit,
         disabledWhenToken: resolvedTrackingRange.disabledWhenToken !== undefined ? resolvedTrackingRange.disabledWhenToken : true,
-      }));
+      });
+      pushNode(trackingNode, layoutVariant === 'title-two-col' ? 'styles' : undefined);
     }
 
     if (ENABLE_TYPO_LINE_HEIGHT && showLineHeight) {
-      children.push(RangeValueRow({
+      const lineHeightNode = RangeValueRow({
         label: `${label} Line Height`,
         name: names.lineHeight || null,
         value: lineHeight,
@@ -1848,7 +1950,8 @@
         step: resolvedLineHeightRange.step,
         placeholder: resolvedLineHeightRange.placeholder,
         unit: resolvedLineHeightRange.unit,
-      }));
+      });
+      pushNode(lineHeightNode, layoutVariant === 'title-two-col' ? 'styles' : undefined);
     }
 
     const hiddenFields = [];
@@ -1865,7 +1968,28 @@
     pushHidden(hiddenFields, 'underline', underline);
     pushHidden(hiddenFields, 'strike', strike);
 
-    return h('div', { className: 'pwpl-typo', 'data-typo-id': idKey }, hiddenFields.length ? children.concat(hiddenFields) : children);
+    const panelChildren = [];
+    if (layoutVariant === 'title-two-col') {
+      panelChildren.push(
+        h('div', { className: 'pwpl-typo__two' }, [
+          h('div', { className: 'pwpl-typo__col' },
+            h('div', { className: 'pwpl-typo-card' }, [
+              h('div', { className: 'pwpl-typo-card__title' }, 'Basics'),
+              ...layoutBasics,
+            ])
+          ),
+          h('div', { className: 'pwpl-typo__col' },
+            h('div', { className: 'pwpl-typo-card' }, [
+              h('div', { className: 'pwpl-typo-card__title' }, 'Style & Spacing'),
+              ...layoutStyles,
+            ])
+          ),
+        ])
+      );
+    }
+    panelChildren.push(...children);
+    const fullChildren = hiddenFields.length ? panelChildren.concat(hiddenFields) : panelChildren;
+    return h('div', { className: 'pwpl-typo', 'data-typo-id': idKey }, fullChildren);
   }
   function FourSidesControl({
     label,
@@ -1955,8 +2079,6 @@
     // Lightweight tooltip using title attribute for hover
     return h('span', { className: 'pwpl-help', title: text || '' , style:{ marginLeft:6, cursor:'help', fontSize:'12px', opacity:.7 } }, '❓');
   }
-  // Guard ColorPicker to avoid initial render errors if not available yet
-
   function SectionHeader({ title, description }){
     return h('div', { className: 'pwpl-v1-section-header' }, [
       h('div', { className: 'pwpl-v1-section-left' }, [
@@ -2351,7 +2473,8 @@
             label: 'Border color',
             value: borderColor || '',
             onChange: (val) => setBorderColor(typeof val === 'string' ? val : ''),
-            allowAlpha: false,
+            allowAlpha: true,
+            className: 'pwpl-inlinecolor--compact',
           })
         ),
         HiddenInput({ name: 'pwpl_table[card][colors][border]', value: borderColor }),
@@ -3121,7 +3244,8 @@
         label: labelNode,
         value: valueRef || '',
         onChange: handler,
-        allowAlpha: false,
+        allowAlpha: true,
+        className: 'pwpl-inlinecolor--compact',
       })
     );
 
@@ -3177,25 +3301,6 @@
 
     const sections = [
       {
-        id: 'top-base',
-        title: 'Top Base',
-        content: h('div', { className: 'pwpl-typo-panel' }, [
-          paletteControl(
-            h('span', null, [ 'Top base color ', Help({ text:'Default color for top area texts when no per-element color is set.' }) ]),
-            topColor,
-            handleTopColorChange
-          ),
-          HiddenInput({ name:'pwpl_table[card][text][top][color]', value: topColor }),
-          h(TextControl, {
-            label: h('span', null, ['Top base font family ', Help({ text:'Font stack applied to top area as a base.' }) ]),
-            value: topFamily,
-            onChange:(v)=>{ setTopFamily(v); updatePreviewVars({ 'card.text.top.family': v }); },
-            placeholder:'system-ui, -apple-system, sans-serif'
-          }),
-          HiddenInput({ name:'pwpl_table[card][text][top][family]', value: topFamily }),
-        ]),
-      },
-      {
         id: 'title-text',
         title: 'Title Text',
         content: h(TypographySection, {
@@ -3209,6 +3314,7 @@
           },
           values: makeValues(titleText, titleTypos),
           onPreviewPatch: previewMap('title'),
+          layoutVariant: 'title-two-col',
         }),
       },
       {
@@ -3384,6 +3490,8 @@
     const [ctaHoverColor, setCtaHoverColor] = useState(ctaHover.color || '');
     const [ctaHoverBorder, setCtaHoverBorder] = useState(ctaHover.border || '');
     const [ctaFocusColor, setCtaFocusColor] = useState(cta.focus || '');
+    const [openCtaEditors, setOpenCtaEditors] = useState({ normal: null, hover: null, focus: null });
+    const ctaRowRefs = useRef({});
 
     const postId = parseInt(data.postId || 0, 10) || 0;
     const {
@@ -3408,7 +3516,8 @@
         label,
         value: value || '',
         onChange: handler,
-        allowAlpha: false,
+        allowAlpha: true,
+        className: 'pwpl-inlinecolor--compact',
       })
     );
 
@@ -3512,45 +3621,148 @@
       h('p', { style:{ color:'#475569', fontSize:'13px', margin:0 } }, 'Use saved and recent swatches inside each palette to build quick brand themes. Presets land soon.')
     ]);
 
-    const handleCtaColorChange = (setter, key)=> (value)=>{
-      const hex = typeof value === 'string' ? value : '';
-      setter(hex);
-      updatePreviewVars({ [key]: hex });
+    const handleCtaColorChange = (setter, key)=> (value = '')=>{
+      const normalized = normalizeColorValue(value, true);
+      setter(normalized);
+      updatePreviewVars({ [key]: normalized });
     };
 
-    const ctaPalette = (label, value, handler, hiddenName)=> h('div', { className:'pwpl-v1-color pwpl-v1-color--palette' }, [
-      h(ColorPaletteControl, {
-        label,
-        value: value || '',
-        onChange: handler,
-        allowAlpha: false,
-      }),
-      HiddenInput({ name: hiddenName, value })
+    const CTA_SECTION_CONFIG = {
+      normal: [
+        { key: 'bg', label: 'Background', value: ctaNormalBg, setter: setCtaNormalBg, previewKey: 'ui.cta.normal.bg', hiddenName: 'pwpl_table[ui][cta][normal][bg]' },
+        { key: 'text', label: 'Text', value: ctaNormalColor, setter: setCtaNormalColor, previewKey: 'ui.cta.normal.color', hiddenName: 'pwpl_table[ui][cta][normal][color]' },
+        { key: 'border', label: 'Border', value: ctaNormalBorder, setter: setCtaNormalBorder, previewKey: 'ui.cta.normal.border', hiddenName: 'pwpl_table[ui][cta][normal][border]' },
+      ],
+      hover: [
+        { key: 'bg', label: 'Background', value: ctaHoverBg, setter: setCtaHoverBg, previewKey: 'ui.cta.hover.bg', hiddenName: 'pwpl_table[ui][cta][hover][bg]' },
+        { key: 'text', label: 'Text', value: ctaHoverColor, setter: setCtaHoverColor, previewKey: 'ui.cta.hover.color', hiddenName: 'pwpl_table[ui][cta][hover][color]' },
+        { key: 'border', label: 'Border', value: ctaHoverBorder, setter: setCtaHoverBorder, previewKey: 'ui.cta.hover.border', hiddenName: 'pwpl_table[ui][cta][hover][border]' },
+      ],
+      focus: [
+        { key: 'outline', label: 'Outline', value: ctaFocusColor, setter: setCtaFocusColor, previewKey: 'ui.cta.focus', hiddenName: 'pwpl_table[ui][cta][focus]' },
+      ],
+    };
+    const getCtaRowKey = (sectionKey, fieldKey) => `${sectionKey}__${fieldKey}`;
+    const compareColorValue = (colorValue) => (normalizeColorValue(colorValue, true) || '').toLowerCase();
+    const renderCtaField = (sectionKey) => (field) => {
+      const normalizedValue = normalizeColorValue(field.value, true) || '';
+      const normalizedValueKey = normalizedValue.toLowerCase();
+      const isEditing = openCtaEditors[sectionKey] === field.key;
+      const commitColor = handleCtaColorChange(field.setter, field.previewKey);
+      const rowKey = getCtaRowKey(sectionKey, field.key);
+      const previewCss = (() => {
+        const col = parseCssColor(normalizedValue);
+        return rgbaString(col);
+      })();
+      const copyPreview = () => {
+        const col = parseCssColor(normalizedValue);
+        const out = (col.a != null && col.a < 1)
+          ? rgbaToHex8(col.r, col.g, col.b, col.a).toUpperCase()
+          : rgbToHex({ r: col.r, g: col.g, b: col.b }).toUpperCase();
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(out);
+          } else {
+            const el = document.createElement('textarea');
+            el.value = out; el.setAttribute('readonly',''); el.style.position='absolute'; el.style.left='-9999px';
+            document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+          }
+        } catch(e){}
+      };
+      const handleOpen = () => {
+        setOpenCtaEditors((prev) => {
+          if (prev[sectionKey] === field.key) {
+            return prev;
+          }
+          return { ...prev, [sectionKey]: field.key };
+        });
+        requestAnimationFrame(() => {
+          const node = ctaRowRefs.current[rowKey];
+          if (node && node.scrollIntoView) {
+            node.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }
+        });
+      };
+      const handleClose = () => {
+        setOpenCtaEditors((prev) => ({ ...prev, [sectionKey]: null }));
+      };
+      const swatchButtons = DEFAULT_COLOR_SWATCHES.map((swatch) => {
+        const swatchValue = compareColorValue(swatch.value || '');
+        const isActive = normalizedValueKey === swatchValue;
+        const className = classNames('pwpl-cta-swatch', isActive ? 'is-active' : '', !swatch.value ? 'is-none' : '');
+        const style = swatch.value ? { backgroundColor: swatch.value } : undefined;
+        return h('button', {
+          key: `${rowKey}-${swatch.label}`,
+          type: 'button',
+          className,
+          style,
+          'aria-pressed': isActive,
+          onClick: () => {
+            if (isActive) {
+              handleOpen();
+              return;
+            }
+            commitColor(swatch.value || '');
+          },
+        }, swatch.value ? null : h('span', { className: 'pwpl-cta-swatch-clear', 'aria-hidden': 'true' }, '×'));
+      });
+      const hasSwatchMatch = DEFAULT_COLOR_SWATCHES.some((swatch) => compareColorValue(swatch.value || '') === normalizedValueKey);
+      const customButton = h('button', {
+        type: 'button',
+        className: classNames('pwpl-cta-swatch', 'is-custom', (!hasSwatchMatch || isEditing) ? 'is-active' : ''),
+        onClick: handleOpen,
+        'aria-pressed': isEditing || !hasSwatchMatch,
+      }, 'Custom');
+      const editor = isEditing ? h('div', { className: 'pwpl-cta-color-field__editor' },
+        h(BackgroundColorPanel, {
+          label: `${field.label} color`,
+          value: normalizedValue || '',
+          onChange: commitColor,
+          autoOpen: true,
+          onAfterSave: handleClose,
+          onAfterCancel: handleClose,
+        })
+      ) : null;
+      return h('div', {
+        key: rowKey,
+        className: classNames('pwpl-cta-color-field', isEditing ? 'is-editing' : ''),
+        ref: (node) => {
+          if (node) {
+            ctaRowRefs.current[rowKey] = node;
+          } else {
+            delete ctaRowRefs.current[rowKey];
+          }
+        },
+      }, [
+        h('div', { className: 'pwpl-cta-color-field__head' }, [
+          h('span', { className: 'pwpl-cta-color-field__label' }, field.label),
+          h('button', {
+            type: 'button',
+            className: 'pwpl-cta-color-preview',
+            title: 'Click to edit color',
+            onClick: handleOpen,
+            onKeyDown: (e)=>{ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOpen(); } },
+            'aria-label': 'Click to edit color',
+          }, h('span', { className: 'pwpl-cta-color-preview__fill', style: { background: previewCss } })),
+          h('div', { className: 'pwpl-cta-color-field__swatches' }, [
+            ...swatchButtons,
+            customButton,
+          ]),
+        ]),
+        editor,
+        HiddenInput({ name: field.hiddenName, value: field.value || '' }),
+      ]);
+    };
+    const renderCtaSection = (sectionKey, title) => h('div', { className:'pwpl-v1-cta-color-state' }, [
+      h('strong', null, title),
+      h('div', { className:'pwpl-v1-cta-color-row' },
+        (CTA_SECTION_CONFIG[sectionKey] || []).map(renderCtaField(sectionKey))
+      )
     ]);
-
     const ctaColorsSection = h('div', { className:'pwpl-v1-grid pwpl-v1-cta-colors' }, [
-      h('div', { className:'pwpl-v1-cta-color-state' }, [
-        h('strong', null, 'Normal'),
-        h('div', { className:'pwpl-v1-cta-color-row' }, [
-          ctaPalette('Background', ctaNormalBg, handleCtaColorChange(setCtaNormalBg, 'ui.cta.normal.bg'), 'pwpl_table[ui][cta][normal][bg]'),
-          ctaPalette('Text', ctaNormalColor, handleCtaColorChange(setCtaNormalColor, 'ui.cta.normal.color'), 'pwpl_table[ui][cta][normal][color]'),
-          ctaPalette('Border', ctaNormalBorder, handleCtaColorChange(setCtaNormalBorder, 'ui.cta.normal.border'), 'pwpl_table[ui][cta][normal][border]'),
-        ])
-      ]),
-      h('div', { className:'pwpl-v1-cta-color-state' }, [
-        h('strong', null, 'Hover'),
-        h('div', { className:'pwpl-v1-cta-color-row' }, [
-          ctaPalette('Background', ctaHoverBg, handleCtaColorChange(setCtaHoverBg, 'ui.cta.hover.bg'), 'pwpl_table[ui][cta][hover][bg]'),
-          ctaPalette('Text', ctaHoverColor, handleCtaColorChange(setCtaHoverColor, 'ui.cta.hover.color'), 'pwpl_table[ui][cta][hover][color]'),
-          ctaPalette('Border', ctaHoverBorder, handleCtaColorChange(setCtaHoverBorder, 'ui.cta.hover.border'), 'pwpl_table[ui][cta][hover][border]'),
-        ])
-      ]),
-      h('div', { className:'pwpl-v1-cta-color-state' }, [
-        h('strong', null, 'Focus'),
-        h('div', { className:'pwpl-v1-cta-color-row' }, [
-          ctaPalette('Outline', ctaFocusColor, handleCtaColorChange(setCtaFocusColor, 'ui.cta.focus'), 'pwpl_table[ui][cta][focus]'),
-        ])
-      ]),
+      renderCtaSection('normal', 'Normal'),
+      renderCtaSection('hover', 'Hover'),
+      renderCtaSection('focus', 'Focus'),
     ]);
 
     const sections = [
@@ -3609,13 +3821,23 @@
         h(TextControl, { label:'Badge label', value:item.label||'', onChange:(v)=> update('label', v) }),
         HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][label]`, value:item.label||'' }),
         h('div', { className:'pwpl-v1-color' }, [
-          h('label', { className:'components-base-control__label' }, 'Badge color'),
-          h(ColorPicker, { color:item.color||'', disableAlpha:true, onChangeComplete:(val)=> update('color', (typeof val==='string')?val:(val&&val.hex)?val.hex:'') }),
+          h(ColorPaletteControl, {
+            label: 'Badge color',
+            value: item.color || '',
+            onChange: (val) => update('color', typeof val === 'string' ? val : ''),
+            allowAlpha: true,
+            className: 'pwpl-inlinecolor--compact',
+          }),
           HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][color]`, value:item.color||'' }),
         ]),
         h('div', { className:'pwpl-v1-color' }, [
-          h('label', { className:'components-base-control__label' }, 'Text color'),
-          h(ColorPicker, { color:item.text_color||'', disableAlpha:true, onChangeComplete:(val)=> update('text_color', (typeof val==='string')?val:(val&&val.hex)?val.hex:'') }),
+          h(ColorPaletteControl, {
+            label: 'Text color',
+            value: item.text_color || '',
+            onChange: (val) => update('text_color', typeof val === 'string' ? val : ''),
+            allowAlpha: true,
+            className: 'pwpl-inlinecolor--compact',
+          }),
           HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][text_color]`, value:item.text_color||'' }),
         ]),
         h(TextControl, { label:'Icon', value:item.icon||'', onChange:(v)=> update('icon', v) }),
