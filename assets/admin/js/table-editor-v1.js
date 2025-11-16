@@ -1783,6 +1783,28 @@
     const strikeActive = strike === getFlagMap('strike').on;
 
     const familyInputId = makeDomId(names.family || `${idKey}-family`);
+    // Shadow state (only used when provided via names/values)
+    const [shadowEnabled, setShadowEnabled] = useState(values.shadowEnable || '');
+    const [shadowX, setShadowX] = useState(toNumberOrToken(values.shadowX));
+    const [shadowY, setShadowY] = useState(toNumberOrToken(values.shadowY));
+    const [shadowBlur, setShadowBlur] = useState(toNumberOrToken(values.shadowBlur));
+    const [shadowColor, setShadowColor] = useState(values.shadowColor || 'rgba(0,0,0,.5)');
+    const computeShadowCss = (en = shadowEnabled, x = shadowX, y = shadowY, b = shadowBlur, col = shadowColor) => {
+      if (!en) return 'none';
+      const c = normalizeColorValue(col, true) || 'rgba(0,0,0,.5)';
+      const sx = toNumberOrToken(x) || 0;
+      const sy = toNumberOrToken(y) || 0;
+      const sb = toNumberOrToken(b) || 0;
+      return `${sx}px ${sy}px ${sb}px ${c}`;
+    };
+    const pushShadowPreview = (en = shadowEnabled, x = shadowX, y = shadowY, b = shadowBlur, col = shadowColor) => {
+      emitPreview('shadow_enabled', en ? '1' : '');
+      emitPreview('shadow_x', toNumberOrToken(x) || 0);
+      emitPreview('shadow_y', toNumberOrToken(y) || 0);
+      emitPreview('shadow_blur', toNumberOrToken(b) || 0);
+      emitPreview('shadow_color', normalizeColorValue(col, true) || 'rgba(0,0,0,.5)');
+      emitPreview('shadow', computeShadowCss(en, x, y, b, col));
+    };
     const weightFieldId = makeDomId(names.weight || `${idKey}-weight`);
     const effectiveWeightOptions = (weightOptions && weightOptions.length ? weightOptions : TYPO_WEIGHT_OPTIONS).slice();
     effectiveWeightOptions.push(CUSTOM_WEIGHT_OPTION);
@@ -1954,6 +1976,46 @@
       pushNode(lineHeightNode, layoutVariant === 'title-two-col' ? 'styles' : undefined);
     }
 
+    // Title-only Text Shadow UI when names.* provided (placed in styles column)
+    if (layoutVariant === 'title-two-col' && names.shadowEnable) {
+      const shadowToggle = h('label', { className: 'pwpl-typo__field' }, [
+        h('span', { className: 'pwpl-typo__label' }, `${label} Text Shadow`),
+        h('div', { className: 'pwpl-typo__row' }, [
+          h('label', { style: { display:'inline-flex', alignItems:'center', gap:'8px' } }, [
+            h('input', {
+              type: 'checkbox',
+              checked: !!shadowEnabled,
+              onChange: (e) => { const en = e && e.target && e.target.checked; setShadowEnabled(en ? '1' : ''); pushShadowPreview(en ? '1' : '', shadowX, shadowY, shadowBlur, shadowColor); },
+            }),
+            'Enable text shadow'
+          ])
+        ])
+      ]);
+      const shadowColorPicker = h('div', { className: 'pwpl-v1-color' },
+        h(ColorPaletteControl, {
+          label: 'Shadow color',
+          value: shadowColor || '',
+          onChange: (v) => { const nv = normalizeColorValue(v, true) || ''; setShadowColor(nv); pushShadowPreview(shadowEnabled, shadowX, shadowY, shadowBlur, nv); },
+          allowAlpha: true,
+          className: 'pwpl-inlinecolor--compact',
+        })
+      );
+      const shadowXYZ = h('div', { className: 'pwpl-typo__grid-3' }, [
+        RangeValueRow({ label: 'X offset (px)', name: names.shadowX, value: shadowX, onChange: (v)=>{ setShadowX(v); pushShadowPreview(shadowEnabled, v, shadowY, shadowBlur, shadowColor); }, min: -50, max: 50, step: 1, unit:'px' }),
+        RangeValueRow({ label: 'Y offset (px)', name: names.shadowY, value: shadowY, onChange: (v)=>{ setShadowY(v); pushShadowPreview(shadowEnabled, shadowX, v, shadowBlur, shadowColor); }, min: -50, max: 50, step: 1, unit:'px' }),
+        RangeValueRow({ label: 'Blur (px)', name: names.shadowBlur, value: shadowBlur, onChange: (v)=>{ setShadowBlur(v); pushShadowPreview(shadowEnabled, shadowX, shadowY, v, shadowColor); }, min: 0, max: 100, step: 1, unit:'px' }),
+      ]);
+      pushNode(shadowToggle, 'styles');
+      pushNode(shadowColorPicker, 'styles');
+      pushNode(shadowXYZ, 'styles');
+      // Hidden inputs
+      pushHidden(hiddenFields, 'shadowEnable', shadowEnabled ? '1' : '');
+      pushHidden(hiddenFields, 'shadowX', shadowX);
+      pushHidden(hiddenFields, 'shadowY', shadowY);
+      pushHidden(hiddenFields, 'shadowBlur', shadowBlur);
+      pushHidden(hiddenFields, 'shadowColor', shadowColor);
+    }
+
     const hiddenFields = [];
     pushHidden(hiddenFields, 'color', color);
     pushHidden(hiddenFields, 'family', family);
@@ -1974,13 +2036,11 @@
         h('div', { className: 'pwpl-typo__two' }, [
           h('div', { className: 'pwpl-typo__col' },
             h('div', { className: 'pwpl-typo-card' }, [
-              h('div', { className: 'pwpl-typo-card__title' }, 'Basics'),
               ...layoutBasics,
             ])
           ),
           h('div', { className: 'pwpl-typo__col' },
             h('div', { className: 'pwpl-typo-card' }, [
-              h('div', { className: 'pwpl-typo-card__title' }, 'Style & Spacing'),
               ...layoutStyles,
             ])
           ),
@@ -3311,9 +3371,27 @@
             family: 'pwpl_table[card][text][title][family]',
             size: 'pwpl_table[card][typo][title][size]',
             weight: 'pwpl_table[card][typo][title][weight]',
+            shadowEnable: 'pwpl_table[card][typo][title][shadow_enable]',
+            shadowX: 'pwpl_table[card][typo][title][shadow_x]',
+            shadowY: 'pwpl_table[card][typo][title][shadow_y]',
+            shadowBlur: 'pwpl_table[card][typo][title][shadow_blur]',
+            shadowColor: 'pwpl_table[card][typo][title][shadow_color]',
           },
-          values: makeValues(titleText, titleTypos),
-          onPreviewPatch: previewMap('title'),
+          values: Object.assign({}, makeValues(titleText, titleTypos), {
+            shadowEnable: (titleTypos.shadow_enable ? '1' : ''),
+            shadowX: scalar(titleTypos.shadow_x || 0),
+            shadowY: scalar(titleTypos.shadow_y || 0),
+            shadowBlur: scalar(titleTypos.shadow_blur || 0),
+            shadowColor: titleTypos.shadow_color || 'rgba(0,0,0,.5)',
+          }),
+          onPreviewPatch: previewMap('title', {
+            shadow_enabled: 'card.typo.title.shadow_enabled',
+            shadow_x: 'card.typo.title.shadow_x',
+            shadow_y: 'card.typo.title.shadow_y',
+            shadow_blur: 'card.typo.title.shadow_blur',
+            shadow_color: 'card.typo.title.shadow_color',
+            shadow: 'card.typo.title.shadow',
+          }),
           layoutVariant: 'title-two-col',
         }),
       },
