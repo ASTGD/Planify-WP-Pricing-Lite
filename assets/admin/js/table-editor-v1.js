@@ -1546,6 +1546,25 @@
     { label: 'Violet', value: '#a855f7' },
     { label: 'No color', value: '' },
   ];
+  const shadowColorLayer = (color, alphaOverride) => {
+    const parsed = parseCssColor(color || '');
+    const finalAlpha = alphaOverride != null ? alphaOverride : (parsed.a != null ? parsed.a : 1);
+    return `rgba(${parsed.r}, ${parsed.g}, ${parsed.b}, ${finalAlpha})`;
+  };
+  const buildGlowShadow = (color) => {
+    return `0 0 6px ${shadowColorLayer(color, 0.6)}, 0 0 12px ${shadowColorLayer(color, 0.35)}`;
+  };
+  const buildLongShadow = (color) => {
+    return `2px 2px 0 ${shadowColorLayer(color, 0.25)}, 4px 4px 0 ${shadowColorLayer(color, 0.18)}, 6px 6px 0 ${shadowColorLayer(color, 0.12)}`;
+  };
+  const TEXT_SHADOW_PRESETS = {
+    none: { single: false, type: 'none' },
+    soft: { single: true, x: 0, y: 2, blur: 4 },
+    medium: { single: true, x: 0, y: 4, blur: 8 },
+    deep: { single: true, x: 0, y: 6, blur: 12 },
+    glow: { single: false, builder: buildGlowShadow },
+    long: { single: false, builder: buildLongShadow },
+  };
   function InlineColorPalette(props = {}) {
     const {
       label,
@@ -1789,22 +1808,62 @@
     const [shadowY, setShadowY] = useState(toNumberOrToken(values.shadowY));
     const [shadowBlur, setShadowBlur] = useState(toNumberOrToken(values.shadowBlur));
     const [shadowColor, setShadowColor] = useState(values.shadowColor || 'rgba(0,0,0,.5)');
-    const computeShadowCss = (en = shadowEnabled, x = shadowX, y = shadowY, b = shadowBlur, col = shadowColor) => {
-      if (!en) return 'none';
-      const c = normalizeColorValue(col, true) || 'rgba(0,0,0,.5)';
+    const [shadowStyle, setShadowStyle] = useState(values.shadowStyle || 'custom');
+    const computeShadowCss = (style = shadowStyle, en = shadowEnabled, x = shadowX, y = shadowY, b = shadowBlur, col = shadowColor) => {
+      if (!en || style === 'none') {
+        return 'none';
+      }
+      const presetMeta = TEXT_SHADOW_PRESETS[style];
+      const color = normalizeColorValue(col, true) || 'rgba(0,0,0,.5)';
+      if (presetMeta) {
+        if (presetMeta.single && typeof presetMeta.x === 'number') {
+          const px = presetMeta.x ?? 0;
+          const py = presetMeta.y ?? 0;
+          const pb = presetMeta.blur ?? 0;
+          return `${px}px ${py}px ${pb}px ${color}`;
+        }
+        if (!presetMeta.single && typeof presetMeta.builder === 'function') {
+          return presetMeta.builder(color);
+        }
+      }
       const sx = toNumberOrToken(x) || 0;
       const sy = toNumberOrToken(y) || 0;
       const sb = toNumberOrToken(b) || 0;
-      return `${sx}px ${sy}px ${sb}px ${c}`;
+      return `${sx}px ${sy}px ${sb}px ${color}`;
     };
-    const pushShadowPreview = (en = shadowEnabled, x = shadowX, y = shadowY, b = shadowBlur, col = shadowColor) => {
+    const pushShadowPreview = (style = shadowStyle, en = shadowEnabled, x = shadowX, y = shadowY, b = shadowBlur, col = shadowColor) => {
+      emitPreview('shadow_style', style);
       emitPreview('shadow_enabled', en ? '1' : '');
       emitPreview('shadow_x', toNumberOrToken(x) || 0);
       emitPreview('shadow_y', toNumberOrToken(y) || 0);
       emitPreview('shadow_blur', toNumberOrToken(b) || 0);
       emitPreview('shadow_color', normalizeColorValue(col, true) || 'rgba(0,0,0,.5)');
-      emitPreview('shadow', computeShadowCss(en, x, y, b, col));
+      emitPreview('shadow', computeShadowCss(style, en, x, y, b, col));
     };
+    const applyShadowPreset = (styleKey) => {
+      const preset = TEXT_SHADOW_PRESETS[styleKey];
+      setShadowStyle(styleKey);
+      if (styleKey === 'custom') {
+        pushShadowPreview('custom', shadowEnabled, shadowX, shadowY, shadowBlur, shadowColor);
+        return;
+      }
+      if (styleKey === 'none') {
+        pushShadowPreview('none', shadowEnabled, shadowX, shadowY, shadowBlur, shadowColor);
+        return;
+      }
+      if (preset && preset.single) {
+        const nx = preset.x ?? 0;
+        const ny = preset.y ?? 0;
+        const nb = preset.blur ?? 0;
+        setShadowX(nx);
+        setShadowY(ny);
+        setShadowBlur(nb);
+        pushShadowPreview(styleKey, shadowEnabled, nx, ny, nb, shadowColor);
+        return;
+      }
+      pushShadowPreview(styleKey, shadowEnabled, shadowX, shadowY, shadowBlur, shadowColor);
+    };
+    const shadowSlidersDisabled = (style) => style === 'none' || (style !== 'custom' && TEXT_SHADOW_PRESETS[style] && !TEXT_SHADOW_PRESETS[style].single);
     const weightFieldId = makeDomId(names.weight || `${idKey}-weight`);
     const effectiveWeightOptions = (weightOptions && weightOptions.length ? weightOptions : TYPO_WEIGHT_OPTIONS).slice();
     effectiveWeightOptions.push(CUSTOM_WEIGHT_OPTION);
@@ -1988,36 +2047,92 @@
             h('input', {
               type: 'checkbox',
               checked: !!shadowEnabled,
-              onChange: (e) => { const en = e && e.target && e.target.checked; setShadowEnabled(en ? '1' : ''); pushShadowPreview(en ? '1' : '', shadowX, shadowY, shadowBlur, shadowColor); },
+              onChange: (e) => { const en = e && e.target && e.target.checked; const style = shadowStyle; setShadowEnabled(en ? '1' : ''); pushShadowPreview(style, en ? '1' : '', shadowX, shadowY, shadowBlur, shadowColor); },
             }),
             'Enable text shadow'
           ])
+        ])
+      ]);
+      const shadowStyleControl = h('div', { className: 'pwpl-typo__row' }, [
+        h('label', { className: 'pwpl-typo__label' }, 'Shadow style'),
+        h('div', { className: 'pwpl-typo__styles' }, [
+          h(SegmentedButtonGroup, {
+            items: [
+              { id: `${idKey}-shadow-none`, label: 'None', value: 'none', isActive: shadowStyle === 'none', onClick: () => applyShadowPreset('none') },
+              { id: `${idKey}-shadow-soft`, label: 'Soft', value: 'soft', isActive: shadowStyle === 'soft', onClick: () => applyShadowPreset('soft') },
+              { id: `${idKey}-shadow-medium`, label: 'Medium', value: 'medium', isActive: shadowStyle === 'medium', onClick: () => applyShadowPreset('medium') },
+              { id: `${idKey}-shadow-deep`, label: 'Deep', value: 'deep', isActive: shadowStyle === 'deep', onClick: () => applyShadowPreset('deep') },
+              { id: `${idKey}-shadow-glow`, label: 'Glow', value: 'glow', isActive: shadowStyle === 'glow', onClick: () => applyShadowPreset('glow') },
+              { id: `${idKey}-shadow-long`, label: 'Long', value: 'long', isActive: shadowStyle === 'long', onClick: () => applyShadowPreset('long') },
+              { id: `${idKey}-shadow-custom`, label: 'Custom', value: 'custom', isActive: shadowStyle === 'custom', onClick: () => applyShadowPreset('custom') },
+            ],
+            role: 'radiogroup',
+          })
         ])
       ]);
       const shadowColorPicker = h('div', { className: 'pwpl-v1-color' },
         h(ColorPaletteControl, {
           label: 'Shadow color',
           value: shadowColor || '',
-          onChange: (v) => { const nv = normalizeColorValue(v, true) || ''; setShadowColor(nv); pushShadowPreview(shadowEnabled, shadowX, shadowY, shadowBlur, nv); },
+          onChange: (v) => {
+            const nv = normalizeColorValue(v, true) || '';
+            if (shadowStyle !== 'custom') {
+              setShadowStyle('custom');
+            }
+            setShadowColor(nv);
+            pushShadowPreview('custom', shadowEnabled, shadowX, shadowY, shadowBlur, nv);
+          },
           allowAlpha: true,
           className: 'pwpl-inlinecolor--compact',
         })
       );
-      const shadowXYZ = h('div', { className: 'pwpl-typo__grid-3' }, [
-        RangeValueRow({ label: 'X offset (px)', name: names.shadowX, value: shadowX, onChange: (v)=>{ setShadowX(v); pushShadowPreview(shadowEnabled, v, shadowY, shadowBlur, shadowColor); }, min: -50, max: 50, step: 1, unit:'px' }),
-        RangeValueRow({ label: 'Y offset (px)', name: names.shadowY, value: shadowY, onChange: (v)=>{ setShadowY(v); pushShadowPreview(shadowEnabled, shadowX, v, shadowBlur, shadowColor); }, min: -50, max: 50, step: 1, unit:'px' }),
-        RangeValueRow({ label: 'Blur (px)', name: names.shadowBlur, value: shadowBlur, onChange: (v)=>{ setShadowBlur(v); pushShadowPreview(shadowEnabled, shadowX, shadowY, v, shadowColor); }, min: 0, max: 100, step: 1, unit:'px' }),
+      const handleShadowXChange = (value) => {
+        const normalized = toNumberOrToken(value);
+        if (shadowStyle !== 'custom') {
+          setShadowStyle('custom');
+        }
+        setShadowX(normalized);
+        pushShadowPreview('custom', shadowEnabled, normalized, shadowY, shadowBlur, shadowColor);
+      };
+      const handleShadowYChange = (value) => {
+        const normalized = toNumberOrToken(value);
+        if (shadowStyle !== 'custom') {
+          setShadowStyle('custom');
+        }
+        setShadowY(normalized);
+        pushShadowPreview('custom', shadowEnabled, shadowX, normalized, shadowBlur, shadowColor);
+      };
+      const handleShadowBlurChange = (value) => {
+        const normalized = toNumberOrToken(value);
+        if (shadowStyle !== 'custom') {
+          setShadowStyle('custom');
+        }
+        setShadowBlur(normalized);
+        pushShadowPreview('custom', shadowEnabled, shadowX, shadowY, normalized, shadowColor);
+      };
+      const slidersDisabled = shadowSlidersDisabled(shadowStyle);
+      const shadowXYZ = h('div', {
+        className: classNames('pwpl-typo__grid-3', slidersDisabled ? 'is-shadow-disabled' : ''),
+        'aria-disabled': slidersDisabled ? 'true' : undefined,
+      }, [
+        RangeValueRow({ label: 'X offset (px)', name: names.shadowX, value: shadowX, onChange: handleShadowXChange, min: -50, max: 50, step: 1, unit:'px' }),
+        RangeValueRow({ label: 'Y offset (px)', name: names.shadowY, value: shadowY, onChange: handleShadowYChange, min: -50, max: 50, step: 1, unit:'px' }),
+        RangeValueRow({ label: 'Blur (px)', name: names.shadowBlur, value: shadowBlur, onChange: handleShadowBlurChange, min: 0, max: 100, step: 1, unit:'px' }),
       ]);
+      const shadowHint = h('p', { className: 'pwpl-typo__help' }, 'Adjusting color or sliders switches style to Custom.');
       // Place Text Shadow in the left card (Basics) to use available space
       pushNode(shadowToggle, 'basics');
+      pushNode(shadowStyleControl, 'basics');
       pushNode(shadowColorPicker, 'basics');
       pushNode(shadowXYZ, 'basics');
+      pushNode(shadowHint, 'basics');
       // Hidden inputs
       pushHidden(hiddenFields, 'shadowEnable', shadowEnabled ? '1' : '');
       pushHidden(hiddenFields, 'shadowX', shadowX);
       pushHidden(hiddenFields, 'shadowY', shadowY);
       pushHidden(hiddenFields, 'shadowBlur', shadowBlur);
       pushHidden(hiddenFields, 'shadowColor', shadowColor);
+      pushHidden(hiddenFields, 'shadowStyle', shadowStyle || 'custom');
     }
 
     pushHidden(hiddenFields, 'color', color);
@@ -3362,6 +3477,18 @@
       uppercase: ctaFont.transform || 'none',
     });
 
+    const titleShadowStyleInitial = titleTypos.shadow_style || 'custom';
+    const titleShadowPresetInit = TEXT_SHADOW_PRESETS[titleShadowStyleInitial];
+    const shadowDefaultValue = (rawValue, prop, fallback = 0) => {
+      if (rawValue != null && rawValue !== '') {
+        return scalar(rawValue, fallback);
+      }
+      if (titleShadowPresetInit && titleShadowPresetInit.single && typeof titleShadowPresetInit[prop] === 'number') {
+        return titleShadowPresetInit[prop];
+      }
+      return fallback;
+    };
+
     const sections = [
       {
         id: 'title-text',
@@ -3379,13 +3506,15 @@
             shadowY: 'pwpl_table[card][typo][title][shadow_y]',
             shadowBlur: 'pwpl_table[card][typo][title][shadow_blur]',
             shadowColor: 'pwpl_table[card][typo][title][shadow_color]',
+            shadowStyle: 'pwpl_table[card][typo][title][shadow_style]',
           },
           values: Object.assign({}, makeValues(titleText, titleTypos), {
             shadowEnable: (titleTypos.shadow_enable ? '1' : ''),
-            shadowX: scalar(titleTypos.shadow_x || 0),
-            shadowY: scalar(titleTypos.shadow_y || 0),
-            shadowBlur: scalar(titleTypos.shadow_blur || 0),
+            shadowX: shadowDefaultValue(titleTypos.shadow_x, 'x'),
+            shadowY: shadowDefaultValue(titleTypos.shadow_y, 'y'),
+            shadowBlur: shadowDefaultValue(titleTypos.shadow_blur, 'blur'),
             shadowColor: titleTypos.shadow_color || 'rgba(0,0,0,.5)',
+            shadowStyle: titleShadowStyleInitial,
           }),
           onPreviewPatch: previewMap('title', {
             shadow_enabled: 'card.typo.title.shadow_enabled',
@@ -3393,6 +3522,7 @@
             shadow_y: 'card.typo.title.shadow_y',
             shadow_blur: 'card.typo.title.shadow_blur',
             shadow_color: 'card.typo.title.shadow_color',
+            shadow_style: 'card.typo.title.shadow_style',
             shadow: 'card.typo.title.shadow',
           }),
           layoutVariant: 'title-two-col',
