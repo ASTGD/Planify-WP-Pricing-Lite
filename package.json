@@ -6,7 +6,10 @@
   "directories": {
     "doc": "docs"
   },
-  "scripts": {},
+  "scripts": {
+    "build:mui": "node ./assets/admin/mui/scripts/build.mjs",
+    "watch:mui": "node ./assets/admin/mui/scripts/build.mjs --watch"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ASTGD/Planify-WP-Pricing-Lite.git"
@@ -21,6 +24,15 @@
   "homepage": "https://github.com/ASTGD/Planify-WP-Pricing-Lite#readme",
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "@types/node": "^24.10.1"
+    "@types/node": "^24.10.1",
+    "esbuild": "^0.24.0"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.2.1",
+    "@mui/material": "^6.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

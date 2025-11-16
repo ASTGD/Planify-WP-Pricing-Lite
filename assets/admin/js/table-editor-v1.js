@@ -3383,7 +3383,8 @@
     const typo = (data.card.typo || {});
     const scalar = (val) => toNumberOrToken(val);
 
-    const titleText = text.title || {};
+    // Title visual color/family are sourced from the shared top text config
+    const titleText = text.top || {};
     const subtitleText = text.subtitle || {};
     const priceText = text.price || {};
     const billingText = text.billing || {};
@@ -3497,18 +3498,22 @@
           idKey: 'title',
           label: 'Title',
           names: {
-            color: 'pwpl_table[card][text][title][color]',
-            family: 'pwpl_table[card][text][title][family]',
+            // Map title color to top text color so frontend can apply consistently
+            color: 'pwpl_table[card][text][top][color]',
+            family: 'pwpl_table[card][text][top][family]',
             size: 'pwpl_table[card][typo][title][size]',
             weight: 'pwpl_table[card][typo][title][weight]',
+            align: 'pwpl_table[card][typo][title][align]',
             shadowEnable: 'pwpl_table[card][typo][title][shadow_enable]',
-            shadowX: 'pwpl_table[card][typo][title][shadow_x]',
-            shadowY: 'pwpl_table[card][typo][title][shadow_y]',
-            shadowBlur: 'pwpl_table[card][typo][title][shadow_blur]',
-            shadowColor: 'pwpl_table[card][typo][title][shadow_color]',
+          shadowX: 'pwpl_table[card][typo][title][shadow_x]',
+          shadowY: 'pwpl_table[card][typo][title][shadow_y]',
+          shadowBlur: 'pwpl_table[card][typo][title][shadow_blur]',
+          shadowColor: 'pwpl_table[card][typo][title][shadow_color]',
             shadowStyle: 'pwpl_table[card][typo][title][shadow_style]',
           },
           values: Object.assign({}, makeValues(titleText, titleTypos), {
+            // Align is stored in typo.title
+            align: (titleTypos.align || ''),
             shadowEnable: (titleTypos.shadow_enable ? '1' : ''),
             shadowX: shadowDefaultValue(titleTypos.shadow_x, 'x'),
             shadowY: shadowDefaultValue(titleTypos.shadow_y, 'y'),
@@ -3517,6 +3522,9 @@
             shadowStyle: titleShadowStyleInitial,
           }),
           onPreviewPatch: previewMap('title', {
+            // Ensure title color/family preview target the shared top text config
+            color: 'card.text.top.color',
+            family: 'card.text.top.family',
             shadow_enabled: 'card.typo.title.shadow_enabled',
             shadow_x: 'card.typo.title.shadow_x',
             shadow_y: 'card.typo.title.shadow_y',

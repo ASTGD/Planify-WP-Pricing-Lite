@@ -12,6 +12,8 @@ class PWPL_Plugin {
             ( new PWPL_Settings() )->init();
             // New Table Editor UI (V1) — optional preview
             ( new PWPL_Admin_UI_V1() )->init();
+            // Experimental UI V2 (React + Material UI)
+            ( new PWPL_Admin_MUI() )->init();
         }
     }
 }
