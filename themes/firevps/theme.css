@@ -787,6 +787,9 @@
   margin: 0;
   color: var(--card-top-text-color, #1d1a15);
   letter-spacing: -0.01em;
+  /* Dynamic alignment and optional text shadow */
+  text-align: var(--card-title-align, inherit);
+  text-shadow: var(--card-title-shadow, none);
 }
 
 .pwpl-table--theme-firevps .fvps-plan-lead {

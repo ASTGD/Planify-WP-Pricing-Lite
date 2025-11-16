@@ -613,6 +613,15 @@ class PWPL_Meta {
                 $entry_clean['weight'] = max( $limits['weight'][0], min( $limits['weight'][1], $weight ) );
             }
 
+            // Optional text alignment for supported areas
+            if ( array_key_exists( 'align', $entry_input ) ) {
+                $align = is_string( $entry_input['align'] ) ? strtolower( trim( $entry_input['align'] ) ) : '';
+                $allowed_align = [ 'left', 'center', 'right' ];
+                if ( in_array( $align, $allowed_align, true ) ) {
+                    $entry_clean['align'] = $align;
+                }
+            }
+
             if ( 'title' === $slug ) {
                 $entry_clean['shadow_enable'] = ! empty( $entry_input['shadow_enable'] ) ? '1' : '';
                 if ( array_key_exists( 'shadow_x', $entry_input ) && $entry_input['shadow_x'] !== '' ) {
