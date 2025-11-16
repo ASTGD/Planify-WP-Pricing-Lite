@@ -1976,6 +1976,9 @@
       pushNode(lineHeightNode, layoutVariant === 'title-two-col' ? 'styles' : undefined);
     }
 
+    // Hidden inputs collection (declare before any pushHidden usage below)
+    const hiddenFields = [];
+
     // Title-only Text Shadow UI when names.* provided (placed in styles column)
     if (layoutVariant === 'title-two-col' && names.shadowEnable) {
       const shadowToggle = h('label', { className: 'pwpl-typo__field' }, [
@@ -2016,7 +2019,6 @@
       pushHidden(hiddenFields, 'shadowColor', shadowColor);
     }
 
-    const hiddenFields = [];
     pushHidden(hiddenFields, 'color', color);
     pushHidden(hiddenFields, 'family', family);
     pushHidden(hiddenFields, 'weight', weight);
