@@ -2008,9 +2008,10 @@
         RangeValueRow({ label: 'Y offset (px)', name: names.shadowY, value: shadowY, onChange: (v)=>{ setShadowY(v); pushShadowPreview(shadowEnabled, shadowX, v, shadowBlur, shadowColor); }, min: -50, max: 50, step: 1, unit:'px' }),
         RangeValueRow({ label: 'Blur (px)', name: names.shadowBlur, value: shadowBlur, onChange: (v)=>{ setShadowBlur(v); pushShadowPreview(shadowEnabled, shadowX, shadowY, v, shadowColor); }, min: 0, max: 100, step: 1, unit:'px' }),
       ]);
-      pushNode(shadowToggle, 'styles');
-      pushNode(shadowColorPicker, 'styles');
-      pushNode(shadowXYZ, 'styles');
+      // Place Text Shadow in the left card (Basics) to use available space
+      pushNode(shadowToggle, 'basics');
+      pushNode(shadowColorPicker, 'basics');
+      pushNode(shadowXYZ, 'basics');
       // Hidden inputs
       pushHidden(hiddenFields, 'shadowEnable', shadowEnabled ? '1' : '');
       pushHidden(hiddenFields, 'shadowX', shadowX);
