@@ -731,10 +731,13 @@
     };
     const suffix = (!disabledWhenToken || !isToken(sanitizedValue)) ? (unit || '') : '';
     const hiddenValue = sanitizedValue;
+    // percent fill for range track
+    const pct = (Number(max) > Number(min)) ? ((numericValue - Number(min)) / (Number(max) - Number(min))) * 100 : 0;
+    const fillPct = Math.max(0, Math.min(100, pct));
     return h('div', { className: 'pwpl-row' }, [
       h('div', { className: 'pwpl-row__left' }, [
         label ? h('label', { className: 'pwpl-row__label', htmlFor: inputId, id: labelId }, label) : null,
-        h('div', { className: 'pwpl-range' }, h(RangeControl, {
+        h('div', { className: 'pwpl-range', style: { '--pwpl-fill': `${fillPct}%` } }, h(RangeControl, {
           label: null,
           value: numericValue,
           min,
@@ -1930,7 +1933,7 @@
     ]);
     if (layoutVariant === 'title-two-col') {
       pushNode(h('div', { className: 'pwpl-typo__row' }, [fontField]), 'basics');
-      pushNode(h('div', { className: 'pwpl-typo__row' }, [weightFieldOptions]), 'styles');
+      pushNode(h('div', { className: 'pwpl-typo__row' }, [weightFieldOptions]), 'basics');
     } else {
       pushNode(h('div', { className: 'pwpl-typo__row' }, [fontField, weightFieldOptions]));
     }
@@ -1946,7 +1949,7 @@
       pushNode(h('div', { className: 'pwpl-typo__group' }, [
         h('span', { className: 'pwpl-typo__label' }, `${label} Font Style`),
         h(SegmentedButtonGroup, { items: styleItems, ariaLabel: `${label} font style` }),
-      ]), layoutVariant === 'title-two-col' ? 'styles' : undefined);
+      ]), layoutVariant === 'title-two-col' ? 'basics' : undefined);
     }
 
     if (ENABLE_TYPO_ALIGNMENT && showAlignment) {
@@ -1963,7 +1966,7 @@
       pushNode(h('div', { className: 'pwpl-typo__group' }, [
         h('span', { className: 'pwpl-typo__label' }, `${label} Text Alignment`),
         h(SegmentedButtonGroup, { items: alignItems, role: 'radiogroup', className: 'pwpl-typo__seg--align', ariaLabel: `${label} alignment` }),
-      ]), layoutVariant === 'title-two-col' ? 'styles' : undefined);
+      ]), layoutVariant === 'title-two-col' ? 'basics' : undefined);
     }
 
     if (showColor) {
@@ -2017,7 +2020,7 @@
         unit: resolvedTrackingRange.unit,
         disabledWhenToken: resolvedTrackingRange.disabledWhenToken !== undefined ? resolvedTrackingRange.disabledWhenToken : true,
       });
-      pushNode(trackingNode, layoutVariant === 'title-two-col' ? 'styles' : undefined);
+    pushNode(trackingNode, layoutVariant === 'title-two-col' ? 'basics' : undefined);
     }
 
     if (ENABLE_TYPO_LINE_HEIGHT && showLineHeight) {
@@ -2032,7 +2035,7 @@
         placeholder: resolvedLineHeightRange.placeholder,
         unit: resolvedLineHeightRange.unit,
       });
-      pushNode(lineHeightNode, layoutVariant === 'title-two-col' ? 'styles' : undefined);
+    pushNode(lineHeightNode, layoutVariant === 'title-two-col' ? 'basics' : undefined);
     }
 
     // Hidden inputs collection (declare before any pushHidden usage below)
@@ -2121,11 +2124,11 @@
       ]);
       const shadowHint = h('p', { className: 'pwpl-typo__help' }, 'Adjusting color or sliders switches style to Custom.');
       // Place Text Shadow in the left card (Basics) to use available space
-      pushNode(shadowToggle, 'basics');
-      pushNode(shadowStyleControl, 'basics');
-      pushNode(shadowColorPicker, 'basics');
-      pushNode(shadowXYZ, 'basics');
-      pushNode(shadowHint, 'basics');
+      pushNode(shadowToggle, 'styles');
+      pushNode(shadowStyleControl, 'styles');
+      pushNode(shadowColorPicker, 'styles');
+      pushNode(shadowXYZ, 'styles');
+      pushNode(shadowHint, 'styles');
       // Hidden inputs
       pushHidden(hiddenFields, 'shadowEnable', shadowEnabled ? '1' : '');
       pushHidden(hiddenFields, 'shadowX', shadowX);
@@ -2150,20 +2153,26 @@
 
     const panelChildren = [];
     if (layoutVariant === 'title-two-col') {
-      panelChildren.push(
-        h('div', { className: 'pwpl-typo__two' }, [
-          h('div', { className: 'pwpl-typo__col' },
-            h('div', { className: 'pwpl-typo-card' }, [
-              ...layoutBasics,
-            ])
-          ),
-          h('div', { className: 'pwpl-typo__col' },
-            h('div', { className: 'pwpl-typo-card' }, [
-              ...layoutStyles,
-            ])
-          ),
-        ])
-      );
+      const columns = [];
+      if (layoutBasics.length) {
+        columns.push(
+          h('div', { className: 'pwpl-col' },
+            h('div', { className: 'pwpl-card' }, layoutBasics )
+          )
+        );
+      }
+      if (layoutStyles.length) {
+        columns.push(
+          h('div', { className: 'pwpl-col' },
+            h('div', { className: 'pwpl-card' }, layoutStyles )
+          )
+        );
+      }
+      if (columns.length) {
+        panelChildren.push(
+          h('div', { className: 'pwpl-two' }, columns )
+        );
+      }
     }
     panelChildren.push(...children);
     const fullChildren = hiddenFields.length ? panelChildren.concat(hiddenFields) : panelChildren;
@@ -2232,25 +2241,29 @@
             ]),
             names[side.key] ? HiddenInput({ name: names[side.key], value: safeValues[side.key] || '' }) : null,
           ])),
-          h('div', { className: 'pwpl-sides__lock' }, [
-            h('button', {
-              type: 'button',
-              className: 'pwpl-lock' + (locked ? ' is-locked' : ''),
-              onClick: () => onToggleLock && onToggleLock(!locked),
-              'aria-pressed': locked,
-              'aria-label': locked ? 'Unlock values' : 'Lock values',
-            }, locked ? 'Locked' : 'Unlocked'),
-          ]),
         ]),
       ]),
-      presets && presets.length ? h('div', { className: 'pwpl-sides-presets' },
-        presets.map((preset) => h('button', {
-          type: 'button',
-          key: String(preset),
-          className: 'pwpl-presets__chip',
-          onClick: () => handlePreset(preset),
-        }, `${preset}${unit}`))
-      ) : null,
+      h('div', { className: 'pwpl-sides-footer' }, [
+        presets && presets.length ? h('div', { className: 'pwpl-sides-presets' },
+          presets.map((preset) => h('button', {
+            type: 'button',
+            key: String(preset),
+            className: 'pwpl-presets__chip',
+            onClick: () => handlePreset(preset),
+          }, `${preset}${unit}`))
+        ) : h('div'),
+        h('div', { className: 'pwpl-sides__lock' }, [
+          h('label', { className: 'pwpl-lockchk' }, [
+            h('input', {
+              type: 'checkbox',
+              checked: !!locked,
+              onChange: (e) => onToggleLock && onToggleLock(!!e.target.checked),
+              'aria-label': 'Lock values',
+            }),
+            ' Locked'
+          ])
+        ])
+      ]),
     ]);
   }
   function Help({ text }){
@@ -2289,12 +2302,14 @@
     const [globalWidth, setGlobalWidth] = useState(scalar(layoutConfig.widths && layoutConfig.widths.global, '0'));
     const [globalColumns, setGlobalColumns] = useState(scalar(layoutConfig.columns && layoutConfig.columns.global, '0'));
     const [globalCardMin, setGlobalCardMin] = useState(scalar(layoutConfig.cardWidths && layoutConfig.cardWidths.global, '0'));
+    const [tableHeight, setTableHeight] = useState(scalar(layoutConfig.height, '0'));
+    const [columnGap, setColumnGap] = useState(scalar(layoutConfig.gap_x, '0'));
+    const [cardHeight, setCardHeight] = useState(scalar(cardLayout.height, '0'));
 
-    const deviceOrder = ['xxl','xl','lg','md','sm'];
+    const deviceOrder = ['xxl','xl','md','sm'];
     const DEVICE_LABELS = {
       xxl: 'Big screens (≥ 1536px)',
       xl:  'Desktop (1280–1535px)',
-      lg:  'Laptop (1024–1279px)',
       md:  'Tablet (768–1023px)',
       sm:  'Mobile (≤ 767px)'
     };
@@ -2483,11 +2498,11 @@
 
     const spacingLockSummary = lockPads ? 'Spacing lock: linked' : 'Spacing lock: free';
     const sectionSummaries = {
-      'layout-table': [globalWidthLabel, `${formatCount(globalColumns)} cols`, `min ${formatNumber(globalCardMin)}`],
+      'layout-table': [globalWidthLabel, `${formatCount(globalColumns)} cols`, `gap ${formatNumber(columnGap)}`],
       'layout-card': [
         `Container r ${formatNumber(radius)} · b ${formatNumber(borderW)} · ${summarizeColor(borderColor)}`,
-        `Spacing Pad ${formatSides(pads)} · Mar ${formatSides(margins)}`,
-        `${spacingLockSummary} · Split: ${formatSplit(split)}`,
+        `W ${formatNumber(globalCardMin)} · H ${formatNumber(cardHeight)}`,
+        `Pad ${formatSides(pads)} · Mar ${formatSides(margins)} · ${spacingLockSummary} · Split: ${formatSplit(split)}`,
       ],
       'layout-cta': [
         `Width ${ctaWidthSel || 'auto'}`,
@@ -2525,109 +2540,136 @@
       );
     };
 
-    const tableSection = h('div', { className: 'pwpl-tabs pwpl-tabs--segmented' },
-      h(TabPanel, {
-        tabs: [
-          { name: 'widths', title: i18n((data.i18n.tabs || {}).widths) || 'Widths' },
-          { name: 'breakpoints', title: i18n((data.i18n.tabs || {}).breakpoints) || 'Breakpoints' },
-        ],
-      }, (tab) => {
-        if (tab.name === 'widths') {
-          return h('div', null, [
-            RangeValueRow({
-              label: 'Global width',
-              name: 'pwpl_table[layout][widths][global]',
-              value: globalWidth,
-              onChange: (val) => setGlobalWidth(val),
-              min: 0,
-              max: 2000,
-              step: 10,
-              placeholder: 'auto',
-            }),
-            presetChips(WIDTH_PRESETS.concat(['fluid']), (preset) => {
-              if (preset === 'fluid') {
-                setGlobalWidth('0');
-                return;
-              }
-              setGlobalWidth(String(preset));
-            }, (preset) => preset === 'fluid' ? '100%' : `${preset}px`),
-            RangeValueRow({
-              label: 'Preferred columns',
-              name: 'pwpl_table[layout][columns][global]',
-              value: globalColumns,
-              onChange: (val) => setGlobalColumns(val),
-              min: 0,
-              max: 12,
-              step: 1,
-              unit: 'cols',
-            }),
-            RangeValueRow({
-              label: 'Global card minimum width',
-              name: 'pwpl_table[layout][card_widths][global]',
-              value: globalCardMin,
-              onChange: (val) => setGlobalCardMin(val),
-              min: 0,
-              max: 1200,
-              step: 10,
-              placeholder: 'inherit',
-            }),
-          ]);
-        }
-        const breakpointToolbar = h('div', { className: 'pwpl-tab-actions' }, [
-          h('button', { type: 'button', className: 'pwpl-presets__chip', onClick: copyGlobalToBreakpoints }, 'Copy Global'),
-          h('button', {
-            type: 'button',
-            className: 'pwpl-presets__chip' + (linkDevices ? ' is-active' : ''),
-            onClick: () => setLinkDevices((prev) => !prev),
-            'aria-pressed': linkDevices,
-          }, linkDevices ? 'Link on' : 'Link off'),
-        ]);
-        return h('div', null, [
-          breakpointToolbar,
-          h('div', { className: 'pwpl-breakpoints' }, deviceOrder.map((key) => {
-            const readable = DEVICE_LABELS[key] || key.toUpperCase();
-            return h('div', { key, className: 'pwpl-breakpoint-card' }, [
-              h('div', { className: 'pwpl-breakpoint-card__title' }, readable),
-              RangeValueRow({
-                label: 'Width',
-                name: `pwpl_table[layout][widths][${key}]`,
-                value: widths[key],
-                onChange: (val) => updateBreakpointField(setWidths, widths, key, val),
-                min: 0,
-                max: 2000,
-                step: 10,
-                placeholder: 'inherit',
-              }),
-              RangeValueRow({
-                label: 'Columns',
-                name: `pwpl_table[layout][columns][${key}]`,
-                value: columns[key],
-                onChange: (val) => updateBreakpointField(setColumns, columns, key, val),
-                min: 0,
-                max: 12,
-                step: 1,
-                unit: 'cols',
-                placeholder: 'inherit',
-              }),
-              RangeValueRow({
-                label: 'Card min width',
-                name: `pwpl_table[layout][card_widths][${key}]`,
-                value: cardW[key],
-                onChange: (val) => updateBreakpointField(setCardW, cardW, key, val),
-                min: 0,
-                max: 2000,
-                step: 10,
-                placeholder: 'inherit',
-              }),
-            ]);
-          }))
-        ]);
-      })
-    );
+    const renderCard = (child) => h('div', { className: 'pwpl-card' }, child);
+    const renderTwoCards = (leftChild, rightChild) => {
+      const cols = [];
+      if (leftChild) {
+        cols.push(h('div', { className: 'pwpl-col' }, renderCard(leftChild)));
+      }
+      if (rightChild) {
+        cols.push(h('div', { className: 'pwpl-col' }, renderCard(rightChild)));
+      }
+      if (!cols.length) {
+        return null;
+      }
+      return h('div', { className: 'pwpl-two' }, cols);
+    };
 
-    const planCardSection = h('div', { className: 'pwpl-card-groups' }, [
-      h('div', { className: 'pwpl-group' }, [
-        h('div', { className: 'pwpl-group__title' }, 'Card Container'),
+    // Build widths/columns two cards
+    const widthsLeft = h('div', null, [
+      h('h3', { className: 'pwpl-card__title' }, 'Table Size'),
+      RangeValueRow({
+        label: 'Table width',
+        name: 'pwpl_table[layout][widths][global]',
+        value: globalWidth,
+        onChange: (val) => setGlobalWidth(val),
+        min: 0,
+        max: 2000,
+        step: 10,
+        placeholder: 'auto',
+      }),
+      presetChips(WIDTH_PRESETS.concat(['fluid']), (preset) => {
+        if (preset === 'fluid') { setGlobalWidth('0'); return; }
+        setGlobalWidth(String(preset));
+      }, (preset) => preset === 'fluid' ? '100%' : `${preset}px`),
+      RangeValueRow({
+        label: 'Table height',
+        name: 'pwpl_table[layout][height]',
+        value: tableHeight,
+        onChange: (val) => setTableHeight(val),
+        min: 0,
+        max: 4000,
+        step: 10,
+        placeholder: 'auto',
+      }),
+    ]);
+    const widthsRight = h('div', null, [
+      h('h3', { className: 'pwpl-card__title' }, 'Columns'),
+      RangeValueRow({
+        label: 'Preferred columns',
+        name: 'pwpl_table[layout][columns][global]',
+        value: globalColumns,
+        onChange: (val) => setGlobalColumns(val),
+        min: 0,
+        max: 12,
+        step: 1,
+        unit: 'cols',
+      }),
+      RangeValueRow({
+        label: 'Column gap (px)',
+        name: 'pwpl_table[layout][gap_x]',
+        value: columnGap,
+        onChange: (val) => setColumnGap(val),
+        min: 0,
+        max: 96,
+        step: 2,
+        placeholder: 'auto',
+      }),
+    ]);
+    const widthsTwoCards = renderTwoCards(widthsLeft, widthsRight);
+    // Breakpoints card (now inline below widths)
+    const breakpointsBody = h('div', { className: 'pwpl-breakpoints' }, deviceOrder.map((key) => {
+      const readable = DEVICE_LABELS[key] || key.toUpperCase();
+      return h('div', { key, className: 'pwpl-breakpoint-card' }, [
+        h('div', { className: 'pwpl-breakpoint-card__title' }, readable),
+        RangeValueRow({
+          label: 'Width',
+          name: `pwpl_table[layout][widths][${key}]`,
+          value: widths[key],
+          onChange: (val) => updateBreakpointField(setWidths, widths, key, val),
+          min: 0,
+          max: 2000,
+          step: 10,
+          placeholder: 'inherit',
+        }),
+        RangeValueRow({
+          label: 'Columns',
+          name: `pwpl_table[layout][columns][${key}]`,
+          value: columns[key],
+          onChange: (val) => updateBreakpointField(setColumns, columns, key, val),
+          min: 0,
+          max: 12,
+          step: 1,
+          unit: 'cols',
+          placeholder: 'inherit',
+        }),
+        RangeValueRow({
+          label: 'Card min width',
+          name: `pwpl_table[layout][card_widths][${key}]`,
+          value: cardW[key],
+          onChange: (val) => updateBreakpointField(setCardW, cardW, key, val),
+          min: 0,
+          max: 2000,
+          step: 10,
+          placeholder: 'inherit',
+        }),
+      ]);
+    }));
+    const tableSection = h('div', null, [ widthsTwoCards, h('div', { className: 'pwpl-breakpoints-section' }, breakpointsBody) ]);
+
+    const planCardSection = (() => {
+      const containerFields = [
+        h('h3', { className: 'pwpl-card__title' }, 'Card Container'),
+        RangeValueRow({
+          label: 'Card Width',
+          name: 'pwpl_table[layout][card_widths][global]',
+          value: globalCardMin,
+          onChange: (val) => setGlobalCardMin(val),
+          min: 0,
+          max: 1200,
+          step: 10,
+          placeholder: 'inherit',
+        }),
+        RangeValueRow({
+          label: 'Card Height',
+          name: 'pwpl_table[card][layout][height]',
+          value: cardHeight,
+          onChange: (val) => setCardHeight(val),
+          min: 0,
+          max: 2000,
+          step: 10,
+          placeholder: 'auto',
+        }),
         RangeValueRow({
           label: 'Card radius',
           name: 'pwpl_table[card][layout][radius]',
@@ -2656,9 +2698,9 @@
           })
         ),
         HiddenInput({ name: 'pwpl_table[card][colors][border]', value: borderColor }),
-      ]),
-      h('div', { className: 'pwpl-group' }, [
-        h('div', { className: 'pwpl-group__title' }, 'Card Spacing'),
+      ];
+      const layoutFields = [
+        h('h3', { className: 'pwpl-card__title' }, 'Card Layout & Margins'),
         FourSidesControl({
           label: 'Padding (px)',
           values: pads,
@@ -2687,18 +2729,29 @@
           onToggleLock: handleMarginLockToggle,
           onChange: setMargins,
         }),
-      ]),
-      h('div', { className: 'pwpl-group' }, [
-        h('div', { className: 'pwpl-group__title' }, 'Card Layout'),
-        h('label', { className: 'components-base-control__label' }, 'Split layout'),
-        h('select', { value: split, onChange: (e) => setSplit(e.target.value) }, [
-          h('option', { value: 'two_tone' }, 'Two-tone (header & CTA vs. specs)'),
+        h('div', { className: 'pwpl-card__section' }, [
+          h('span', { className: 'pwpl-card__section-title' }, 'Card Style'),
+          h('div', { className: 'pwpl-row' }, [
+            h('div', { className: 'pwpl-row__left' }, [
+              h('label', { className: 'pwpl-row__label', htmlFor: makeDomId('pwpl_table[card][layout][split]') }, 'Split layout'),
+            ]),
+            h('div', { className: 'pwpl-row__control' }, [
+              h('select', { id: makeDomId('pwpl_table[card][layout][split]'), value: split, onChange: (e) => setSplit(e.target.value) }, [
+                h('option', { value: 'two_tone' }, 'Two-tone (header & CTA vs. specs)'),
+              ]),
+              HiddenInput({ name: 'pwpl_table[card][layout][split]', value: split }),
+            ]),
+          ]),
         ]),
-        HiddenInput({ name: 'pwpl_table[card][layout][split]', value: split }),
-      ]),
-    ]);
+      ];
+      return renderTwoCards(
+        h('div', null, containerFields),
+        h('div', null, layoutFields)
+      );
+    })();
 
-    const ctaSizeSection = h('div', null, [
+    const ctaSizeSection = renderCard(h('div', null, [
+      h('h3', { className: 'pwpl-card__title' }, 'CTA Size & Layout'),
       h('div', null, [
         h('label', { className:'components-base-control__label' }, 'Width'),
         h('select', {
@@ -2804,10 +2857,11 @@
         max: 10,
         step: 1,
       }),
-    ]);
+    ]));
 
-    const specsStyleSection = h('div', { className:'pwpl-form-grid' }, [
+    const specsStyleSection = renderCard(h('div', { className:'pwpl-form-grid' }, [
       h('div', null, [
+        h('h3', { className: 'pwpl-card__title' }, 'Specs Style'),
         h('label', { className:'components-base-control__label' }, 'Specs style'),
         h('select', { value:specStyle, onChange:(e)=> setSpecStyle(e.target.value) }, [
           h('option', { value:'default' }, 'Default'),
@@ -2817,13 +2871,15 @@
         ]),
         HiddenInput({ name:'pwpl_table[ui][specs_style]', value: specStyle }),
       ])
-    ]);
+    ]));
 
     const sidebar = (data.i18n && data.i18n.sidebar) ? data.i18n.sidebar : {};
     const layoutLabel = i18n(sidebar.layoutSpacing) || 'Layout & Spacing';
 
+    const tableCard = tableSection;
+
     const sections = [
-      { id: 'layout-table', title: 'Table Width & Columns', content: tableSection },
+      { id: 'layout-table', title: 'Table Width & Columns', content: tableCard },
       {
         id: 'layout-card',
         title: 'Plan Card Layout, Sizing & Spacing',
@@ -2896,6 +2952,8 @@
       openFirstMatch(sections);
     };
 
+    const renderCard = (child, title) => h('div', { className:'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), child] : child);
+
     const interactionsSection = h('div', { className:'pwpl-v1-grid' }, [
       h('div', { style:{ display:'grid', gridTemplateColumns:'repeat(2, minmax(120px, 1fr))', gap:'10px' } },
         flagKeys.map((k)=> h('label', { key:k, className:'components-base-control__label' }, [
@@ -2920,7 +2978,7 @@
     ]);
 
     const sections = [
-      { id: 'animation-interactions', title: 'Interactions', content: interactionsSection },
+      { id: 'animation-interactions', title: 'Interactions', content: renderCard(interactionsSection, 'Specs Interactions') },
     ];
 
     const sidebar = (data.i18n && data.i18n.sidebar) ? data.i18n.sidebar : {};
@@ -3287,6 +3345,8 @@
       openFirstMatch(sections);
     };
 
+    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), content] : content);
+
     const enabledSection = h('div', { className:'pwpl-v1-grid' }, [
       dims.map((d)=> h('label', { key:'en-'+d, className:'components-base-control__label' }, [
         h('input', { type:'checkbox', checked: enabled.has(d), onChange:()=> toggleEnabled(d) }), ' Enable ', d
@@ -3350,9 +3410,9 @@
     ]);
 
     const sections = [
-      { id: 'filters-enable', title: 'Enable Filters', content: enabledSection },
-      { id: 'filters-allowed', title: 'Allowed Lists', content: listsSection },
-      { id: 'filters-platform-order', title: 'Platform Order', content: platformSection },
+      { id: 'filters-enable', title: 'Enable Filters', content: renderCard(enabledSection) },
+      { id: 'filters-allowed', title: 'Allowed Lists', content: renderCard(listsSection) },
+      { id: 'filters-platform-order', title: 'Platform Order', content: renderCard(platformSection) },
     ];
 
     return h('section', { className:'pwpl-v1-block' }, [
@@ -3490,6 +3550,25 @@
       return fallback;
     };
 
+    const renderCard = (child) => h('div', { className: 'pwpl-card' }, child);
+    const renderTwoCards = (leftChild, rightChild) => {
+      const columns = [];
+      if (leftChild) {
+        columns.push(
+          h('div', { className: 'pwpl-col' }, renderCard(leftChild))
+        );
+      }
+      if (rightChild) {
+        columns.push(
+          h('div', { className: 'pwpl-col' }, renderCard(rightChild))
+        );
+      }
+      if (! columns.length) {
+        return null;
+      }
+      return h('div', { className: 'pwpl-two' }, columns);
+    };
+
     const sections = [
       {
         id: 'title-text',
@@ -3539,7 +3618,7 @@
       {
         id: 'subtitle-text',
         title: 'Subtitle Text',
-        content: h(TypographySection, {
+        content: renderCard(h(TypographySection, {
           idKey: 'subtitle',
           label: 'Subtitle',
           names: {
@@ -3550,12 +3629,12 @@
           },
           values: makeValues(subtitleText, subtitleTypos),
           onPreviewPatch: previewMap('subtitle'),
-        }),
+        })),
       },
       {
         id: 'price-text',
         title: 'Price Text',
-        content: h('div', { className: 'pwpl-typo-stack' }, [
+        content: renderTwoCards(
           h(TypographySection, {
             idKey: 'price',
             label: 'Price',
@@ -3568,13 +3647,13 @@
             values: makeValues(priceText, priceTypos),
             onPreviewPatch: previewMap('price'),
           }),
-          priceExtras,
-        ]),
+          priceExtras
+        ),
       },
       {
         id: 'billing-text',
         title: 'Billing Text',
-        content: h(TypographySection, {
+        content: renderCard(h(TypographySection, {
           idKey: 'billing',
           label: 'Billing',
           names: {
@@ -3585,12 +3664,12 @@
           },
           values: makeValues(billingText, billingTypos),
           onPreviewPatch: previewMap('billing'),
-        }),
+        })),
       },
       {
         id: 'specs-text',
         title: 'Specs Text',
-        content: h(TypographySection, {
+        content: renderCard(h(TypographySection, {
           idKey: 'specs',
           label: 'Specs',
           names: {
@@ -3604,12 +3683,12 @@
             size: 'card.text.specs.size',
             weight: 'card.text.specs.weight',
           }),
-        }),
+        })),
       },
       {
         id: 'cta-typography',
         title: 'CTA Typography',
-        content: h(TypographySection, {
+        content: renderCard(h(TypographySection, {
           idKey: 'cta',
           label: 'CTA Label',
           names: {
@@ -3635,7 +3714,7 @@
             tracking: 'ui.cta.font.tracking',
             uppercase: 'ui.cta.font.transform',
           },
-        }),
+        })),
       },
     ].map((section) => Object.assign({}, section, { keywords: [section.title] }));
 
@@ -3984,12 +4063,46 @@
       renderCtaSection('focus', 'Focus'),
     ]);
 
+    const wrapCard = (content) => h('div', { className: 'pwpl-card' }, content);
+    const twoCard = (left, right) => {
+      const cols = [];
+      if (left) cols.push(h('div', { className: 'pwpl-col' }, wrapCard(left)));
+      if (right) cols.push(h('div', { className: 'pwpl-col' }, wrapCard(right)));
+      if (!cols.length) return null;
+      return h('div', { className: 'pwpl-two' }, cols);
+    };
+
+    const topSpecsCards = twoCard(
+      h(React.Fragment, null, [
+        h('h3', { className: 'pwpl-card__title' }, 'Top Background'),
+        topSection,
+      ]),
+      h(React.Fragment, null, [
+        h('h3', { className: 'pwpl-card__title' }, 'Specs Background'),
+        specsSection,
+      ])
+    );
+
+    const keylineCard = wrapCard(h(React.Fragment, null, [
+      h('h3', { className: 'pwpl-card__title' }, 'Keyline'),
+      keylineSection,
+    ]));
+
+    const presetCard = wrapCard(h(React.Fragment, null, [
+      h('h3', { className: 'pwpl-card__title' }, 'Theme Palettes'),
+      themePalettesSection,
+    ]));
+
+    const ctaCard = wrapCard(h(React.Fragment, null, [
+      h('h3', { className: 'pwpl-card__title' }, 'CTA Colors'),
+      ctaColorsSection,
+    ]));
+
     const sections = [
-      { id: 'colors-top', title: 'Top Background', content: topSection },
-      { id: 'colors-specs', title: 'Specs Background', content: specsSection },
-      { id: 'colors-keyline', title: 'Keyline', content: keylineSection },
-      { id: 'colors-presets', title: 'Theme Palettes', content: themePalettesSection },
-      { id: 'colors-cta', title: 'CTA Colors', content: ctaColorsSection },
+      { id: 'colors-top', title: 'Top & Specs Background', content: topSpecsCards },
+      { id: 'colors-keyline', title: 'Keyline', content: keylineCard },
+      { id: 'colors-presets', title: 'Theme Palettes', content: presetCard },
+      { id: 'colors-cta', title: 'CTA Colors', content: ctaCard },
     ];
 
     return h('section', { className:'pwpl-v1-block' }, [
@@ -4080,6 +4193,8 @@
       dim.set([...(dim.state||[]), { slug:'', label:'', color:'', text_color:'', icon:'', tone:'', start:'', end:'' }]);
     };
 
+    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), content] : content);
+
     const Priority = ()=>{
       const dims = ['period','location','platform'];
       const initP = (init.priority && init.priority.length) ? init.priority : dims;
@@ -4105,12 +4220,12 @@
           { name:'platform', title: i18n(data.i18n.tabs.platform) },
           { name:'priority', title: i18n(data.i18n.tabs.priority) },
         ]}, (tab)=>{
-          if (tab.name==='priority') return Priority();
+          if (tab.name==='priority') return renderCard(Priority(), 'Priority & Shadow');
           const dim = dims.find(d=> d.key===tab.name) || dims[0];
-          return h('div', null, [
+          return renderCard(h('div', null, [
             (dim.state||[]).map((row,idx)=> Row({ dim, idx, item: row })),
             h('div', { style:{ marginTop:'10px' } }, h('button', { type:'button', className:'button button-primary', onClick:()=> addRow(dim) }, 'Add Promotion')),
-          ]);
+          ]), dim.label);
         })
       ))
     ]);
@@ -4139,6 +4254,8 @@
       openFirstMatch(sections);
     };
 
+    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), content] : content);
+
     const trustSection = h('div', { className:'pwpl-v1-grid' }, [
       h('label', { className:'components-base-control__label' }, [
         h('input', { type:'checkbox', checked: !!trustTrio, onChange:(e)=> setTrustTrio(e.target.checked?1:0) }), ' Show trust row under CTA'
@@ -4155,7 +4272,7 @@
     ]);
 
     const sections = [
-      { id: 'advanced-trust', title: 'Trust & Inline CTA', content: trustSection },
+      { id: 'advanced-trust', title: 'Trust & Inline CTA', content: renderCard(trustSection) },
     ];
 
     return h('section', { className:'pwpl-v1-block' }, [

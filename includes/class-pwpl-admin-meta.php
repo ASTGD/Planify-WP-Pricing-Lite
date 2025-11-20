@@ -1708,6 +1708,28 @@ class PWPL_Admin_Meta {
             }
         }
 
+        // Column gap (gutter) — global scalar
+        if ( array_key_exists( 'gap_x', $layout_input ) ) {
+            $gap_val = (int) $layout_input['gap_x'];
+            $gap_val = max( 0, min( 96, $gap_val ) );
+            if ( $gap_val ) {
+                update_post_meta( $post_id, PWPL_Meta::LAYOUT_GAP_X, $gap_val );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::LAYOUT_GAP_X );
+            }
+        }
+
+        // Table height (single scalar)
+        if ( array_key_exists( 'height', $layout_input ) ) {
+            $height_val = (int) $layout_input['height'];
+            $height_val = max( 0, min( 4000, $height_val ) );
+            if ( $height_val ) {
+                update_post_meta( $post_id, PWPL_Meta::TABLE_HEIGHT, $height_val );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::TABLE_HEIGHT );
+            }
+        }
+
         // UI toggles
         if ( array_key_exists( 'tabs_glass', $ui_input ) ) {
             $tabs_glass = ! empty( $ui_input['tabs_glass'] ) ? 1 : 0;

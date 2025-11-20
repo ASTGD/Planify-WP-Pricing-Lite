@@ -38,14 +38,14 @@ class PWPL_Admin_UI_V1 {
             return;
         }
 
-        // Styles for the shell layout
-        $css_path = PWPL_DIR . 'assets/admin/css/admin-v1.css';
-        if ( file_exists( $css_path ) ) {
-            wp_enqueue_style( 'pwpl-admin-v1', PWPL_URL . 'assets/admin/css/admin-v1.css', [], filemtime( $css_path ) );
-        }
-
         // Ensure WordPress Components styles are present so TabPanel/Card look correct
         wp_enqueue_style( 'wp-components' );
+
+        // Styles for the shell layout (load after wp-components so we can override specifics)
+        $css_path = PWPL_DIR . 'assets/admin/css/admin-v1.css';
+        if ( file_exists( $css_path ) ) {
+            wp_enqueue_style( 'pwpl-admin-v1', PWPL_URL . 'assets/admin/css/admin-v1.css', [ 'wp-components' ], filemtime( $css_path ) );
+        }
 
         // React app using WordPress components
         $js_path = PWPL_DIR . 'assets/admin/js/table-editor-v1.js';
@@ -65,6 +65,8 @@ class PWPL_Admin_UI_V1 {
             $layout_widths_raw = get_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS, true );
             $layout_columns_raw= get_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS, true );
             $layout_cardw_raw  = get_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, true );
+            $layout_gapx_val   = (int) get_post_meta( $post_id, PWPL_Meta::LAYOUT_GAP_X, true );
+            $layout_height_val = (int) get_post_meta( $post_id, PWPL_Meta::TABLE_HEIGHT, true );
             $dims_enabled      = get_post_meta( $post_id, PWPL_Meta::DIMENSION_META, true );
             $allowed_platforms = get_post_meta( $post_id, PWPL_Meta::ALLOWED_PLATFORMS, true );
             $allowed_periods   = get_post_meta( $post_id, PWPL_Meta::ALLOWED_PERIODS, true );
@@ -107,6 +109,8 @@ class PWPL_Admin_UI_V1 {
                     'widths'     => $layout_widths,
                     'columns'    => $layout_columns,
                     'cardWidths' => $layout_cardw,
+                    'gap_x'      => $layout_gapx_val,
+                    'height'     => $layout_height_val,
                 ],
                 'card' => $card_config,
                 'filters' => [

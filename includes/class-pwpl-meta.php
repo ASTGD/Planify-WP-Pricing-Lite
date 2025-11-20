@@ -18,9 +18,11 @@ class PWPL_Meta {
     const PLAN_BADGES_OVERRIDE    = '_pwpl_badges_override';
     const TABLE_BADGES            = '_pwpl_badges';
     const TABLE_THEME             = '_pwpl_table_theme';
+    const TABLE_HEIGHT            = '_pwpl_table_height';
     const LAYOUT_WIDTHS           = '_pwpl_layout_widths';
     const LAYOUT_COLUMNS          = '_pwpl_layout_columns';
     const LAYOUT_CARD_WIDTHS      = '_pwpl_layout_card_widths';
+    const LAYOUT_GAP_X            = '_pwpl_layout_gap_x';
     const TABS_GLASS              = '_pwpl_tabs_glass';
     const TABS_GLASS_TINT         = '_pwpl_tabs_glass_tint';
     const TABS_GLASS_INTENSITY    = '_pwpl_tabs_glass_intensity';
@@ -111,6 +113,25 @@ class PWPL_Meta {
             'type'              => 'string',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => [ $this, 'sanitize_theme' ],
+            'show_in_rest'      => false,
+        ] );
+
+        // Column gap (gutter) between plan cards — global scalar in px
+        register_post_meta( 'pwpl_table', self::LAYOUT_GAP_X, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) {
+                $n = (int) $value; if ( $n < 0 ) $n = 0; if ( $n > 96 ) $n = 96; return $n; },
+            'show_in_rest'      => false,
+        ] );
+
+        // Table height (global)
+        register_post_meta( 'pwpl_table', self::TABLE_HEIGHT, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) { $n = (int) $value; if ( $n < 0 ) $n = 0; if ( $n > 4000 ) $n = 4000; return $n; },
             'show_in_rest'      => false,
         ] );
 
@@ -500,6 +521,18 @@ class PWPL_Meta {
             }
             $pad = (int) $pad_raw;
             $layout_clean[ $pad_key ] = max( 0, min( 32, $pad ) );
+        }
+
+        // Optional card height (px)
+        if ( array_key_exists( 'height', $layout_input ) ) {
+            $h_raw = $layout_input['height'];
+            if ( $h_raw !== '' && null !== $h_raw ) {
+                $h = (int) $h_raw;
+                // clamp to reasonable bounds
+                if ( $h < 0 ) { $h = 0; }
+                if ( $h > 2000 ) { $h = 2000; }
+                $layout_clean['height'] = $h;
+            }
         }
 
         if ( array_key_exists( 'split', $layout_input ) ) {

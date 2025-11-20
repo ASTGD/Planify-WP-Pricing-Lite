@@ -91,11 +91,16 @@ class PWPL_CPT {
         // Map by slug to rebuild order.
         $by_slug = [];
         foreach ( $filtered as $item ) {
+            // Rename legacy list view for clarity when dashboard is present
+            if ( isset( $item[2] ) && $item[2] === 'edit.php?post_type=pwpl_table' ) {
+                $item[0] = __( 'All Tables (List)', 'planify-wp-pricing-lite' );
+            }
             $by_slug[ $item[2] ] = $item;
         }
 
         $desired = [
-            'edit.php?post_type=pwpl_table',      // All Pricing Tables
+            'pwpl-tables-dashboard',              // Dashboard view (cards)
+            'edit.php?post_type=pwpl_table',      // All Pricing Tables (list)
             'post-new.php?post_type=pwpl_table',  // Add New Pricing Table
             'edit.php?post_type=pwpl_plan',       // All Plans
             'post-new.php?post_type=pwpl_plan',   // Add New Plan
