@@ -1,15 +1,197 @@
 (function(w){
   const wp = w.wp || window.wp || {};
   const element = wp.element || {};
-  const { createElement: h, useState, useEffect } = element;
+  const { createElement: h, useState, useEffect, useRef } = element;
 
-  const REQUIRED_COMPONENTS = [ 'Card', 'CardBody', 'TabPanel', 'TextControl', 'ColorPicker' ];
+  const REQUIRED_COMPONENTS = [ 'Card', 'CardBody', 'TabPanel', 'TextControl' ];
   const getWPComponents = () => (w.wp && w.wp.components) || {};
   const hasRequiredComponents = () => {
     const cmp = getWPComponents();
     return REQUIRED_COMPONENTS.every((key) => typeof cmp[ key ] === 'function');
   };
   const classNames = (base, extra) => extra ? base + ' ' + extra : base;
+  const clampChannel = (value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) {
+      return 0;
+    }
+    return Math.max(0, Math.min(255, Math.round(num)));
+  };
+  const clampAlpha = (value) => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) {
+      return 1;
+    }
+    if (num <= 0) {
+      return 0;
+    }
+    if (num >= 1) {
+      return 1;
+    }
+    return Number(num.toFixed(2));
+  };
+  const rgbaString = (rgb = {}) => {
+    const { r = 0, g = 0, b = 0, a = 1 } = rgb;
+    return `rgba(${clampChannel(r)}, ${clampChannel(g)}, ${clampChannel(b)}, ${clampAlpha(a)})`;
+  };
+  const parseCssColor = (value) => {
+    if (typeof value !== 'string') {
+      return { r: 0, g: 0, b: 0, a: 1 };
+    }
+    const raw = value.trim();
+    const rgbaMatch = raw.match(/^rgba?\(([^)]+)\)/i);
+    if (rgbaMatch) {
+      const parts = rgbaMatch[1].split(',').map((v) => v.trim());
+      const r = clampChannel(parseFloat(parts[0]));
+      const g = clampChannel(parseFloat(parts[1]));
+      const b = clampChannel(parseFloat(parts[2]));
+      const a = parts[3] !== undefined ? clampAlpha(parseFloat(parts[3])) : 1;
+      return { r, g, b, a };
+    }
+    if (/^#/.test(raw) || /^[0-9a-f]{3,8}$/i.test(raw)) {
+      const rgb = hexToRgb(raw);
+      return { ...rgb, a: 1 };
+    }
+    return { r: 0, g: 0, b: 0, a: 1 };
+  };
+  const rgbaFromHsv = (h, s, v, a = 1) => {
+    const { r, g, b } = hsvToRgb(h, s, v);
+    return rgbaString({ r, g, b, a });
+  };
+  const normalizeColorValue = (value, allowAlpha = false) => {
+    if (value == null) {
+      return '';
+    }
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return '';
+      }
+      if (/^#/.test(trimmed) || /^rgb(a)?\(/i.test(trimmed)) {
+        return trimmed;
+      }
+      if (/^[0-9a-f]{3,8}$/i.test(trimmed)) {
+        return '#' + trimmed;
+      }
+      return trimmed;
+    }
+    if (typeof value === 'object') {
+      if (allowAlpha && value.rgb) {
+        return rgbaString(value.rgb);
+      }
+      if (typeof value.hex === 'string') {
+        return value.hex;
+      }
+      if (typeof value.color === 'string') {
+        return normalizeColorValue(value.color, allowAlpha);
+      }
+    }
+    return '';
+  };
+  const clamp01 = (value) => {
+    if (!Number.isFinite(value)) {
+      return 0;
+    }
+    if (value <= 0) {
+      return 0;
+    }
+    if (value >= 1) {
+      return 1;
+    }
+    return value;
+  };
+  const hexToRgb = (hex) => {
+    if (typeof hex !== 'string') {
+      return { r: 0, g: 0, b: 0 };
+    }
+    let raw = hex.trim();
+    if (!raw) {
+      return { r: 0, g: 0, b: 0 };
+    }
+    if (raw[0] === '#') {
+      raw = raw.slice(1);
+    }
+    if (raw.length === 3) {
+      raw = raw.split('').map((c) => c + c).join('');
+    }
+    if (raw.length !== 6) {
+      return { r: 0, g: 0, b: 0 };
+    }
+    const r = parseInt(raw.slice(0, 2), 16);
+    const g = parseInt(raw.slice(2, 4), 16);
+    const b = parseInt(raw.slice(4, 6), 16);
+    if ([r, g, b].some((v) => Number.isNaN(v))) {
+      return { r: 0, g: 0, b: 0 };
+    }
+    return { r, g, b };
+  };
+  const rgbToHex = ({ r = 0, g = 0, b = 0 }) => {
+    const toHex = (value) => {
+      const clamped = Math.max(0, Math.min(255, Math.round(value)));
+      return clamped.toString(16).padStart(2, '0');
+    };
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+  const rgbToHsv = (r = 0, g = 0, b = 0) => {
+    const rn = r / 255;
+    const gn = g / 255;
+    const bn = b / 255;
+    const max = Math.max(rn, gn, bn);
+    const min = Math.min(rn, gn, bn);
+    const delta = max - min;
+    let h = 0;
+    if (delta !== 0) {
+      if (max === rn) {
+        h = ((gn - bn) / delta) % 6;
+      } else if (max === gn) {
+        h = (bn - rn) / delta + 2;
+      } else {
+        h = (rn - gn) / delta + 4;
+      }
+      h *= 60;
+      if (h < 0) {
+        h += 360;
+      }
+    }
+    const s = max === 0 ? 0 : delta / max;
+    const v = max;
+    return { h, s, v };
+  };
+  const hsvToRgb = (h = 0, s = 0, v = 0) => {
+    const hh = ((h % 360) + 360) % 360;
+    const c = v * s;
+    const x = c * (1 - Math.abs((hh / 60) % 2 - 1));
+    const m = v - c;
+    let rp = 0, gp = 0, bp = 0;
+    if (hh >= 0 && hh < 60) { rp = c; gp = x; bp = 0; }
+    else if (hh >= 60 && hh < 120) { rp = x; gp = c; bp = 0; }
+    else if (hh >= 120 && hh < 180) { rp = 0; gp = c; bp = x; }
+    else if (hh >= 180 && hh < 240) { rp = 0; gp = x; bp = c; }
+    else if (hh >= 240 && hh < 300) { rp = x; gp = 0; bp = c; }
+    else { rp = c; gp = 0; bp = x; }
+    return {
+      r: Math.round((rp + m) * 255),
+      g: Math.round((gp + m) * 255),
+      b: Math.round((bp + m) * 255),
+    };
+  };
+  const hsvToHex = (h = 0, s = 0, v = 0) => rgbToHex(hsvToRgb(h, s, v));
+  const rgbaToHex8 = (r = 0, g = 0, b = 0, a = 1) => {
+    const toHex = (value) => {
+      const clamped = Math.max(0, Math.min(255, Math.round(value)));
+      return clamped.toString(16).padStart(2, '0');
+    };
+    const alphaByte = Math.max(0, Math.min(255, Math.round(clamp01(a) * 255)));
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}${toHex(alphaByte)}`;
+  };
+  const hsvToHex8 = (h = 0, s = 0, v = 0, a = 1) => {
+    const { r, g, b } = hsvToRgb(h, s, v);
+    return rgbaToHex8(r, g, b, a);
+  };
+  const hexToHsv = (hex) => {
+    const rgb = hexToRgb(hex);
+    return rgbToHsv(rgb.r, rgb.g, rgb.b);
+  };
 
   const FallbackCard = (props = {}) => {
     const { className = '', children, ...rest } = props;
@@ -40,24 +222,6 @@
   };
   const FallbackNumberControl = (props = {}) => {
     return FallbackTextControl( { ...props, type: 'number' } );
-  };
-  const FallbackColorPicker = (props = {}) => {
-    const { color, onChangeComplete, onChange, className = '' } = props;
-    const handleChange = ( event ) => {
-      const next = event && event.target ? event.target.value : event;
-      if ( typeof onChangeComplete === 'function' ) {
-        onChangeComplete( next );
-      } else if ( typeof onChange === 'function' ) {
-        onChange( next );
-      }
-    };
-    return h('input', {
-      type: 'text',
-      value: typeof color === 'string' ? color : '',
-      onChange: handleChange,
-      placeholder: '#FFFFFF',
-      className: classNames( 'pwpl-colorpicker-fallback components-color-picker__input', className ),
-    });
   };
   const FallbackRangeControl = (props = {}) => {
     const { value, onChange, min, max, step, disabled, className = '' } = props;
@@ -95,7 +259,6 @@
   const TabPanel = createComponentProxy( 'TabPanel', FallbackTabPanel );
   const TextControl = createComponentProxy( 'TextControl', FallbackTextControl );
   const NumberControl = createComponentProxy( '__experimentalNumberControl', FallbackNumberControl );
-  const ColorPicker = createComponentProxy( 'ColorPicker', FallbackColorPicker );
   const RangeControl = createComponentProxy( 'RangeControl', FallbackRangeControl );
   const BaseColorPalette = w.PWPL_ColorPalette;
   const PaletteFallback = function PaletteFallback( props ) {
@@ -113,27 +276,69 @@
       } ),
     ] );
   };
-  const ColorPaletteControl = typeof BaseColorPalette === 'function' ? BaseColorPalette : PaletteFallback;
+  let ColorPaletteControl = typeof BaseColorPalette === 'function' ? BaseColorPalette : null;
 
+  // Inlined accordion implementation (used unless a shared global exists)
   const BaseAccordion = w.PWPL_Accordion;
   const BaseAccordionItem = w.PWPL_AccordionItem;
   const AccordionFallback = function AccordionFallback( props ) {
-    const { children, searchValue, onSearchChange } = props || {};
-    return h('div', null, [
-      h('div', null, [
-        h('label', null, 'Search Options'),
-        h('input', {
-          type: 'search',
-          value: searchValue || '',
-          onChange: ( event ) => onSearchChange && onSearchChange( event.target.value ),
-        }),
+    const { children, searchValue, onSearchChange, onSearchKeyDown, onClear } = props || {};
+    const handleKeyDown = (event) => {
+      if (typeof onSearchKeyDown === 'function') {
+        onSearchKeyDown(event);
+      }
+    };
+    return h('div', { className: 'pwpl-acc' }, [
+      h('div', { className: 'pwpl-acc__toolbar' }, [
+        h('div', { className: 'pwpl-acc__search' }, [
+          h('span', { className: 'pwpl-acc__search-label' }, 'Search'),
+          h('div', { className: 'pwpl-acc__search-field' }, [
+            h('input', {
+              type: 'search',
+              value: searchValue || '',
+              onChange: ( event ) => onSearchChange && onSearchChange( event.target.value ),
+              onKeyDown: handleKeyDown,
+              placeholder: 'Filter settings…',
+            }),
+            h('button', { type: 'button', className: 'pwpl-acc__search-clear', onClick: () => onClear && onClear() }, 'Clear')
+          ]),
+        ]),
       ]),
-      children
+      h('div', { className: 'pwpl-acc__list' }, children)
     ]);
   };
   const AccordionItemFallback = function AccordionItemFallback( props ) {
-    const { title, children } = props || {};
-    return h('div', null, [ h('h3', null, title ), children ]);
+    const { id, title, isOpen, onToggle, hidden, children } = props || {};
+    const open = !!isOpen;
+    const itemCls = ['pwpl-acc__item', open ? 'is-open' : '', hidden ? 'is-hidden' : ''].filter(Boolean).join(' ');
+    const panelId = (id || 'acc-item') + '__panel';
+    const btnId = (id || 'acc-item') + '__btn';
+    const handleKey = (event) => {
+      if (event.key === ' ' || event.key === 'Enter'){
+        event.preventDefault();
+        if (typeof onToggle === 'function') onToggle(id);
+      }
+    };
+    return h('div', { className: itemCls, id }, [
+      h('button', {
+        id: btnId,
+        type: 'button',
+        className: 'pwpl-acc__btn',
+        'aria-expanded': open,
+        'aria-controls': panelId,
+        onClick: () => typeof onToggle === 'function' && onToggle(id),
+        onKeyDown: handleKey,
+      }, [
+        h('div', { className: 'pwpl-acc__head' }, [
+          h('div', { className: 'pwpl-acc__title-wrap' }, [
+            h('span', { className: 'pwpl-acc__title' }, title || ''),
+          ]),
+          h('div', { className: 'pwpl-acc__summary-chips' }),
+        ]),
+        h('span', { className: 'pwpl-acc__chev', 'aria-hidden': 'true' }, '⌄')
+      ]),
+      h('div', { className: ['pwpl-acc__panel', open ? 'is-open' : ''].join(' '), id: panelId, role: 'region', 'aria-labelledby': btnId }, children)
+    ]);
   };
   const Accordion = typeof BaseAccordion === 'function' ? BaseAccordion : AccordionFallback;
   const AccordionItem = typeof BaseAccordionItem === 'function' ? BaseAccordionItem : AccordionItemFallback;
@@ -526,10 +731,13 @@
     };
     const suffix = (!disabledWhenToken || !isToken(sanitizedValue)) ? (unit || '') : '';
     const hiddenValue = sanitizedValue;
+    // percent fill for range track
+    const pct = (Number(max) > Number(min)) ? ((numericValue - Number(min)) / (Number(max) - Number(min))) * 100 : 0;
+    const fillPct = Math.max(0, Math.min(100, pct));
     return h('div', { className: 'pwpl-row' }, [
       h('div', { className: 'pwpl-row__left' }, [
         label ? h('label', { className: 'pwpl-row__label', htmlFor: inputId, id: labelId }, label) : null,
-        h('div', { className: 'pwpl-range' }, h(RangeControl, {
+        h('div', { className: 'pwpl-range', style: { '--pwpl-fill': `${fillPct}%` } }, h(RangeControl, {
           label: null,
           value: numericValue,
           min,
@@ -547,6 +755,748 @@
         ]),
         name ? HiddenInput({ name, value: hiddenValue }) : null,
       ]),
+    ]);
+  }
+
+  const BACKGROUND_TABS = [
+    { id: 'color', label: 'Background Color' },
+    { id: 'gradient', label: 'Background Gradient' },
+  ];
+  const GRADIENT_TYPE_OPTIONS = [
+    { label: 'Linear', value: 'linear' },
+    { label: 'Radial', value: 'radial' },
+    { label: 'Conic', value: 'conic' },
+  ];
+  const clampPercent = (value, fallback = 0) => {
+    const num = parseFloat(value);
+    if (!Number.isFinite(num)) {
+      return fallback;
+    }
+    return Math.max(0, Math.min(100, num));
+  };
+  const buildGradientPreviewStyle = ({
+    type = 'linear',
+    start,
+    end,
+    angle,
+    startPos,
+    endPos,
+  } = {}) => {
+    const startColor = start || '#2563eb';
+    const endColor = end || '#34d399';
+    const startStop = clampPercent(startPos, 0);
+    const endStop = clampPercent(endPos, 100);
+    const angleValue = Number.isFinite(parseFloat(angle)) ? parseFloat(angle) : 180;
+    switch (type) {
+      case 'radial':
+        return {
+          backgroundImage: `radial-gradient(circle, ${startColor} ${startStop}%, ${endColor} ${endStop}%)`,
+        };
+      case 'conic':
+        return {
+          backgroundImage: `conic-gradient(from ${angleValue}deg, ${startColor}, ${endColor})`,
+        };
+      default:
+        return {
+          backgroundImage: `linear-gradient(${angleValue}deg, ${startColor} ${startStop}%, ${endColor} ${endStop}%)`,
+        };
+    }
+  };
+  const DEFAULT_CUSTOM_COLOR = '#2563eb';
+
+  function BackgroundColorPanel({
+    label = 'Background color',
+    value = '',
+    onChange,
+    autoOpen = false,
+    onAfterSave,
+    onAfterCancel,
+  } = {}){
+    const normalizedValue = normalizeColorValue(value);
+    const parsed = parseCssColor(normalizedValue || DEFAULT_CUSTOM_COLOR);
+    const initialHsv = rgbToHsv(parsed.r, parsed.g, parsed.b);
+    const [isEditing, setIsEditing] = useState(false);
+    const [draftHue, setDraftHue] = useState(initialHsv.h || 0);
+    const [draftSat, setDraftSat] = useState(initialHsv.s || 0);
+    const [draftVal, setDraftVal] = useState(initialHsv.v || 0);
+    const [draftAlpha, setDraftAlpha] = useState(parsed.a != null ? parsed.a : 1);
+    const [draggingCanvas, setDraggingCanvas] = useState(false);
+    const canvasRef = useRef(null);
+    const [hexField, setHexField] = useState(hsvToHex(initialHsv.h || 0, initialHsv.s || 0, initialHsv.v || 0).toUpperCase());
+    const aRailRef = useRef(null);
+    const satRailRef = useRef(null);
+    const [copied, setCopied] = useState(false);
+    const [showSaved, setShowSaved] = useState(false);
+    const savedTickRef = useRef(null);
+    const autoOpenRef = useRef(false);
+
+    useEffect(() => {
+      const normalized = normalizeColorValue(value);
+      const col = parseCssColor(normalized || DEFAULT_CUSTOM_COLOR);
+      const hsv = rgbToHsv(col.r, col.g, col.b);
+      setDraftHue(hsv.h || 0);
+      setDraftSat(hsv.s || 0);
+      setDraftVal(hsv.v || 0);
+      setDraftAlpha(col.a != null ? clampAlpha(col.a) : 1);
+      setHexField(hsvToHex(hsv.h || 0, hsv.s || 0, hsv.v || 0).toUpperCase());
+      if (!normalized) {
+        setIsEditing(false);
+      }
+    }, [value]);
+
+    const emitChange = (next) => {
+      const normalized = normalizeColorValue(next);
+      if (typeof onChange === 'function') {
+        onChange(normalized);
+      }
+    };
+
+    const openEditor = () => {
+      const col = parseCssColor(normalizedValue || DEFAULT_CUSTOM_COLOR);
+      const hsv = rgbToHsv(col.r, col.g, col.b);
+      setDraftHue(hsv.h || 0);
+      setDraftSat(hsv.s || 0);
+      setDraftVal(hsv.v || 0);
+      setDraftAlpha(col.a != null ? clampAlpha(col.a) : 1);
+      setHexField(hsvToHex(hsv.h || 0, hsv.s || 0, hsv.v || 0).toUpperCase());
+      try { document.body.classList.add('pwpl-bg-editing'); } catch(e) {}
+      setIsEditing(true);
+    };
+    useEffect(() => {
+      if (autoOpen && !autoOpenRef.current) {
+        autoOpenRef.current = true;
+        openEditor();
+      }
+    }, [autoOpen]);
+
+    const handleAddClick = () => {
+      openEditor();
+    };
+
+    const handleSwatchClick = (swatchValue) => {
+      const normalized = normalizeColorValue(swatchValue);
+      const col = parseCssColor(normalized || DEFAULT_CUSTOM_COLOR);
+      const hsv = rgbToHsv(col.r, col.g, col.b);
+      setDraftHue(hsv.h || 0);
+      setDraftSat(hsv.s || 0);
+      setDraftVal(hsv.v || 0);
+      setDraftAlpha(col.a != null ? clampAlpha(col.a) : 1);
+      setHexField(hsvToHex(hsv.h || 0, hsv.s || 0, hsv.v || 0).toUpperCase());
+      emitChange(normalized);
+      setIsEditing(false);
+    };
+
+    const handleSave = () => {
+      const hex = hsvToHex(draftHue || 0, draftSat || 0, draftVal || 0);
+      const out = (draftAlpha != null && draftAlpha < 1) ? rgbaFromHsv(draftHue || 0, draftSat || 0, draftVal || 0, draftAlpha) : hex;
+      emitChange(out);
+      if (savedTickRef.current) {
+        clearTimeout(savedTickRef.current);
+      }
+      setShowSaved(true);
+      savedTickRef.current = setTimeout(() => setShowSaved(false), 1500);
+      setCopied(false);
+      try { document.body.classList.remove('pwpl-bg-editing'); } catch(e) {}
+      setIsEditing(false);
+      if (typeof onAfterSave === 'function') {
+        onAfterSave(out);
+      }
+    };
+
+    const handleCancel = () => {
+      const col = parseCssColor(normalizedValue || DEFAULT_CUSTOM_COLOR);
+      const hsv = rgbToHsv(col.r, col.g, col.b);
+      setDraftHue(hsv.h || 0);
+      setDraftSat(hsv.s || 0);
+      setDraftVal(hsv.v || 0);
+      setDraftAlpha(col.a != null ? clampAlpha(col.a) : 1);
+      setHexField(hsvToHex(hsv.h || 0, hsv.s || 0, hsv.v || 0).toUpperCase());
+      setShowSaved(false);
+      setCopied(false);
+      try { document.body.classList.remove('pwpl-bg-editing'); } catch(e) {}
+      setIsEditing(false);
+      if (typeof onAfterCancel === 'function') {
+        onAfterCancel();
+      }
+    };
+
+    const handleFillClick = () => {
+      if (!isEditing) {
+        openEditor();
+      }
+    };
+
+    const rawHue = Number.isFinite(draftHue) ? draftHue : 0;
+    const safeHue = ((rawHue % 360) + 360) % 360;
+    const pointerHue = Math.max(0, Math.min(360, rawHue));
+    const safeSat = clamp01(draftSat || 0);
+    const safeVal = clamp01(draftVal || 0);
+    const safeAlpha = clamp01(draftAlpha != null ? draftAlpha : 1);
+    const currentDraftHex = hsvToHex(safeHue, safeSat, safeVal);
+    const currentDraftHex8 = hsvToHex8(safeHue, safeSat, safeVal, safeAlpha).toUpperCase();
+    const currentDraftRgba = rgbaFromHsv(safeHue, safeSat, safeVal, safeAlpha);
+    useEffect(() => {
+      setHexField(currentDraftHex.toUpperCase());
+    }, [currentDraftHex]);
+
+    const valueMatchesSwatch = DEFAULT_COLOR_SWATCHES.some((swatch) => {
+      if (!swatch.value || !normalizedValue) {
+        return false;
+      }
+      return swatch.value.toLowerCase() === normalizedValue.toLowerCase();
+    });
+    const isCustomActive = isEditing || (!!normalizedValue && !valueMatchesSwatch);
+
+    const handleCanvasPointer = (event) => {
+      if (!canvasRef || !canvasRef.current) {
+        return;
+      }
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = clamp01((event.clientX - rect.left) / rect.width);
+      const y = clamp01((event.clientY - rect.top) / rect.height);
+      // Panel X controls Hue (0..360), Y controls Brightness/Value (1..0)
+      setDraftHue(x * 360);
+      setDraftVal(1 - y);
+    };
+
+    const handleCanvasPointerDown = (event) => {
+      event.preventDefault();
+      if (!isEditing) {
+        openEditor();
+      }
+      setDraggingCanvas(true);
+      handleCanvasPointer(event);
+    };
+
+    useEffect(() => {
+      if (!draggingCanvas) {
+        return undefined;
+      }
+      const handleMove = (event) => handleCanvasPointer(event);
+      const handleUp = () => setDraggingCanvas(false);
+      document.addEventListener('pointermove', handleMove);
+      document.addEventListener('pointerup', handleUp);
+      return () => {
+        document.removeEventListener('pointermove', handleMove);
+        document.removeEventListener('pointerup', handleUp);
+      };
+    }, [draggingCanvas]);
+
+    // Rail pointer utilities
+    const getRailValue = (event, ref) => {
+      if (!ref || !ref.current) return 0;
+      const rect = ref.current.getBoundingClientRect();
+      let y = (event.clientY - rect.top) / rect.height;
+      y = Math.max(0, Math.min(1, y));
+      return y;
+    };
+    const [dragSatRail, setDragSatRail] = useState(false);
+    const [dragAlphaRail, setDragAlphaRail] = useState(false);
+    const onSatDown = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setDragSatRail(true);
+      const y = getRailValue(event, satRailRef);
+      setDraftSat(1 - y);
+    };
+    const onAlphaDown = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setDragAlphaRail(true);
+      const y = getRailValue(event, aRailRef);
+      setDraftAlpha(1 - y);
+    };
+    useEffect(() => {
+      if (!dragSatRail && !dragAlphaRail) {
+        return undefined;
+      }
+      const handleMove = (event) => {
+        if (dragSatRail) {
+          const y = getRailValue(event, satRailRef);
+          setDraftSat(1 - y);
+        }
+        if (dragAlphaRail) {
+          const y = getRailValue(event, aRailRef);
+          setDraftAlpha(1 - y);
+        }
+      };
+      const handleUp = () => {
+        setDragSatRail(false);
+        setDragAlphaRail(false);
+      };
+      document.addEventListener('pointermove', handleMove);
+      document.addEventListener('pointerup', handleUp);
+      return () => {
+        document.removeEventListener('pointermove', handleMove);
+        document.removeEventListener('pointerup', handleUp);
+      };
+    }, [dragSatRail, dragAlphaRail]);
+
+    useEffect(() => () => { try { document.body.classList.remove('pwpl-bg-editing'); } catch(e) {} }, []);
+
+    const handleHexFieldChange = (event) => {
+      const raw = event && event.target ? event.target.value : '';
+      setHexField(raw.toUpperCase());
+      const normalized = normalizeColorValue(raw);
+      if (/^#[0-9A-Fa-f]{6}$/.test(normalized)) {
+        const hsv = hexToHsv(normalized);
+        setDraftHue(hsv.h || 0);
+        setDraftSat(hsv.s || 0);
+        setDraftVal(hsv.v || 0);
+      }
+    };
+
+    const swatchButtons = DEFAULT_COLOR_SWATCHES.map((swatch) => {
+      const swatchValue = swatch.value || '';
+      const isActive = (normalizedValue || '') === swatchValue;
+      const className = classNames('pwpl-bgctrl__swatch', isActive ? 'is-active' : '', !swatchValue ? 'is-none' : '');
+      return h('button', {
+        key: `bgcolor-${swatch.label}`,
+        type: 'button',
+        className,
+        style: swatchValue ? { backgroundColor: swatchValue } : undefined,
+        'aria-pressed': isActive,
+        onClick: () => handleSwatchClick(swatchValue),
+        title: swatch.value ? `${swatch.label} (${swatch.value})` : 'No color',
+      }, swatch.value ? null : h('span', { className: 'pwpl-bgctrl__swatch-clear', 'aria-hidden': 'true' }, '×'));
+    });
+
+    // Editor-specific swatches: apply to draft (do not commit / close)
+    const applyDraftFromColor = (colorValue) => {
+      const normalized = normalizeColorValue(colorValue);
+      const col = parseCssColor(normalized || DEFAULT_CUSTOM_COLOR);
+      const hsv = rgbToHsv(col.r, col.g, col.b);
+      setDraftHue(hsv.h || 0);
+      setDraftSat(hsv.s || 0);
+      setDraftVal(hsv.v || 0);
+      setDraftAlpha(col.a != null ? clampAlpha(col.a) : 1);
+      setHexField(hsvToHex(hsv.h || 0, hsv.s || 0, hsv.v || 0).toUpperCase());
+    };
+    const swatchButtonsEditing = DEFAULT_COLOR_SWATCHES.map((swatch) => {
+      const swatchValue = swatch.value || '';
+      const isActive = (!!swatchValue && swatchValue.toLowerCase() === currentDraftHex.toLowerCase());
+      const className = classNames('pwpl-bgctrl__swatch', isActive ? 'is-active' : '', !swatchValue ? 'is-none' : '');
+      return h('button', {
+        key: `bgcolor-edit-${swatch.label}`,
+        type: 'button',
+        className,
+        style: swatchValue ? { backgroundColor: swatchValue } : undefined,
+        'aria-pressed': isActive,
+        onClick: () => applyDraftFromColor(swatchValue),
+        title: swatch.value ? `${swatch.label} (${swatch.value})` : 'No color',
+      }, swatch.value ? null : h('span', { className: 'pwpl-bgctrl__swatch-clear', 'aria-hidden': 'true' }, '×'));
+    });
+
+    const rootClass = classNames('pwpl-bgctrl__color', isEditing ? 'is-editing' : '');
+    const baseHueBand = 'linear-gradient(90deg, #f00 0%, #ff0 16%, #0f0 33%, #0ff 50%, #00f 66%, #f0f 83%, #f00 100%)';
+    const valueOverlay = 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)';
+    const satFade = Math.max(0, Math.min(1, 1 - safeSat));
+    const satOverlay = `linear-gradient(0deg, rgba(255,255,255,${satFade}), rgba(255,255,255,${satFade}))`;
+    // Order matters: top-most first. Put saturation overlay on top,
+    // then fixed value darkening, with the hue band at the bottom.
+    const pickerBg = [satOverlay, valueOverlay, baseHueBand].join(', ');
+    const pointerStyle = {
+      left: `${(pointerHue / 360) * 100}%`,
+      top: `${(1 - safeVal) * 100}%`,
+    };
+    // Show HEX for both cases; if alpha < 1 use 8-digit HEX (#RRGGBBAA)
+    const displayValue = safeAlpha < 1 ? currentDraftHex8 : hexField;
+    const saturationGradientStart = hsvToHex(safeHue, 1, safeVal);
+    const saturationTrack = `linear-gradient(to bottom, ${saturationGradientStart}, #ffffff)`;
+    const alphaGradient = `linear-gradient(to bottom, ${rgbaFromHsv(safeHue, safeSat, safeVal, 1)}, ${rgbaFromHsv(safeHue, safeSat, safeVal, 0)})`;
+
+    const copyText = (text) => {
+      if (!text) return false;
+      const markCopied = () => { setCopied(true); setTimeout(() => setCopied(false), 1200); };
+      const fallback = (val) => {
+        try {
+          const el = document.createElement('textarea');
+          el.value = String(val || '');
+          el.setAttribute('readonly', '');
+          el.style.position = 'absolute';
+          el.style.left = '-9999px';
+          document.body.appendChild(el);
+          el.select();
+          el.setSelectionRange(0, el.value.length);
+          document.execCommand('copy');
+          document.body.removeChild(el);
+          markCopied();
+          return true;
+        } catch (e) { return false; }
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          markCopied();
+        }).catch(() => { fallback(text); });
+        return true;
+      }
+      return fallback(text);
+    };
+
+    const handleCopyValue = (event) => {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      copyText(displayValue);
+    };
+    const handleCopyOverlayValue = (event) => {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      const base = normalizedValue || currentDraftHex;
+      const col = parseCssColor(base);
+      const out = (col.a != null && col.a < 1)
+        ? rgbaToHex8(col.r, col.g, col.b, col.a).toUpperCase()
+        : rgbToHex({ r: col.r, g: col.g, b: col.b }).toUpperCase();
+      copyText(out);
+    };
+
+    const handlePanelKeyDown = (event) => {
+      if (!isEditing) {
+        return;
+      }
+      const stepHue = 4;
+      const stepVal = 0.02;
+      switch (event.key) {
+        case 'ArrowRight':
+          event.preventDefault();
+          setDraftHue((prev) => (((prev || 0) + stepHue) % 360));
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          setDraftHue((prev) => {
+            const next = ((prev || 0) - stepHue);
+            return next < 0 ? (next + 360) : next;
+          });
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          setDraftVal((prev) => Math.min(1, (prev || 0) + stepVal));
+          break;
+        case 'ArrowDown':
+          event.preventDefault();
+          setDraftVal((prev) => Math.max(0, (prev || 0) - stepVal));
+          break;
+        case 'Escape':
+          event.preventDefault();
+          handleCancel();
+          break;
+        case 'Enter':
+          event.preventDefault();
+          handleSave();
+          break;
+        default:
+          break;
+      }
+    };
+
+    useEffect(() => () => {
+      if (savedTickRef.current) {
+        clearTimeout(savedTickRef.current);
+      }
+    }, []);
+
+    return h('div', { className: rootClass }, [
+      h('div', {
+        ref: canvasRef,
+        className: classNames('pwpl-bgctrl__fill', isEditing ? 'is-editing' : ''),
+        style: isEditing ? { backgroundImage: pickerBg } : { background: normalizedValue || '#f8fafc' },
+        onClick: (!isEditing) ? handleFillClick : undefined,
+        onPointerDown: isEditing ? handleCanvasPointerDown : undefined,
+        role: isEditing ? 'application' : 'button',
+        tabIndex: 0,
+        onKeyDown: isEditing ? handlePanelKeyDown : (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleFillClick();
+          }
+        },
+      }, isEditing ? [
+        h('div', {
+          className: 'pwpl-bgctrl__pill-row',
+          onPointerDown: (event) => event.stopPropagation(),
+        }, [
+          h('span', {
+            className: 'pwpl-bgctrl__swatch-preview',
+            'aria-hidden': 'true',
+          }, h('span', {
+            className: 'pwpl-bgctrl__swatch-preview-fill',
+            style: { background: currentDraftRgba },
+          })),
+          h('button', {
+            type: 'button',
+            className: classNames('pwpl-bgctrl__pill', copied ? 'is-copied' : '', showSaved ? 'is-saved' : ''),
+            onClick: handleCopyValue,
+            onPointerUp: handleCopyValue,
+            title: 'Click to copy color',
+          }, [
+            h('span', { className: 'pwpl-bgctrl__pill-value' }, displayValue),
+            showSaved ? h('span', { className: 'pwpl-bgctrl__pill-tick', 'aria-hidden': 'true' }, '✓') : null,
+            copied ? h('span', { className: 'pwpl-bgctrl__pill-copy' }, 'Copied!') : null,
+          ]),
+        ]),
+        h('div', { className: 'pwpl-bgctrl__rails' }, [
+          h('div', {
+            className: 'pwpl-bgctrl__rail pwpl-bgctrl__rail--sat',
+            ref: satRailRef,
+            onPointerDown: onSatDown,
+            tabIndex: 0,
+            role: 'slider',
+            'aria-label': 'Saturation',
+            'aria-valuemin': 0,
+            'aria-valuemax': 100,
+            'aria-valuenow': Math.round(safeSat * 100),
+            onKeyDown: (event) => {
+              if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                setDraftSat((prev) => Math.min(1, (prev || 0) + 0.05));
+              } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                setDraftSat((prev) => Math.max(0, (prev || 0) - 0.05));
+              }
+            },
+            style: { backgroundImage: saturationTrack },
+          }, h('span', { className: 'pwpl-bgctrl__rail-thumb', style: { top: `${(1 - safeSat) * 100}%` } })),
+          h('div', {
+            className: 'pwpl-bgctrl__rail pwpl-bgctrl__rail--alpha',
+            ref: aRailRef,
+            onPointerDown: onAlphaDown,
+            tabIndex: 0,
+            role: 'slider',
+            'aria-label': 'Alpha',
+            'aria-valuemin': 0,
+            'aria-valuemax': 100,
+            'aria-valuenow': Math.round(safeAlpha * 100),
+            onKeyDown: (event) => {
+              if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                setDraftAlpha((prev) => Math.min(1, (prev || 0) + 0.05));
+              } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                setDraftAlpha((prev) => Math.max(0, (prev || 0) - 0.05));
+              }
+            },
+          }, [
+            h('span', { className: 'pwpl-bgctrl__rail-check' }),
+            h('span', { className: 'pwpl-bgctrl__rail-overlay', style: { backgroundImage: alphaGradient } }),
+            h('span', { className: 'pwpl-bgctrl__rail-thumb', style: { top: `${(1 - safeAlpha) * 100}%` } }),
+          ]),
+        ]),
+        h('span', { className: 'pwpl-bgctrl__pointer', style: pointerStyle }),
+      ] : (normalizedValue ?
+        h('button', {
+          type: 'button',
+          className: classNames('pwpl-bgctrl__pill','pwpl-bgctrl__pill--overlay', copied ? 'is-copied' : ''),
+          onPointerDown: (e) => e.stopPropagation(),
+          onClick: handleCopyOverlayValue,
+          onPointerUp: handleCopyOverlayValue,
+          title: 'Click to copy color',
+        }, [
+          (function(){
+            const col = parseCssColor(normalizedValue);
+            const label = (col.a != null && col.a < 1)
+              ? rgbaToHex8(col.r, col.g, col.b, col.a).toUpperCase()
+              : rgbToHex({ r: col.r, g: col.g, b: col.b }).toUpperCase();
+            return h('span', { className: 'pwpl-bgctrl__pill-value' }, label);
+          })(),
+          copied ? h('span', { className: 'pwpl-bgctrl__pill-copy' }, 'Copied!') : null,
+        ]) :
+        h('button', {
+          type: 'button',
+          className: 'pwpl-bgctrl__add-btn',
+          onClick: handleAddClick,
+        }, '+ ' + (label ? `Add ${label.toLowerCase()}` : 'Add color'))
+      )),
+      isEditing ? [
+        h('div', { className: 'pwpl-bgctrl__swatches-row' }, [
+          h('button', {
+            type: 'button',
+            className: classNames('pwpl-bgctrl__swatch', 'is-custom', isCustomActive ? 'is-active' : ''),
+            onClick: handleAddClick,
+            'aria-pressed': isCustomActive,
+          }, 'Custom'),
+          ...swatchButtonsEditing,
+        ]),
+        h('div', { className: 'pwpl-bgctrl__actions' }, [
+          h('button', { type: 'button', className: 'button button-primary pwpl-bgctrl__action', onClick: handleSave }, 'Save color'),
+          h('button', { type: 'button', className: 'button pwpl-bgctrl__action', onClick: handleCancel }, 'Cancel'),
+        ])
+      ] : h('div', { className: 'pwpl-bgctrl__swatches-row' }, [
+        h('button', {
+          type: 'button',
+          className: classNames('pwpl-bgctrl__swatch', 'is-custom', isCustomActive ? 'is-active' : ''),
+          onClick: handleAddClick,
+          'aria-pressed': isCustomActive,
+        }, 'Custom'),
+        ...swatchButtons,
+      ]),
+    ]);
+  }
+
+  function BackgroundTabsSection({
+    id,
+    label = '',
+    colorLabel = '',
+    colorValue = '',
+    onColorChange,
+    colorName,
+    gradient = {},
+  } = {}){
+    const gradientNames = gradient.names || {};
+    const gradientType = gradient.type || '';
+    const defaultType = gradient.defaultType || 'linear';
+    const [activeTab, setActiveTab] = useState(gradientType ? 'gradient' : 'color');
+
+    useEffect(() => {
+      const next = gradientType ? 'gradient' : 'color';
+      if (next !== activeTab) {
+        setActiveTab(next);
+      }
+    }, [gradientType]);
+
+    const handleTabChange = (tabId) => {
+      if (tabId === activeTab) {
+        return;
+      }
+      if (tabId === 'color') {
+        setActiveTab('color');
+        if (typeof gradient.onTypeChange === 'function') {
+          gradient.onTypeChange('');
+        }
+        return;
+      }
+      setActiveTab('gradient');
+      if (!gradient.type && typeof gradient.onTypeChange === 'function') {
+        gradient.onTypeChange(defaultType);
+      }
+    };
+
+    const colorPanel = h('div', { className: 'pwpl-bgctrl__panel is-color' }, [
+      h(BackgroundColorPanel, {
+        label: colorLabel || 'Background color',
+        value: colorValue,
+        onChange: onColorChange,
+      }),
+    ]);
+
+    const gradientActive = activeTab === 'gradient' && !!gradient.type;
+    const gradientPreviewStyle = buildGradientPreviewStyle({
+      type: gradient.type || defaultType,
+      start: gradient.start,
+      end: gradient.end,
+      angle: gradient.angle,
+      startPos: gradient.startPos,
+      endPos: gradient.endPos,
+    });
+    const gradientOptions = gradient.typeOptions || GRADIENT_TYPE_OPTIONS;
+    const previewLabel = (!gradient.start && !gradient.end) ? 'Add gradient colors' : null;
+    const renderRangeControl = (config, shouldRender) => {
+      if (!config || !config.name) {
+        return null;
+      }
+      if (shouldRender) {
+        return RangeValueRow(config);
+      }
+      return HiddenInput({ name: config.name, value: '' });
+    };
+    const gradientPanel = h('div', { className: 'pwpl-bgctrl__panel is-gradient' }, [
+      h('div', { className: 'pwpl-bgctrl__preview', style: gradientPreviewStyle },
+        previewLabel ? h('span', { className: 'pwpl-bgctrl__preview-text' }, previewLabel) : null
+      ),
+      h('div', { className: 'pwpl-bgctrl__gradient-swatches' }, [
+        h('div', { className: 'pwpl-bgctrl__gradient-field' },
+          h(ColorPaletteControl, {
+            label: 'Start color',
+            value: gradient.start || '',
+            onChange: gradient.onStartChange,
+            allowAlpha: true,
+            className: 'pwpl-inlinecolor--compact',
+          })
+        ),
+        h('div', { className: 'pwpl-bgctrl__gradient-field' },
+          h(ColorPaletteControl, {
+            label: 'End color',
+            value: gradient.end || '',
+            onChange: gradient.onEndChange,
+            allowAlpha: true,
+            className: 'pwpl-inlinecolor--compact',
+          })
+        ),
+      ]),
+      h('div', { className: 'pwpl-bgctrl__field' }, [
+        h('label', { className: 'components-base-control__label' }, 'Gradient Type'),
+        h('select', {
+          className: 'pwpl-v1-select',
+          value: gradient.type || defaultType,
+          onChange: (event) => {
+            const nextType = event && event.target ? event.target.value : '';
+            if (typeof gradient.onTypeChange === 'function') {
+              gradient.onTypeChange(nextType);
+            }
+          },
+        }, gradientOptions.map((option) =>
+          h('option', { key: option.value, value: option.value }, option.label)
+        )),
+      ]),
+      renderRangeControl({
+        label: 'Gradient direction',
+        name: gradientNames.angle,
+        value: gradient.angle,
+        onChange: gradient.onAngleChange,
+        min: 0,
+        max: 360,
+        step: 1,
+        unit: '°',
+      }, gradientActive && gradient.showAngle),
+      renderRangeControl({
+        label: 'Start position (%)',
+        name: gradientNames.startPos,
+        value: gradient.startPos,
+        onChange: gradient.onStartPosChange,
+        min: 0,
+        max: 100,
+        step: 1,
+        unit: '%',
+      }, gradientActive),
+      renderRangeControl({
+        label: 'End position (%)',
+        name: gradientNames.endPos,
+        value: gradient.endPos,
+        onChange: gradient.onEndPosChange,
+        min: 0,
+        max: 100,
+        step: 1,
+        unit: '%',
+      }, gradientActive),
+    ]);
+
+    const tabs = h('div', { className: 'pwpl-bgctrl__tabs', role: 'tablist' },
+      BACKGROUND_TABS.map((tab) => h('button', {
+        key: tab.id,
+        type: 'button',
+        role: 'tab',
+        className: classNames('pwpl-bgctrl__tab', activeTab === tab.id ? 'is-active' : ''),
+        'aria-selected': activeTab === tab.id,
+        onClick: () => handleTabChange(tab.id),
+      }, tab.label))
+    );
+
+    const hiddenFields = [
+      colorName ? HiddenInput({ name: colorName, value: colorValue || '' }) : null,
+      gradientNames.type ? HiddenInput({ name: gradientNames.type, value: gradientActive ? (gradient.type || defaultType) : '' }) : null,
+      gradientNames.start ? HiddenInput({ name: gradientNames.start, value: gradientActive ? (gradient.start || '') : '' }) : null,
+      gradientNames.end ? HiddenInput({ name: gradientNames.end, value: gradientActive ? (gradient.end || '') : '' }) : null,
+    ];
+
+    return h('div', { className: 'pwpl-bgctrl', id }, [
+      h('div', { className: 'pwpl-bgctrl__head' }, [
+        h('span', { className: 'pwpl-bgctrl__title' }, label || 'Background'),
+      ]),
+      tabs,
+      activeTab === 'gradient' ? gradientPanel : colorPanel,
+      ...hiddenFields,
     ]);
   }
 
@@ -599,6 +1549,100 @@
     { label: 'Violet', value: '#a855f7' },
     { label: 'No color', value: '' },
   ];
+  const shadowColorLayer = (color, alphaOverride) => {
+    const parsed = parseCssColor(color || '');
+    const finalAlpha = alphaOverride != null ? alphaOverride : (parsed.a != null ? parsed.a : 1);
+    return `rgba(${parsed.r}, ${parsed.g}, ${parsed.b}, ${finalAlpha})`;
+  };
+  const buildGlowShadow = (color) => {
+    return `0 0 6px ${shadowColorLayer(color, 0.6)}, 0 0 12px ${shadowColorLayer(color, 0.35)}`;
+  };
+  const buildLongShadow = (color) => {
+    return `2px 2px 0 ${shadowColorLayer(color, 0.25)}, 4px 4px 0 ${shadowColorLayer(color, 0.18)}, 6px 6px 0 ${shadowColorLayer(color, 0.12)}`;
+  };
+  const TEXT_SHADOW_PRESETS = {
+    none: { single: false, type: 'none' },
+    soft: { single: true, x: 0, y: 2, blur: 4 },
+    medium: { single: true, x: 0, y: 4, blur: 8 },
+    deep: { single: true, x: 0, y: 6, blur: 12 },
+    glow: { single: false, builder: buildGlowShadow },
+    long: { single: false, builder: buildLongShadow },
+  };
+  function InlineColorPalette(props = {}) {
+    const {
+      label,
+      value,
+      onChange,
+      allowAlpha = true,
+      className = '',
+    } = props;
+    const normalizedValue = normalizeColorValue(value, allowAlpha) || '';
+    const [isEditing, setIsEditing] = useState(false);
+    const previewColor = normalizedValue ? rgbaString(parseCssColor(normalizedValue)) : 'transparent';
+    const normalizedLower = normalizedValue.toLowerCase();
+    const commit = (nextValue) => {
+      const normalized = normalizeColorValue(nextValue, allowAlpha);
+      if (typeof onChange === 'function') {
+        onChange(normalized);
+      }
+    };
+    const handleOpen = () => setIsEditing(true);
+    const handleClose = () => setIsEditing(false);
+    const handleSwatchClick = (swatchValue) => {
+      commit(swatchValue || '');
+      setIsEditing(false);
+    };
+    const hasSwatchMatch = DEFAULT_COLOR_SWATCHES.some((swatch) => {
+      const swatchValue = normalizeColorValue(swatch.value || '', allowAlpha);
+      return swatchValue.toLowerCase() === normalizedLower;
+    });
+    const swatchButtons = DEFAULT_COLOR_SWATCHES.map((swatch) => {
+      const swatchValue = swatch.value || '';
+      const normalizedSwatch = normalizeColorValue(swatchValue, allowAlpha);
+      const isActive = normalizedSwatch.toLowerCase() === normalizedLower;
+      const btnClass = classNames('pwpl-bgctrl__swatch', isActive ? 'is-active' : '', !swatchValue ? 'is-none' : '');
+      return h('button', {
+        key: swatchValue || swatch.label || 'none',
+        type: 'button',
+        className: btnClass,
+        style: swatchValue ? { backgroundColor: swatchValue } : undefined,
+        'aria-pressed': isActive,
+        onClick: () => handleSwatchClick(swatchValue),
+        title: swatchValue ? `${swatch.label} (${swatchValue})` : 'No color',
+      }, swatch.value ? null : h('span', { className: 'pwpl-bgctrl__swatch-clear', 'aria-hidden': 'true' }, '×'));
+    });
+    const customButton = h('button', {
+      type: 'button',
+      className: classNames('pwpl-bgctrl__swatch', 'is-custom', (!hasSwatchMatch || isEditing) ? 'is-active' : ''),
+      onClick: handleOpen,
+      'aria-pressed': !hasSwatchMatch || isEditing,
+    }, 'Custom');
+    const containerExtra = (className ? className : '') + (isEditing ? ((className ? ' ' : '') + 'is-open') : '');
+    return h('div', { className: classNames('pwpl-inlinecolor', containerExtra) }, [
+      label ? h('div', { className: 'pwpl-inlinecolor__label' }, label) : null,
+      h('button', {
+        type: 'button',
+        className: 'pwpl-inlinecolor__preview',
+        onClick: handleOpen,
+        'aria-label': label ? `${label} color` : 'Edit color',
+      }, h('span', { className: 'pwpl-inlinecolor__preview-fill', style: { background: previewColor } })),
+      isEditing ? h('div', { className: 'pwpl-inlinecolor__editor' },
+        h(BackgroundColorPanel, {
+          label,
+          value: normalizedValue,
+          onChange: commit,
+          autoOpen: true,
+          onAfterSave: handleClose,
+          onAfterCancel: handleClose,
+        })
+      ) : h('div', { className: 'pwpl-inlinecolor__swatches' }, [
+        ...swatchButtons,
+        customButton,
+      ]),
+    ]);
+  }
+  ColorPaletteControl = InlineColorPalette;
+  w.PWPL_ColorPalette = InlineColorPalette;
 
   function SegmentedButtonGroup({ items = [], role = 'group', className = '', ariaLabel }){
     if (!items.length) {
@@ -670,6 +1714,7 @@
     showStyle = true,
     weightOptions = TYPO_WEIGHT_OPTIONS,
     flagValueMap = {},
+    layoutVariant = '',
   } = {}){
     const resolvedSizeRange = Object.assign({ min: 8, max: 120, step: 1, unit: 'px', placeholder: 'inherit' }, sizeRange || {});
     const resolvedTrackingRange = Object.assign({ min: -2, max: 20, step: 0.5, unit: 'px', placeholder: '0px' }, trackingRange || {});
@@ -760,6 +1805,68 @@
     const strikeActive = strike === getFlagMap('strike').on;
 
     const familyInputId = makeDomId(names.family || `${idKey}-family`);
+    // Shadow state (only used when provided via names/values)
+    const [shadowEnabled, setShadowEnabled] = useState(values.shadowEnable || '');
+    const [shadowX, setShadowX] = useState(toNumberOrToken(values.shadowX));
+    const [shadowY, setShadowY] = useState(toNumberOrToken(values.shadowY));
+    const [shadowBlur, setShadowBlur] = useState(toNumberOrToken(values.shadowBlur));
+    const [shadowColor, setShadowColor] = useState(values.shadowColor || 'rgba(0,0,0,.5)');
+    const [shadowStyle, setShadowStyle] = useState(values.shadowStyle || 'custom');
+    const computeShadowCss = (style = shadowStyle, en = shadowEnabled, x = shadowX, y = shadowY, b = shadowBlur, col = shadowColor) => {
+      if (!en || style === 'none') {
+        return 'none';
+      }
+      const presetMeta = TEXT_SHADOW_PRESETS[style];
+      const color = normalizeColorValue(col, true) || 'rgba(0,0,0,.5)';
+      if (presetMeta) {
+        if (presetMeta.single && typeof presetMeta.x === 'number') {
+          const px = presetMeta.x ?? 0;
+          const py = presetMeta.y ?? 0;
+          const pb = presetMeta.blur ?? 0;
+          return `${px}px ${py}px ${pb}px ${color}`;
+        }
+        if (!presetMeta.single && typeof presetMeta.builder === 'function') {
+          return presetMeta.builder(color);
+        }
+      }
+      const sx = toNumberOrToken(x) || 0;
+      const sy = toNumberOrToken(y) || 0;
+      const sb = toNumberOrToken(b) || 0;
+      return `${sx}px ${sy}px ${sb}px ${color}`;
+    };
+    const pushShadowPreview = (style = shadowStyle, en = shadowEnabled, x = shadowX, y = shadowY, b = shadowBlur, col = shadowColor) => {
+      emitPreview('shadow_style', style);
+      emitPreview('shadow_enabled', en ? '1' : '');
+      emitPreview('shadow_x', toNumberOrToken(x) || 0);
+      emitPreview('shadow_y', toNumberOrToken(y) || 0);
+      emitPreview('shadow_blur', toNumberOrToken(b) || 0);
+      emitPreview('shadow_color', normalizeColorValue(col, true) || 'rgba(0,0,0,.5)');
+      emitPreview('shadow', computeShadowCss(style, en, x, y, b, col));
+    };
+    const applyShadowPreset = (styleKey) => {
+      const preset = TEXT_SHADOW_PRESETS[styleKey];
+      setShadowStyle(styleKey);
+      if (styleKey === 'custom') {
+        pushShadowPreview('custom', shadowEnabled, shadowX, shadowY, shadowBlur, shadowColor);
+        return;
+      }
+      if (styleKey === 'none') {
+        pushShadowPreview('none', shadowEnabled, shadowX, shadowY, shadowBlur, shadowColor);
+        return;
+      }
+      if (preset && preset.single) {
+        const nx = preset.x ?? 0;
+        const ny = preset.y ?? 0;
+        const nb = preset.blur ?? 0;
+        setShadowX(nx);
+        setShadowY(ny);
+        setShadowBlur(nb);
+        pushShadowPreview(styleKey, shadowEnabled, nx, ny, nb, shadowColor);
+        return;
+      }
+      pushShadowPreview(styleKey, shadowEnabled, shadowX, shadowY, shadowBlur, shadowColor);
+    };
+    const shadowSlidersDisabled = (style) => style === 'none' || (style !== 'custom' && TEXT_SHADOW_PRESETS[style] && !TEXT_SHADOW_PRESETS[style].single);
     const weightFieldId = makeDomId(names.weight || `${idKey}-weight`);
     const effectiveWeightOptions = (weightOptions && weightOptions.length ? weightOptions : TYPO_WEIGHT_OPTIONS).slice();
     effectiveWeightOptions.push(CUSTOM_WEIGHT_OPTION);
@@ -776,6 +1883,21 @@
     };
 
     const children = [];
+    const layoutBasics = [];
+    const layoutStyles = [];
+    const pushNode = (node, bucket) => {
+      if (layoutVariant === 'title-two-col') {
+        if (bucket === 'basics') {
+          layoutBasics.push(node);
+          return;
+        }
+        if (bucket === 'styles') {
+          layoutStyles.push(node);
+          return;
+        }
+      }
+      children.push(node);
+    };
     const fontField = h('label', { className: 'pwpl-typo__field', htmlFor: familyInputId }, [
       h('span', { className: 'pwpl-typo__label' }, `${label} Font`),
       fontOptions.length ? h('select', {
@@ -809,7 +1931,12 @@
         placeholder: 'inherit',
       }) : null,
     ]);
-    children.push(h('div', { className: 'pwpl-typo__row' }, [fontField, weightFieldOptions]));
+    if (layoutVariant === 'title-two-col') {
+      pushNode(h('div', { className: 'pwpl-typo__row' }, [fontField]), 'basics');
+      pushNode(h('div', { className: 'pwpl-typo__row' }, [weightFieldOptions]), 'basics');
+    } else {
+      pushNode(h('div', { className: 'pwpl-typo__row' }, [fontField, weightFieldOptions]));
+    }
 
     if (ENABLE_TYPO_STYLE_FLAGS && showStyle) {
       const styleItems = [
@@ -819,10 +1946,10 @@
         { id: `${idKey}-underline`, label: 'U', ariaLabel: `${label} underline`, isActive: underlineActive, onClick: () => toggleFlag('underline', underline, setUnderline) },
         { id: `${idKey}-strike`, label: 'S', ariaLabel: `${label} strikethrough`, isActive: strikeActive, onClick: () => toggleFlag('strike', strike, setStrike) },
       ];
-      children.push(h('div', { className: 'pwpl-typo__group' }, [
+      pushNode(h('div', { className: 'pwpl-typo__group' }, [
         h('span', { className: 'pwpl-typo__label' }, `${label} Font Style`),
         h(SegmentedButtonGroup, { items: styleItems, ariaLabel: `${label} font style` }),
-      ]));
+      ]), layoutVariant === 'title-two-col' ? 'basics' : undefined);
     }
 
     if (ENABLE_TYPO_ALIGNMENT && showAlignment) {
@@ -836,15 +1963,15 @@
         { id: `${idKey}-align-center`, value: 'center', ariaLabel: `${label} align center`, isActive: align === 'center', onClick: () => handleAlignChange('center'), content: alignIcon('center') },
         { id: `${idKey}-align-right`, value: 'right', ariaLabel: `${label} align right`, isActive: align === 'right', onClick: () => handleAlignChange('right'), content: alignIcon('right') },
       ];
-      children.push(h('div', { className: 'pwpl-typo__group' }, [
+      pushNode(h('div', { className: 'pwpl-typo__group' }, [
         h('span', { className: 'pwpl-typo__label' }, `${label} Text Alignment`),
         h(SegmentedButtonGroup, { items: alignItems, role: 'radiogroup', className: 'pwpl-typo__seg--align', ariaLabel: `${label} alignment` }),
-      ]));
+      ]), layoutVariant === 'title-two-col' ? 'basics' : undefined);
     }
 
     if (showColor) {
       const colorTabs = ['Saved', 'Global', 'Recent'];
-      children.push(h('div', { className: 'pwpl-typo__colors' }, [
+      const colorNode = h('div', { className: 'pwpl-typo__colors' }, [
         h('div', { className: 'pwpl-typo__color-head' }, [
           h('span', { className: 'pwpl-typo__label' }, `${label} Text Color`),
           h('div', { className: 'pwpl-typo__color-tabs' },
@@ -860,23 +1987,14 @@
           label: null,
           value: color,
           onChange: handleColorChange,
-          allowAlpha: false,
-          'aria-label': `${label} text color`,
+          allowAlpha: true,
+          className: 'pwpl-inlinecolor--compact',
         })),
-        h('div', { className: 'pwpl-typo__swatches' },
-          DEFAULT_COLOR_SWATCHES.map((swatch) => h('button', {
-            type: 'button',
-            key: `${idKey}-${swatch.value || 'none'}`,
-            className: classNames('pwpl-typo__swatch', (color || '') === (swatch.value || '') ? 'is-active' : '', !swatch.value ? 'is-none' : ''),
-            'aria-label': swatch.value ? `${swatch.label} (${swatch.value})` : `${swatch.label} (reset color)`,
-            style: { '--pwpl-swatch-color': swatch.value || 'transparent' },
-            onClick: () => handleColorChange(swatch.value || ''),
-          }, swatch.value ? null : h('span', { className: 'pwpl-typo__swatch-clear' }, '×')))
-        ),
-      ]));
+      ]);
+      pushNode(colorNode, 'basics');
     }
 
-    children.push(RangeValueRow({
+    const sizeNode = RangeValueRow({
       label: `${label} Text Size`,
       name: names.size || null,
       value: size,
@@ -886,10 +2004,11 @@
       step: resolvedSizeRange.step,
       placeholder: resolvedSizeRange.placeholder,
       unit: resolvedSizeRange.unit,
-    }));
+    });
+    pushNode(sizeNode, layoutVariant === 'title-two-col' ? 'basics' : undefined);
 
     if (ENABLE_TYPO_TRACKING && showTracking) {
-      children.push(RangeValueRow({
+      const trackingNode = RangeValueRow({
         label: `${label} Letter Spacing`,
         name: names.tracking || null,
         value: tracking,
@@ -900,11 +2019,12 @@
         placeholder: resolvedTrackingRange.placeholder,
         unit: resolvedTrackingRange.unit,
         disabledWhenToken: resolvedTrackingRange.disabledWhenToken !== undefined ? resolvedTrackingRange.disabledWhenToken : true,
-      }));
+      });
+    pushNode(trackingNode, layoutVariant === 'title-two-col' ? 'basics' : undefined);
     }
 
     if (ENABLE_TYPO_LINE_HEIGHT && showLineHeight) {
-      children.push(RangeValueRow({
+      const lineHeightNode = RangeValueRow({
         label: `${label} Line Height`,
         name: names.lineHeight || null,
         value: lineHeight,
@@ -914,10 +2034,110 @@
         step: resolvedLineHeightRange.step,
         placeholder: resolvedLineHeightRange.placeholder,
         unit: resolvedLineHeightRange.unit,
-      }));
+      });
+    pushNode(lineHeightNode, layoutVariant === 'title-two-col' ? 'basics' : undefined);
     }
 
+    // Hidden inputs collection (declare before any pushHidden usage below)
     const hiddenFields = [];
+
+    // Title-only Text Shadow UI when names.* provided (placed in styles column)
+    if (layoutVariant === 'title-two-col' && names.shadowEnable) {
+      const shadowToggle = h('label', { className: 'pwpl-typo__field' }, [
+        h('span', { className: 'pwpl-typo__label' }, `${label} Text Shadow`),
+        h('div', { className: 'pwpl-typo__row' }, [
+          h('label', { style: { display:'inline-flex', alignItems:'center', gap:'8px' } }, [
+            h('input', {
+              type: 'checkbox',
+              checked: !!shadowEnabled,
+              onChange: (e) => { const en = e && e.target && e.target.checked; const style = shadowStyle; setShadowEnabled(en ? '1' : ''); pushShadowPreview(style, en ? '1' : '', shadowX, shadowY, shadowBlur, shadowColor); },
+            }),
+            'Enable text shadow'
+          ])
+        ])
+      ]);
+      const shadowStyleControl = h('div', { className: 'pwpl-typo__row' }, [
+        h('label', { className: 'pwpl-typo__label' }, 'Shadow style'),
+        h('div', { className: 'pwpl-typo__styles' }, [
+          h(SegmentedButtonGroup, {
+            items: [
+              { id: `${idKey}-shadow-none`, label: 'None', value: 'none', isActive: shadowStyle === 'none', onClick: () => applyShadowPreset('none') },
+              { id: `${idKey}-shadow-soft`, label: 'Soft', value: 'soft', isActive: shadowStyle === 'soft', onClick: () => applyShadowPreset('soft') },
+              { id: `${idKey}-shadow-medium`, label: 'Medium', value: 'medium', isActive: shadowStyle === 'medium', onClick: () => applyShadowPreset('medium') },
+              { id: `${idKey}-shadow-deep`, label: 'Deep', value: 'deep', isActive: shadowStyle === 'deep', onClick: () => applyShadowPreset('deep') },
+              { id: `${idKey}-shadow-glow`, label: 'Glow', value: 'glow', isActive: shadowStyle === 'glow', onClick: () => applyShadowPreset('glow') },
+              { id: `${idKey}-shadow-long`, label: 'Long', value: 'long', isActive: shadowStyle === 'long', onClick: () => applyShadowPreset('long') },
+              { id: `${idKey}-shadow-custom`, label: 'Custom', value: 'custom', isActive: shadowStyle === 'custom', onClick: () => applyShadowPreset('custom') },
+            ],
+            role: 'radiogroup',
+          })
+        ])
+      ]);
+      const shadowColorPicker = h('div', { className: 'pwpl-v1-color' },
+        h(ColorPaletteControl, {
+          label: 'Shadow color',
+          value: shadowColor || '',
+          onChange: (v) => {
+            const nv = normalizeColorValue(v, true) || '';
+            if (shadowStyle !== 'custom') {
+              setShadowStyle('custom');
+            }
+            setShadowColor(nv);
+            pushShadowPreview('custom', shadowEnabled, shadowX, shadowY, shadowBlur, nv);
+          },
+          allowAlpha: true,
+          className: 'pwpl-inlinecolor--compact',
+        })
+      );
+      const handleShadowXChange = (value) => {
+        const normalized = toNumberOrToken(value);
+        if (shadowStyle !== 'custom') {
+          setShadowStyle('custom');
+        }
+        setShadowX(normalized);
+        pushShadowPreview('custom', shadowEnabled, normalized, shadowY, shadowBlur, shadowColor);
+      };
+      const handleShadowYChange = (value) => {
+        const normalized = toNumberOrToken(value);
+        if (shadowStyle !== 'custom') {
+          setShadowStyle('custom');
+        }
+        setShadowY(normalized);
+        pushShadowPreview('custom', shadowEnabled, shadowX, normalized, shadowBlur, shadowColor);
+      };
+      const handleShadowBlurChange = (value) => {
+        const normalized = toNumberOrToken(value);
+        if (shadowStyle !== 'custom') {
+          setShadowStyle('custom');
+        }
+        setShadowBlur(normalized);
+        pushShadowPreview('custom', shadowEnabled, shadowX, shadowY, normalized, shadowColor);
+      };
+      const slidersDisabled = shadowSlidersDisabled(shadowStyle);
+      const shadowXYZ = h('div', {
+        className: classNames('pwpl-typo__grid-3', slidersDisabled ? 'is-shadow-disabled' : ''),
+        'aria-disabled': slidersDisabled ? 'true' : undefined,
+      }, [
+        RangeValueRow({ label: 'X offset (px)', name: names.shadowX, value: shadowX, onChange: handleShadowXChange, min: -50, max: 50, step: 1, unit:'px' }),
+        RangeValueRow({ label: 'Y offset (px)', name: names.shadowY, value: shadowY, onChange: handleShadowYChange, min: -50, max: 50, step: 1, unit:'px' }),
+        RangeValueRow({ label: 'Blur (px)', name: names.shadowBlur, value: shadowBlur, onChange: handleShadowBlurChange, min: 0, max: 100, step: 1, unit:'px' }),
+      ]);
+      const shadowHint = h('p', { className: 'pwpl-typo__help' }, 'Adjusting color or sliders switches style to Custom.');
+      // Place Text Shadow in the left card (Basics) to use available space
+      pushNode(shadowToggle, 'styles');
+      pushNode(shadowStyleControl, 'styles');
+      pushNode(shadowColorPicker, 'styles');
+      pushNode(shadowXYZ, 'styles');
+      pushNode(shadowHint, 'styles');
+      // Hidden inputs
+      pushHidden(hiddenFields, 'shadowEnable', shadowEnabled ? '1' : '');
+      pushHidden(hiddenFields, 'shadowX', shadowX);
+      pushHidden(hiddenFields, 'shadowY', shadowY);
+      pushHidden(hiddenFields, 'shadowBlur', shadowBlur);
+      pushHidden(hiddenFields, 'shadowColor', shadowColor);
+      pushHidden(hiddenFields, 'shadowStyle', shadowStyle || 'custom');
+    }
+
     pushHidden(hiddenFields, 'color', color);
     pushHidden(hiddenFields, 'family', family);
     pushHidden(hiddenFields, 'weight', weight);
@@ -931,7 +2151,32 @@
     pushHidden(hiddenFields, 'underline', underline);
     pushHidden(hiddenFields, 'strike', strike);
 
-    return h('div', { className: 'pwpl-typo', 'data-typo-id': idKey }, hiddenFields.length ? children.concat(hiddenFields) : children);
+    const panelChildren = [];
+    if (layoutVariant === 'title-two-col') {
+      const columns = [];
+      if (layoutBasics.length) {
+        columns.push(
+          h('div', { className: 'pwpl-col' },
+            h('div', { className: 'pwpl-card' }, layoutBasics )
+          )
+        );
+      }
+      if (layoutStyles.length) {
+        columns.push(
+          h('div', { className: 'pwpl-col' },
+            h('div', { className: 'pwpl-card' }, layoutStyles )
+          )
+        );
+      }
+      if (columns.length) {
+        panelChildren.push(
+          h('div', { className: 'pwpl-two' }, columns )
+        );
+      }
+    }
+    panelChildren.push(...children);
+    const fullChildren = hiddenFields.length ? panelChildren.concat(hiddenFields) : panelChildren;
+    return h('div', { className: 'pwpl-typo', 'data-typo-id': idKey }, fullChildren);
   }
   function FourSidesControl({
     label,
@@ -996,33 +2241,35 @@
             ]),
             names[side.key] ? HiddenInput({ name: names[side.key], value: safeValues[side.key] || '' }) : null,
           ])),
-          h('div', { className: 'pwpl-sides__lock' }, [
-            h('button', {
-              type: 'button',
-              className: 'pwpl-lock' + (locked ? ' is-locked' : ''),
-              onClick: () => onToggleLock && onToggleLock(!locked),
-              'aria-pressed': locked,
-              'aria-label': locked ? 'Unlock values' : 'Lock values',
-            }, locked ? 'Locked' : 'Unlocked'),
-          ]),
         ]),
       ]),
-      presets && presets.length ? h('div', { className: 'pwpl-sides-presets' },
-        presets.map((preset) => h('button', {
-          type: 'button',
-          key: String(preset),
-          className: 'pwpl-presets__chip',
-          onClick: () => handlePreset(preset),
-        }, `${preset}${unit}`))
-      ) : null,
+      h('div', { className: 'pwpl-sides-footer' }, [
+        presets && presets.length ? h('div', { className: 'pwpl-sides-presets' },
+          presets.map((preset) => h('button', {
+            type: 'button',
+            key: String(preset),
+            className: 'pwpl-presets__chip',
+            onClick: () => handlePreset(preset),
+          }, `${preset}${unit}`))
+        ) : h('div'),
+        h('div', { className: 'pwpl-sides__lock' }, [
+          h('label', { className: 'pwpl-lockchk' }, [
+            h('input', {
+              type: 'checkbox',
+              checked: !!locked,
+              onChange: (e) => onToggleLock && onToggleLock(!!e.target.checked),
+              'aria-label': 'Lock values',
+            }),
+            ' Locked'
+          ])
+        ])
+      ]),
     ]);
   }
   function Help({ text }){
     // Lightweight tooltip using title attribute for hover
     return h('span', { className: 'pwpl-help', title: text || '' , style:{ marginLeft:6, cursor:'help', fontSize:'12px', opacity:.7 } }, '❓');
   }
-  // Guard ColorPicker to avoid initial render errors if not available yet
-
   function SectionHeader({ title, description }){
     return h('div', { className: 'pwpl-v1-section-header' }, [
       h('div', { className: 'pwpl-v1-section-left' }, [
@@ -1055,12 +2302,14 @@
     const [globalWidth, setGlobalWidth] = useState(scalar(layoutConfig.widths && layoutConfig.widths.global, '0'));
     const [globalColumns, setGlobalColumns] = useState(scalar(layoutConfig.columns && layoutConfig.columns.global, '0'));
     const [globalCardMin, setGlobalCardMin] = useState(scalar(layoutConfig.cardWidths && layoutConfig.cardWidths.global, '0'));
+    const [tableHeight, setTableHeight] = useState(scalar(layoutConfig.height, '0'));
+    const [columnGap, setColumnGap] = useState(scalar(layoutConfig.gap_x, '0'));
+    const [cardHeight, setCardHeight] = useState(scalar(cardLayout.height, '0'));
 
-    const deviceOrder = ['xxl','xl','lg','md','sm'];
+    const deviceOrder = ['xxl','xl','md','sm'];
     const DEVICE_LABELS = {
       xxl: 'Big screens (≥ 1536px)',
       xl:  'Desktop (1280–1535px)',
-      lg:  'Laptop (1024–1279px)',
       md:  'Tablet (768–1023px)',
       sm:  'Mobile (≤ 767px)'
     };
@@ -1249,11 +2498,11 @@
 
     const spacingLockSummary = lockPads ? 'Spacing lock: linked' : 'Spacing lock: free';
     const sectionSummaries = {
-      'layout-table': [globalWidthLabel, `${formatCount(globalColumns)} cols`, `min ${formatNumber(globalCardMin)}`],
+      'layout-table': [globalWidthLabel, `${formatCount(globalColumns)} cols`, `gap ${formatNumber(columnGap)}`],
       'layout-card': [
         `Container r ${formatNumber(radius)} · b ${formatNumber(borderW)} · ${summarizeColor(borderColor)}`,
-        `Spacing Pad ${formatSides(pads)} · Mar ${formatSides(margins)}`,
-        `${spacingLockSummary} · Split: ${formatSplit(split)}`,
+        `W ${formatNumber(globalCardMin)} · H ${formatNumber(cardHeight)}`,
+        `Pad ${formatSides(pads)} · Mar ${formatSides(margins)} · ${spacingLockSummary} · Split: ${formatSplit(split)}`,
       ],
       'layout-cta': [
         `Width ${ctaWidthSel || 'auto'}`,
@@ -1291,109 +2540,136 @@
       );
     };
 
-    const tableSection = h('div', { className: 'pwpl-tabs pwpl-tabs--segmented' },
-      h(TabPanel, {
-        tabs: [
-          { name: 'widths', title: i18n((data.i18n.tabs || {}).widths) || 'Widths' },
-          { name: 'breakpoints', title: i18n((data.i18n.tabs || {}).breakpoints) || 'Breakpoints' },
-        ],
-      }, (tab) => {
-        if (tab.name === 'widths') {
-          return h('div', null, [
-            RangeValueRow({
-              label: 'Global width',
-              name: 'pwpl_table[layout][widths][global]',
-              value: globalWidth,
-              onChange: (val) => setGlobalWidth(val),
-              min: 0,
-              max: 2000,
-              step: 10,
-              placeholder: 'auto',
-            }),
-            presetChips(WIDTH_PRESETS.concat(['fluid']), (preset) => {
-              if (preset === 'fluid') {
-                setGlobalWidth('0');
-                return;
-              }
-              setGlobalWidth(String(preset));
-            }, (preset) => preset === 'fluid' ? '100%' : `${preset}px`),
-            RangeValueRow({
-              label: 'Preferred columns',
-              name: 'pwpl_table[layout][columns][global]',
-              value: globalColumns,
-              onChange: (val) => setGlobalColumns(val),
-              min: 0,
-              max: 12,
-              step: 1,
-              unit: 'cols',
-            }),
-            RangeValueRow({
-              label: 'Global card minimum width',
-              name: 'pwpl_table[layout][card_widths][global]',
-              value: globalCardMin,
-              onChange: (val) => setGlobalCardMin(val),
-              min: 0,
-              max: 1200,
-              step: 10,
-              placeholder: 'inherit',
-            }),
-          ]);
-        }
-        const breakpointToolbar = h('div', { className: 'pwpl-tab-actions' }, [
-          h('button', { type: 'button', className: 'pwpl-presets__chip', onClick: copyGlobalToBreakpoints }, 'Copy Global'),
-          h('button', {
-            type: 'button',
-            className: 'pwpl-presets__chip' + (linkDevices ? ' is-active' : ''),
-            onClick: () => setLinkDevices((prev) => !prev),
-            'aria-pressed': linkDevices,
-          }, linkDevices ? 'Link on' : 'Link off'),
-        ]);
-        return h('div', null, [
-          breakpointToolbar,
-          h('div', { className: 'pwpl-breakpoints' }, deviceOrder.map((key) => {
-            const readable = DEVICE_LABELS[key] || key.toUpperCase();
-            return h('div', { key, className: 'pwpl-breakpoint-card' }, [
-              h('div', { className: 'pwpl-breakpoint-card__title' }, readable),
-              RangeValueRow({
-                label: 'Width',
-                name: `pwpl_table[layout][widths][${key}]`,
-                value: widths[key],
-                onChange: (val) => updateBreakpointField(setWidths, widths, key, val),
-                min: 0,
-                max: 2000,
-                step: 10,
-                placeholder: 'inherit',
-              }),
-              RangeValueRow({
-                label: 'Columns',
-                name: `pwpl_table[layout][columns][${key}]`,
-                value: columns[key],
-                onChange: (val) => updateBreakpointField(setColumns, columns, key, val),
-                min: 0,
-                max: 12,
-                step: 1,
-                unit: 'cols',
-                placeholder: 'inherit',
-              }),
-              RangeValueRow({
-                label: 'Card min width',
-                name: `pwpl_table[layout][card_widths][${key}]`,
-                value: cardW[key],
-                onChange: (val) => updateBreakpointField(setCardW, cardW, key, val),
-                min: 0,
-                max: 2000,
-                step: 10,
-                placeholder: 'inherit',
-              }),
-            ]);
-          }))
-        ]);
-      })
-    );
+    const renderCard = (child) => h('div', { className: 'pwpl-card' }, child);
+    const renderTwoCards = (leftChild, rightChild) => {
+      const cols = [];
+      if (leftChild) {
+        cols.push(h('div', { className: 'pwpl-col' }, renderCard(leftChild)));
+      }
+      if (rightChild) {
+        cols.push(h('div', { className: 'pwpl-col' }, renderCard(rightChild)));
+      }
+      if (!cols.length) {
+        return null;
+      }
+      return h('div', { className: 'pwpl-two' }, cols);
+    };
 
-    const planCardSection = h('div', { className: 'pwpl-card-groups' }, [
-      h('div', { className: 'pwpl-group' }, [
-        h('div', { className: 'pwpl-group__title' }, 'Card Container'),
+    // Build widths/columns two cards
+    const widthsLeft = h('div', null, [
+      h('h3', { className: 'pwpl-card__title' }, 'Table Size'),
+      RangeValueRow({
+        label: 'Table width',
+        name: 'pwpl_table[layout][widths][global]',
+        value: globalWidth,
+        onChange: (val) => setGlobalWidth(val),
+        min: 0,
+        max: 2000,
+        step: 10,
+        placeholder: 'auto',
+      }),
+      presetChips(WIDTH_PRESETS.concat(['fluid']), (preset) => {
+        if (preset === 'fluid') { setGlobalWidth('0'); return; }
+        setGlobalWidth(String(preset));
+      }, (preset) => preset === 'fluid' ? '100%' : `${preset}px`),
+      RangeValueRow({
+        label: 'Table height',
+        name: 'pwpl_table[layout][height]',
+        value: tableHeight,
+        onChange: (val) => setTableHeight(val),
+        min: 0,
+        max: 4000,
+        step: 10,
+        placeholder: 'auto',
+      }),
+    ]);
+    const widthsRight = h('div', null, [
+      h('h3', { className: 'pwpl-card__title' }, 'Columns'),
+      RangeValueRow({
+        label: 'Preferred columns',
+        name: 'pwpl_table[layout][columns][global]',
+        value: globalColumns,
+        onChange: (val) => setGlobalColumns(val),
+        min: 0,
+        max: 12,
+        step: 1,
+        unit: 'cols',
+      }),
+      RangeValueRow({
+        label: 'Column gap (px)',
+        name: 'pwpl_table[layout][gap_x]',
+        value: columnGap,
+        onChange: (val) => setColumnGap(val),
+        min: 0,
+        max: 96,
+        step: 2,
+        placeholder: 'auto',
+      }),
+    ]);
+    const widthsTwoCards = renderTwoCards(widthsLeft, widthsRight);
+    // Breakpoints card (now inline below widths)
+    const breakpointsBody = h('div', { className: 'pwpl-breakpoints' }, deviceOrder.map((key) => {
+      const readable = DEVICE_LABELS[key] || key.toUpperCase();
+      return h('div', { key, className: 'pwpl-breakpoint-card' }, [
+        h('div', { className: 'pwpl-breakpoint-card__title' }, readable),
+        RangeValueRow({
+          label: 'Width',
+          name: `pwpl_table[layout][widths][${key}]`,
+          value: widths[key],
+          onChange: (val) => updateBreakpointField(setWidths, widths, key, val),
+          min: 0,
+          max: 2000,
+          step: 10,
+          placeholder: 'inherit',
+        }),
+        RangeValueRow({
+          label: 'Columns',
+          name: `pwpl_table[layout][columns][${key}]`,
+          value: columns[key],
+          onChange: (val) => updateBreakpointField(setColumns, columns, key, val),
+          min: 0,
+          max: 12,
+          step: 1,
+          unit: 'cols',
+          placeholder: 'inherit',
+        }),
+        RangeValueRow({
+          label: 'Card min width',
+          name: `pwpl_table[layout][card_widths][${key}]`,
+          value: cardW[key],
+          onChange: (val) => updateBreakpointField(setCardW, cardW, key, val),
+          min: 0,
+          max: 2000,
+          step: 10,
+          placeholder: 'inherit',
+        }),
+      ]);
+    }));
+    const tableSection = h('div', null, [ widthsTwoCards, h('div', { className: 'pwpl-breakpoints-section' }, breakpointsBody) ]);
+
+    const planCardSection = (() => {
+      const containerFields = [
+        h('h3', { className: 'pwpl-card__title' }, 'Card Container'),
+        RangeValueRow({
+          label: 'Card Width',
+          name: 'pwpl_table[layout][card_widths][global]',
+          value: globalCardMin,
+          onChange: (val) => setGlobalCardMin(val),
+          min: 0,
+          max: 1200,
+          step: 10,
+          placeholder: 'inherit',
+        }),
+        RangeValueRow({
+          label: 'Card Height',
+          name: 'pwpl_table[card][layout][height]',
+          value: cardHeight,
+          onChange: (val) => setCardHeight(val),
+          min: 0,
+          max: 2000,
+          step: 10,
+          placeholder: 'auto',
+        }),
         RangeValueRow({
           label: 'Card radius',
           name: 'pwpl_table[card][layout][radius]',
@@ -1417,13 +2693,14 @@
             label: 'Border color',
             value: borderColor || '',
             onChange: (val) => setBorderColor(typeof val === 'string' ? val : ''),
-            allowAlpha: false,
+            allowAlpha: true,
+            className: 'pwpl-inlinecolor--compact',
           })
         ),
         HiddenInput({ name: 'pwpl_table[card][colors][border]', value: borderColor }),
-      ]),
-      h('div', { className: 'pwpl-group' }, [
-        h('div', { className: 'pwpl-group__title' }, 'Card Spacing'),
+      ];
+      const layoutFields = [
+        h('h3', { className: 'pwpl-card__title' }, 'Card Layout & Margins'),
         FourSidesControl({
           label: 'Padding (px)',
           values: pads,
@@ -1452,18 +2729,29 @@
           onToggleLock: handleMarginLockToggle,
           onChange: setMargins,
         }),
-      ]),
-      h('div', { className: 'pwpl-group' }, [
-        h('div', { className: 'pwpl-group__title' }, 'Card Layout'),
-        h('label', { className: 'components-base-control__label' }, 'Split layout'),
-        h('select', { value: split, onChange: (e) => setSplit(e.target.value) }, [
-          h('option', { value: 'two_tone' }, 'Two-tone (header & CTA vs. specs)'),
+        h('div', { className: 'pwpl-card__section' }, [
+          h('span', { className: 'pwpl-card__section-title' }, 'Card Style'),
+          h('div', { className: 'pwpl-row' }, [
+            h('div', { className: 'pwpl-row__left' }, [
+              h('label', { className: 'pwpl-row__label', htmlFor: makeDomId('pwpl_table[card][layout][split]') }, 'Split layout'),
+            ]),
+            h('div', { className: 'pwpl-row__control' }, [
+              h('select', { id: makeDomId('pwpl_table[card][layout][split]'), value: split, onChange: (e) => setSplit(e.target.value) }, [
+                h('option', { value: 'two_tone' }, 'Two-tone (header & CTA vs. specs)'),
+              ]),
+              HiddenInput({ name: 'pwpl_table[card][layout][split]', value: split }),
+            ]),
+          ]),
         ]),
-        HiddenInput({ name: 'pwpl_table[card][layout][split]', value: split }),
-      ]),
-    ]);
+      ];
+      return renderTwoCards(
+        h('div', null, containerFields),
+        h('div', null, layoutFields)
+      );
+    })();
 
-    const ctaSizeSection = h('div', null, [
+    const ctaSizeSection = renderCard(h('div', null, [
+      h('h3', { className: 'pwpl-card__title' }, 'CTA Size & Layout'),
       h('div', null, [
         h('label', { className:'components-base-control__label' }, 'Width'),
         h('select', {
@@ -1569,10 +2857,11 @@
         max: 10,
         step: 1,
       }),
-    ]);
+    ]));
 
-    const specsStyleSection = h('div', { className:'pwpl-form-grid' }, [
+    const specsStyleSection = renderCard(h('div', { className:'pwpl-form-grid' }, [
       h('div', null, [
+        h('h3', { className: 'pwpl-card__title' }, 'Specs Style'),
         h('label', { className:'components-base-control__label' }, 'Specs style'),
         h('select', { value:specStyle, onChange:(e)=> setSpecStyle(e.target.value) }, [
           h('option', { value:'default' }, 'Default'),
@@ -1582,13 +2871,15 @@
         ]),
         HiddenInput({ name:'pwpl_table[ui][specs_style]', value: specStyle }),
       ])
-    ]);
+    ]));
 
     const sidebar = (data.i18n && data.i18n.sidebar) ? data.i18n.sidebar : {};
     const layoutLabel = i18n(sidebar.layoutSpacing) || 'Layout & Spacing';
 
+    const tableCard = tableSection;
+
     const sections = [
-      { id: 'layout-table', title: 'Table Width & Columns', content: tableSection },
+      { id: 'layout-table', title: 'Table Width & Columns', content: tableCard },
       {
         id: 'layout-card',
         title: 'Plan Card Layout, Sizing & Spacing',
@@ -1661,6 +2952,8 @@
       openFirstMatch(sections);
     };
 
+    const renderCard = (child, title) => h('div', { className:'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), child] : child);
+
     const interactionsSection = h('div', { className:'pwpl-v1-grid' }, [
       h('div', { style:{ display:'grid', gridTemplateColumns:'repeat(2, minmax(120px, 1fr))', gap:'10px' } },
         flagKeys.map((k)=> h('label', { key:k, className:'components-base-control__label' }, [
@@ -1685,7 +2978,7 @@
     ]);
 
     const sections = [
-      { id: 'animation-interactions', title: 'Interactions', content: interactionsSection },
+      { id: 'animation-interactions', title: 'Interactions', content: renderCard(interactionsSection, 'Specs Interactions') },
     ];
 
     const sidebar = (data.i18n && data.i18n.sidebar) ? data.i18n.sidebar : {};
@@ -2052,6 +3345,8 @@
       openFirstMatch(sections);
     };
 
+    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), content] : content);
+
     const enabledSection = h('div', { className:'pwpl-v1-grid' }, [
       dims.map((d)=> h('label', { key:'en-'+d, className:'components-base-control__label' }, [
         h('input', { type:'checkbox', checked: enabled.has(d), onChange:()=> toggleEnabled(d) }), ' Enable ', d
@@ -2115,9 +3410,9 @@
     ]);
 
     const sections = [
-      { id: 'filters-enable', title: 'Enable Filters', content: enabledSection },
-      { id: 'filters-allowed', title: 'Allowed Lists', content: listsSection },
-      { id: 'filters-platform-order', title: 'Platform Order', content: platformSection },
+      { id: 'filters-enable', title: 'Enable Filters', content: renderCard(enabledSection) },
+      { id: 'filters-allowed', title: 'Allowed Lists', content: renderCard(listsSection) },
+      { id: 'filters-platform-order', title: 'Platform Order', content: renderCard(platformSection) },
     ];
 
     return h('section', { className:'pwpl-v1-block' }, [
@@ -2148,7 +3443,8 @@
     const typo = (data.card.typo || {});
     const scalar = (val) => toNumberOrToken(val);
 
-    const titleText = text.title || {};
+    // Title visual color/family are sourced from the shared top text config
+    const titleText = text.top || {};
     const subtitleText = text.subtitle || {};
     const priceText = text.price || {};
     const billingText = text.billing || {};
@@ -2187,7 +3483,8 @@
         label: labelNode,
         value: valueRef || '',
         onChange: handler,
-        allowAlpha: false,
+        allowAlpha: true,
+        className: 'pwpl-inlinecolor--compact',
       })
     );
 
@@ -2241,26 +3538,38 @@
       uppercase: ctaFont.transform || 'none',
     });
 
+    const titleShadowStyleInitial = titleTypos.shadow_style || 'custom';
+    const titleShadowPresetInit = TEXT_SHADOW_PRESETS[titleShadowStyleInitial];
+    const shadowDefaultValue = (rawValue, prop, fallback = 0) => {
+      if (rawValue != null && rawValue !== '') {
+        return scalar(rawValue, fallback);
+      }
+      if (titleShadowPresetInit && titleShadowPresetInit.single && typeof titleShadowPresetInit[prop] === 'number') {
+        return titleShadowPresetInit[prop];
+      }
+      return fallback;
+    };
+
+    const renderCard = (child) => h('div', { className: 'pwpl-card' }, child);
+    const renderTwoCards = (leftChild, rightChild) => {
+      const columns = [];
+      if (leftChild) {
+        columns.push(
+          h('div', { className: 'pwpl-col' }, renderCard(leftChild))
+        );
+      }
+      if (rightChild) {
+        columns.push(
+          h('div', { className: 'pwpl-col' }, renderCard(rightChild))
+        );
+      }
+      if (! columns.length) {
+        return null;
+      }
+      return h('div', { className: 'pwpl-two' }, columns);
+    };
+
     const sections = [
-      {
-        id: 'top-base',
-        title: 'Top Base',
-        content: h('div', { className: 'pwpl-typo-panel' }, [
-          paletteControl(
-            h('span', null, [ 'Top base color ', Help({ text:'Default color for top area texts when no per-element color is set.' }) ]),
-            topColor,
-            handleTopColorChange
-          ),
-          HiddenInput({ name:'pwpl_table[card][text][top][color]', value: topColor }),
-          h(TextControl, {
-            label: h('span', null, ['Top base font family ', Help({ text:'Font stack applied to top area as a base.' }) ]),
-            value: topFamily,
-            onChange:(v)=>{ setTopFamily(v); updatePreviewVars({ 'card.text.top.family': v }); },
-            placeholder:'system-ui, -apple-system, sans-serif'
-          }),
-          HiddenInput({ name:'pwpl_table[card][text][top][family]', value: topFamily }),
-        ]),
-      },
       {
         id: 'title-text',
         title: 'Title Text',
@@ -2268,19 +3577,48 @@
           idKey: 'title',
           label: 'Title',
           names: {
-            color: 'pwpl_table[card][text][title][color]',
-            family: 'pwpl_table[card][text][title][family]',
+            // Map title color to top text color so frontend can apply consistently
+            color: 'pwpl_table[card][text][top][color]',
+            family: 'pwpl_table[card][text][top][family]',
             size: 'pwpl_table[card][typo][title][size]',
             weight: 'pwpl_table[card][typo][title][weight]',
+            align: 'pwpl_table[card][typo][title][align]',
+            shadowEnable: 'pwpl_table[card][typo][title][shadow_enable]',
+          shadowX: 'pwpl_table[card][typo][title][shadow_x]',
+          shadowY: 'pwpl_table[card][typo][title][shadow_y]',
+          shadowBlur: 'pwpl_table[card][typo][title][shadow_blur]',
+          shadowColor: 'pwpl_table[card][typo][title][shadow_color]',
+            shadowStyle: 'pwpl_table[card][typo][title][shadow_style]',
           },
-          values: makeValues(titleText, titleTypos),
-          onPreviewPatch: previewMap('title'),
+          values: Object.assign({}, makeValues(titleText, titleTypos), {
+            // Align is stored in typo.title
+            align: (titleTypos.align || ''),
+            shadowEnable: (titleTypos.shadow_enable ? '1' : ''),
+            shadowX: shadowDefaultValue(titleTypos.shadow_x, 'x'),
+            shadowY: shadowDefaultValue(titleTypos.shadow_y, 'y'),
+            shadowBlur: shadowDefaultValue(titleTypos.shadow_blur, 'blur'),
+            shadowColor: titleTypos.shadow_color || 'rgba(0,0,0,.5)',
+            shadowStyle: titleShadowStyleInitial,
+          }),
+          onPreviewPatch: previewMap('title', {
+            // Ensure title color/family preview target the shared top text config
+            color: 'card.text.top.color',
+            family: 'card.text.top.family',
+            shadow_enabled: 'card.typo.title.shadow_enabled',
+            shadow_x: 'card.typo.title.shadow_x',
+            shadow_y: 'card.typo.title.shadow_y',
+            shadow_blur: 'card.typo.title.shadow_blur',
+            shadow_color: 'card.typo.title.shadow_color',
+            shadow_style: 'card.typo.title.shadow_style',
+            shadow: 'card.typo.title.shadow',
+          }),
+          layoutVariant: 'title-two-col',
         }),
       },
       {
         id: 'subtitle-text',
         title: 'Subtitle Text',
-        content: h(TypographySection, {
+        content: renderCard(h(TypographySection, {
           idKey: 'subtitle',
           label: 'Subtitle',
           names: {
@@ -2291,12 +3629,12 @@
           },
           values: makeValues(subtitleText, subtitleTypos),
           onPreviewPatch: previewMap('subtitle'),
-        }),
+        })),
       },
       {
         id: 'price-text',
         title: 'Price Text',
-        content: h('div', { className: 'pwpl-typo-stack' }, [
+        content: renderTwoCards(
           h(TypographySection, {
             idKey: 'price',
             label: 'Price',
@@ -2309,13 +3647,13 @@
             values: makeValues(priceText, priceTypos),
             onPreviewPatch: previewMap('price'),
           }),
-          priceExtras,
-        ]),
+          priceExtras
+        ),
       },
       {
         id: 'billing-text',
         title: 'Billing Text',
-        content: h(TypographySection, {
+        content: renderCard(h(TypographySection, {
           idKey: 'billing',
           label: 'Billing',
           names: {
@@ -2326,12 +3664,12 @@
           },
           values: makeValues(billingText, billingTypos),
           onPreviewPatch: previewMap('billing'),
-        }),
+        })),
       },
       {
         id: 'specs-text',
         title: 'Specs Text',
-        content: h(TypographySection, {
+        content: renderCard(h(TypographySection, {
           idKey: 'specs',
           label: 'Specs',
           names: {
@@ -2345,12 +3683,12 @@
             size: 'card.text.specs.size',
             weight: 'card.text.specs.weight',
           }),
-        }),
+        })),
       },
       {
         id: 'cta-typography',
         title: 'CTA Typography',
-        content: h(TypographySection, {
+        content: renderCard(h(TypographySection, {
           idKey: 'cta',
           label: 'CTA Label',
           names: {
@@ -2376,7 +3714,7 @@
             tracking: 'ui.cta.font.tracking',
             uppercase: 'ui.cta.font.transform',
           },
-        }),
+        })),
       },
     ].map((section) => Object.assign({}, section, { keywords: [section.title] }));
 
@@ -2450,6 +3788,8 @@
     const [ctaHoverColor, setCtaHoverColor] = useState(ctaHover.color || '');
     const [ctaHoverBorder, setCtaHoverBorder] = useState(ctaHover.border || '');
     const [ctaFocusColor, setCtaFocusColor] = useState(cta.focus || '');
+    const [openCtaEditors, setOpenCtaEditors] = useState({ normal: null, hover: null, focus: null });
+    const ctaRowRefs = useRef({});
 
     const postId = parseInt(data.postId || 0, 10) || 0;
     const {
@@ -2474,7 +3814,8 @@
         label,
         value: value || '',
         onChange: handler,
-        allowAlpha: false,
+        allowAlpha: true,
+        className: 'pwpl-inlinecolor--compact',
       })
     );
 
@@ -2485,121 +3826,79 @@
       openFirstMatch(sections);
     };
 
-    const showTopGrad = !!topType;
     const showTopAngle = topType === 'linear';
-    const topSection = h('div', { className:'pwpl-v1-grid' }, [
-      paletteField('Top background', topBg, handleColorChange(setTopBg, 'card.colors.top_bg')),
-      HiddenInput({ name:'pwpl_table[card][colors][top_bg]', value: topBg }),
-      h('div', null, [
-        h('label', { className:'components-base-control__label' }, 'Top gradient type'),
-        h('select', {
-          value: topType,
-          onChange:(e)=> {
-            const next = e.target.value;
-            setTopType(next);
-            updatePreviewVars({ 'card.colors.top_grad.type': next || '' });
-          }
-        }, [
-          h('option', { value:'' }, 'None'),
-          h('option', { value:'linear' }, 'Linear'),
-          h('option', { value:'radial' }, 'Radial'),
-          h('option', { value:'conic' }, 'Conic'),
-        ]),
-        HiddenInput({ name:'pwpl_table[card][colors][top_grad][type]', value: topType }),
-      ]),
-      showTopGrad ? paletteField('Top gradient start', topStart, handleColorChange(setTopStart, 'card.colors.top_grad.start')) : null,
-      HiddenInput({ name:'pwpl_table[card][colors][top_grad][start]', value: showTopGrad ? topStart : '' }),
-      showTopGrad ? paletteField('Top gradient end', topEnd, handleColorChange(setTopEnd, 'card.colors.top_grad.end')) : null,
-      HiddenInput({ name:'pwpl_table[card][colors][top_grad][end]', value: showTopGrad ? topEnd : '' }),
-      showTopGrad && showTopAngle ? RangeValueRow({
-        label: 'Angle (deg)',
-        name: 'pwpl_table[card][colors][top_grad][angle]',
-        value: topAngle,
-        onChange: setTopAngle,
-        min: 0,
-        max: 360,
-        step: 1,
-        unit: '°',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][top_grad][angle]', value: '' }),
-      showTopGrad ? RangeValueRow({
-        label: 'Start position (%)',
-        name: 'pwpl_table[card][colors][top_grad][start_pos]',
-        value: topSP,
-        onChange: setTopSP,
-        min: 0,
-        max: 100,
-        step: 1,
-        unit: '%',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][top_grad][start_pos]', value: '' }),
-      showTopGrad ? RangeValueRow({
-        label: 'End position (%)',
-        name: 'pwpl_table[card][colors][top_grad][end_pos]',
-        value: topEP,
-        onChange: setTopEP,
-        min: 0,
-        max: 100,
-        step: 1,
-        unit: '%',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][top_grad][end_pos]', value: '' }),
-    ]);
+    const topSection = BackgroundTabsSection({
+      id: 'pwpl-bg-top',
+      label: 'Top Background',
+      colorLabel: 'Top background',
+      colorValue: topBg,
+      onColorChange: handleColorChange(setTopBg, 'card.colors.top_bg'),
+      colorName: 'pwpl_table[card][colors][top_bg]',
+      gradient: {
+        type: topType,
+        defaultType: 'linear',
+        onTypeChange: (next) => {
+          setTopType(next);
+          updatePreviewVars({ 'card.colors.top_grad.type': next || '' });
+        },
+        names: {
+          type: 'pwpl_table[card][colors][top_grad][type]',
+          start: 'pwpl_table[card][colors][top_grad][start]',
+          end: 'pwpl_table[card][colors][top_grad][end]',
+          angle: 'pwpl_table[card][colors][top_grad][angle]',
+          startPos: 'pwpl_table[card][colors][top_grad][start_pos]',
+          endPos: 'pwpl_table[card][colors][top_grad][end_pos]',
+        },
+        start: topStart,
+        onStartChange: handleColorChange(setTopStart, 'card.colors.top_grad.start'),
+        end: topEnd,
+        onEndChange: handleColorChange(setTopEnd, 'card.colors.top_grad.end'),
+        angle: topAngle,
+        onAngleChange: setTopAngle,
+        showAngle: showTopAngle,
+        startPos: topSP,
+        onStartPosChange: setTopSP,
+        endPos: topEP,
+        onEndPosChange: setTopEP,
+      },
+    });
 
-    const showSpecsGrad = !!specsType;
     const showSpecsAngle = specsType === 'linear';
-    const specsSection = h('div', { className:'pwpl-v1-grid' }, [
-      paletteField('Specs background', specsBg, handleColorChange(setSpecsBg, 'card.colors.specs_bg')),
-      HiddenInput({ name:'pwpl_table[card][colors][specs_bg]', value: specsBg }),
-      h('div', null, [
-        h('label', { className:'components-base-control__label' }, 'Specs gradient type'),
-        h('select', {
-          value: specsType,
-          onChange:(e)=> {
-            const next = e.target.value;
-            setSpecsType(next);
-            updatePreviewVars({ 'card.colors.specs_grad.type': next || '' });
-          }
-        }, [
-          h('option', { value:'' }, 'None'),
-          h('option', { value:'linear' }, 'Linear'),
-          h('option', { value:'radial' }, 'Radial'),
-          h('option', { value:'conic' }, 'Conic'),
-        ]),
-        HiddenInput({ name:'pwpl_table[card][colors][specs_grad][type]', value: specsType }),
-      ]),
-      showSpecsGrad ? paletteField('Specs gradient start', specsStart, handleColorChange(setSpecsStart, 'card.colors.specs_grad.start')) : null,
-      HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start]', value: showSpecsGrad ? specsStart : '' }),
-      showSpecsGrad ? paletteField('Specs gradient end', specsEnd, handleColorChange(setSpecsEnd, 'card.colors.specs_grad.end')) : null,
-      HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end]', value: showSpecsGrad ? specsEnd : '' }),
-      showSpecsGrad && showSpecsAngle ? RangeValueRow({
-        label: 'Angle (deg)',
-        name: 'pwpl_table[card][colors][specs_grad][angle]',
-        value: specsAngle,
-        onChange: setSpecsAngle,
-        min: 0,
-        max: 360,
-        step: 1,
-        unit: '°',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][specs_grad][angle]', value: '' }),
-      showSpecsGrad ? RangeValueRow({
-        label: 'Start position (%)',
-        name: 'pwpl_table[card][colors][specs_grad][start_pos]',
-        value: specsSP,
-        onChange: setSpecsSP,
-        min: 0,
-        max: 100,
-        step: 1,
-        unit: '%',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][specs_grad][start_pos]', value: '' }),
-      showSpecsGrad ? RangeValueRow({
-        label: 'End position (%)',
-        name: 'pwpl_table[card][colors][specs_grad][end_pos]',
-        value: specsEP,
-        onChange: setSpecsEP,
-        min: 0,
-        max: 100,
-        step: 1,
-        unit: '%',
-      }) : HiddenInput({ name:'pwpl_table[card][colors][specs_grad][end_pos]', value: '' }),
-    ]);
+    const specsSection = BackgroundTabsSection({
+      id: 'pwpl-bg-specs',
+      label: 'Specs Background',
+      colorLabel: 'Specs background',
+      colorValue: specsBg,
+      onColorChange: handleColorChange(setSpecsBg, 'card.colors.specs_bg'),
+      colorName: 'pwpl_table[card][colors][specs_bg]',
+      gradient: {
+        type: specsType,
+        defaultType: 'linear',
+        onTypeChange: (next) => {
+          setSpecsType(next);
+          updatePreviewVars({ 'card.colors.specs_grad.type': next || '' });
+        },
+        names: {
+          type: 'pwpl_table[card][colors][specs_grad][type]',
+          start: 'pwpl_table[card][colors][specs_grad][start]',
+          end: 'pwpl_table[card][colors][specs_grad][end]',
+          angle: 'pwpl_table[card][colors][specs_grad][angle]',
+          startPos: 'pwpl_table[card][colors][specs_grad][start_pos]',
+          endPos: 'pwpl_table[card][colors][specs_grad][end_pos]',
+        },
+        start: specsStart,
+        onStartChange: handleColorChange(setSpecsStart, 'card.colors.specs_grad.start'),
+        end: specsEnd,
+        onEndChange: handleColorChange(setSpecsEnd, 'card.colors.specs_grad.end'),
+        angle: specsAngle,
+        onAngleChange: setSpecsAngle,
+        showAngle: showSpecsAngle,
+        startPos: specsSP,
+        onStartPosChange: setSpecsSP,
+        endPos: specsEP,
+        onEndPosChange: setSpecsEP,
+      },
+    });
 
     const keylineSection = h('div', { className:'pwpl-v1-grid' }, [
       paletteField('Keyline color', kColor, handleColorChange(setKColor)),
@@ -2620,53 +3919,190 @@
       h('p', { style:{ color:'#475569', fontSize:'13px', margin:0 } }, 'Use saved and recent swatches inside each palette to build quick brand themes. Presets land soon.')
     ]);
 
-    const handleCtaColorChange = (setter, key)=> (value)=>{
-      const hex = typeof value === 'string' ? value : '';
-      setter(hex);
-      updatePreviewVars({ [key]: hex });
+    const handleCtaColorChange = (setter, key)=> (value = '')=>{
+      const normalized = normalizeColorValue(value, true);
+      setter(normalized);
+      updatePreviewVars({ [key]: normalized });
     };
 
-    const ctaPalette = (label, value, handler, hiddenName)=> h('div', { className:'pwpl-v1-color pwpl-v1-color--palette' }, [
-      h(ColorPaletteControl, {
-        label,
-        value: value || '',
-        onChange: handler,
-        allowAlpha: false,
-      }),
-      HiddenInput({ name: hiddenName, value })
+    const CTA_SECTION_CONFIG = {
+      normal: [
+        { key: 'bg', label: 'Background', value: ctaNormalBg, setter: setCtaNormalBg, previewKey: 'ui.cta.normal.bg', hiddenName: 'pwpl_table[ui][cta][normal][bg]' },
+        { key: 'text', label: 'Text', value: ctaNormalColor, setter: setCtaNormalColor, previewKey: 'ui.cta.normal.color', hiddenName: 'pwpl_table[ui][cta][normal][color]' },
+        { key: 'border', label: 'Border', value: ctaNormalBorder, setter: setCtaNormalBorder, previewKey: 'ui.cta.normal.border', hiddenName: 'pwpl_table[ui][cta][normal][border]' },
+      ],
+      hover: [
+        { key: 'bg', label: 'Background', value: ctaHoverBg, setter: setCtaHoverBg, previewKey: 'ui.cta.hover.bg', hiddenName: 'pwpl_table[ui][cta][hover][bg]' },
+        { key: 'text', label: 'Text', value: ctaHoverColor, setter: setCtaHoverColor, previewKey: 'ui.cta.hover.color', hiddenName: 'pwpl_table[ui][cta][hover][color]' },
+        { key: 'border', label: 'Border', value: ctaHoverBorder, setter: setCtaHoverBorder, previewKey: 'ui.cta.hover.border', hiddenName: 'pwpl_table[ui][cta][hover][border]' },
+      ],
+      focus: [
+        { key: 'outline', label: 'Outline', value: ctaFocusColor, setter: setCtaFocusColor, previewKey: 'ui.cta.focus', hiddenName: 'pwpl_table[ui][cta][focus]' },
+      ],
+    };
+    const getCtaRowKey = (sectionKey, fieldKey) => `${sectionKey}__${fieldKey}`;
+    const compareColorValue = (colorValue) => (normalizeColorValue(colorValue, true) || '').toLowerCase();
+    const renderCtaField = (sectionKey) => (field) => {
+      const normalizedValue = normalizeColorValue(field.value, true) || '';
+      const normalizedValueKey = normalizedValue.toLowerCase();
+      const isEditing = openCtaEditors[sectionKey] === field.key;
+      const commitColor = handleCtaColorChange(field.setter, field.previewKey);
+      const rowKey = getCtaRowKey(sectionKey, field.key);
+      const previewCss = (() => {
+        const col = parseCssColor(normalizedValue);
+        return rgbaString(col);
+      })();
+      const copyPreview = () => {
+        const col = parseCssColor(normalizedValue);
+        const out = (col.a != null && col.a < 1)
+          ? rgbaToHex8(col.r, col.g, col.b, col.a).toUpperCase()
+          : rgbToHex({ r: col.r, g: col.g, b: col.b }).toUpperCase();
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(out);
+          } else {
+            const el = document.createElement('textarea');
+            el.value = out; el.setAttribute('readonly',''); el.style.position='absolute'; el.style.left='-9999px';
+            document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+          }
+        } catch(e){}
+      };
+      const handleOpen = () => {
+        setOpenCtaEditors((prev) => {
+          if (prev[sectionKey] === field.key) {
+            return prev;
+          }
+          return { ...prev, [sectionKey]: field.key };
+        });
+        requestAnimationFrame(() => {
+          const node = ctaRowRefs.current[rowKey];
+          if (node && node.scrollIntoView) {
+            node.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }
+        });
+      };
+      const handleClose = () => {
+        setOpenCtaEditors((prev) => ({ ...prev, [sectionKey]: null }));
+      };
+      const swatchButtons = DEFAULT_COLOR_SWATCHES.map((swatch) => {
+        const swatchValue = compareColorValue(swatch.value || '');
+        const isActive = normalizedValueKey === swatchValue;
+        const className = classNames('pwpl-cta-swatch', isActive ? 'is-active' : '', !swatch.value ? 'is-none' : '');
+        const style = swatch.value ? { backgroundColor: swatch.value } : undefined;
+        return h('button', {
+          key: `${rowKey}-${swatch.label}`,
+          type: 'button',
+          className,
+          style,
+          'aria-pressed': isActive,
+          onClick: () => {
+            if (isActive) {
+              handleOpen();
+              return;
+            }
+            commitColor(swatch.value || '');
+          },
+        }, swatch.value ? null : h('span', { className: 'pwpl-cta-swatch-clear', 'aria-hidden': 'true' }, '×'));
+      });
+      const hasSwatchMatch = DEFAULT_COLOR_SWATCHES.some((swatch) => compareColorValue(swatch.value || '') === normalizedValueKey);
+      const customButton = h('button', {
+        type: 'button',
+        className: classNames('pwpl-cta-swatch', 'is-custom', (!hasSwatchMatch || isEditing) ? 'is-active' : ''),
+        onClick: handleOpen,
+        'aria-pressed': isEditing || !hasSwatchMatch,
+      }, 'Custom');
+      const editor = isEditing ? h('div', { className: 'pwpl-cta-color-field__editor' },
+        h(BackgroundColorPanel, {
+          label: `${field.label} color`,
+          value: normalizedValue || '',
+          onChange: commitColor,
+          autoOpen: true,
+          onAfterSave: handleClose,
+          onAfterCancel: handleClose,
+        })
+      ) : null;
+      return h('div', {
+        key: rowKey,
+        className: classNames('pwpl-cta-color-field', isEditing ? 'is-editing' : ''),
+        ref: (node) => {
+          if (node) {
+            ctaRowRefs.current[rowKey] = node;
+          } else {
+            delete ctaRowRefs.current[rowKey];
+          }
+        },
+      }, [
+        h('div', { className: 'pwpl-cta-color-field__head' }, [
+          h('span', { className: 'pwpl-cta-color-field__label' }, field.label),
+          h('button', {
+            type: 'button',
+            className: 'pwpl-cta-color-preview',
+            title: 'Click to edit color',
+            onClick: handleOpen,
+            onKeyDown: (e)=>{ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOpen(); } },
+            'aria-label': 'Click to edit color',
+          }, h('span', { className: 'pwpl-cta-color-preview__fill', style: { background: previewCss } })),
+          h('div', { className: 'pwpl-cta-color-field__swatches' }, [
+            ...swatchButtons,
+            customButton,
+          ]),
+        ]),
+        editor,
+        HiddenInput({ name: field.hiddenName, value: field.value || '' }),
+      ]);
+    };
+    const renderCtaSection = (sectionKey, title) => h('div', { className:'pwpl-v1-cta-color-state' }, [
+      h('strong', null, title),
+      h('div', { className:'pwpl-v1-cta-color-row' },
+        (CTA_SECTION_CONFIG[sectionKey] || []).map(renderCtaField(sectionKey))
+      )
+    ]);
+    const ctaColorsSection = h('div', { className:'pwpl-v1-grid pwpl-v1-cta-colors' }, [
+      renderCtaSection('normal', 'Normal'),
+      renderCtaSection('hover', 'Hover'),
+      renderCtaSection('focus', 'Focus'),
     ]);
 
-    const ctaColorsSection = h('div', { className:'pwpl-v1-grid pwpl-v1-cta-colors' }, [
-      h('div', { className:'pwpl-v1-cta-color-state' }, [
-        h('strong', null, 'Normal'),
-        h('div', { className:'pwpl-v1-cta-color-row' }, [
-          ctaPalette('Background', ctaNormalBg, handleCtaColorChange(setCtaNormalBg, 'ui.cta.normal.bg'), 'pwpl_table[ui][cta][normal][bg]'),
-          ctaPalette('Text', ctaNormalColor, handleCtaColorChange(setCtaNormalColor, 'ui.cta.normal.color'), 'pwpl_table[ui][cta][normal][color]'),
-          ctaPalette('Border', ctaNormalBorder, handleCtaColorChange(setCtaNormalBorder, 'ui.cta.normal.border'), 'pwpl_table[ui][cta][normal][border]'),
-        ])
+    const wrapCard = (content) => h('div', { className: 'pwpl-card' }, content);
+    const twoCard = (left, right) => {
+      const cols = [];
+      if (left) cols.push(h('div', { className: 'pwpl-col' }, wrapCard(left)));
+      if (right) cols.push(h('div', { className: 'pwpl-col' }, wrapCard(right)));
+      if (!cols.length) return null;
+      return h('div', { className: 'pwpl-two' }, cols);
+    };
+
+    const topSpecsCards = twoCard(
+      h(React.Fragment, null, [
+        h('h3', { className: 'pwpl-card__title' }, 'Top Background'),
+        topSection,
       ]),
-      h('div', { className:'pwpl-v1-cta-color-state' }, [
-        h('strong', null, 'Hover'),
-        h('div', { className:'pwpl-v1-cta-color-row' }, [
-          ctaPalette('Background', ctaHoverBg, handleCtaColorChange(setCtaHoverBg, 'ui.cta.hover.bg'), 'pwpl_table[ui][cta][hover][bg]'),
-          ctaPalette('Text', ctaHoverColor, handleCtaColorChange(setCtaHoverColor, 'ui.cta.hover.color'), 'pwpl_table[ui][cta][hover][color]'),
-          ctaPalette('Border', ctaHoverBorder, handleCtaColorChange(setCtaHoverBorder, 'ui.cta.hover.border'), 'pwpl_table[ui][cta][hover][border]'),
-        ])
-      ]),
-      h('div', { className:'pwpl-v1-cta-color-state' }, [
-        h('strong', null, 'Focus'),
-        h('div', { className:'pwpl-v1-cta-color-row' }, [
-          ctaPalette('Outline', ctaFocusColor, handleCtaColorChange(setCtaFocusColor, 'ui.cta.focus'), 'pwpl_table[ui][cta][focus]'),
-        ])
-      ]),
-    ]);
+      h(React.Fragment, null, [
+        h('h3', { className: 'pwpl-card__title' }, 'Specs Background'),
+        specsSection,
+      ])
+    );
+
+    const keylineCard = wrapCard(h(React.Fragment, null, [
+      h('h3', { className: 'pwpl-card__title' }, 'Keyline'),
+      keylineSection,
+    ]));
+
+    const presetCard = wrapCard(h(React.Fragment, null, [
+      h('h3', { className: 'pwpl-card__title' }, 'Theme Palettes'),
+      themePalettesSection,
+    ]));
+
+    const ctaCard = wrapCard(h(React.Fragment, null, [
+      h('h3', { className: 'pwpl-card__title' }, 'CTA Colors'),
+      ctaColorsSection,
+    ]));
 
     const sections = [
-      { id: 'colors-top', title: 'Top Background', content: topSection },
-      { id: 'colors-specs', title: 'Specs Background', content: specsSection },
-      { id: 'colors-keyline', title: 'Keyline', content: keylineSection },
-      { id: 'colors-presets', title: 'Theme Palettes', content: themePalettesSection },
-      { id: 'colors-cta', title: 'CTA Colors', content: ctaColorsSection },
+      { id: 'colors-top', title: 'Top & Specs Background', content: topSpecsCards },
+      { id: 'colors-keyline', title: 'Keyline', content: keylineCard },
+      { id: 'colors-presets', title: 'Theme Palettes', content: presetCard },
+      { id: 'colors-cta', title: 'CTA Colors', content: ctaCard },
     ];
 
     return h('section', { className:'pwpl-v1-block' }, [
@@ -2717,13 +4153,23 @@
         h(TextControl, { label:'Badge label', value:item.label||'', onChange:(v)=> update('label', v) }),
         HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][label]`, value:item.label||'' }),
         h('div', { className:'pwpl-v1-color' }, [
-          h('label', { className:'components-base-control__label' }, 'Badge color'),
-          h(ColorPicker, { color:item.color||'', disableAlpha:true, onChangeComplete:(val)=> update('color', (typeof val==='string')?val:(val&&val.hex)?val.hex:'') }),
+          h(ColorPaletteControl, {
+            label: 'Badge color',
+            value: item.color || '',
+            onChange: (val) => update('color', typeof val === 'string' ? val : ''),
+            allowAlpha: true,
+            className: 'pwpl-inlinecolor--compact',
+          }),
           HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][color]`, value:item.color||'' }),
         ]),
         h('div', { className:'pwpl-v1-color' }, [
-          h('label', { className:'components-base-control__label' }, 'Text color'),
-          h(ColorPicker, { color:item.text_color||'', disableAlpha:true, onChangeComplete:(val)=> update('text_color', (typeof val==='string')?val:(val&&val.hex)?val.hex:'') }),
+          h(ColorPaletteControl, {
+            label: 'Text color',
+            value: item.text_color || '',
+            onChange: (val) => update('text_color', typeof val === 'string' ? val : ''),
+            allowAlpha: true,
+            className: 'pwpl-inlinecolor--compact',
+          }),
           HiddenInput({ name:`pwpl_table_badges[${dim.key}][${idx}][text_color]`, value:item.text_color||'' }),
         ]),
         h(TextControl, { label:'Icon', value:item.icon||'', onChange:(v)=> update('icon', v) }),
@@ -2746,6 +4192,8 @@
     const addRow = (dim)=>{
       dim.set([...(dim.state||[]), { slug:'', label:'', color:'', text_color:'', icon:'', tone:'', start:'', end:'' }]);
     };
+
+    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), content] : content);
 
     const Priority = ()=>{
       const dims = ['period','location','platform'];
@@ -2772,12 +4220,12 @@
           { name:'platform', title: i18n(data.i18n.tabs.platform) },
           { name:'priority', title: i18n(data.i18n.tabs.priority) },
         ]}, (tab)=>{
-          if (tab.name==='priority') return Priority();
+          if (tab.name==='priority') return renderCard(Priority(), 'Priority & Shadow');
           const dim = dims.find(d=> d.key===tab.name) || dims[0];
-          return h('div', null, [
+          return renderCard(h('div', null, [
             (dim.state||[]).map((row,idx)=> Row({ dim, idx, item: row })),
             h('div', { style:{ marginTop:'10px' } }, h('button', { type:'button', className:'button button-primary', onClick:()=> addRow(dim) }, 'Add Promotion')),
-          ]);
+          ]), dim.label);
         })
       ))
     ]);
@@ -2806,6 +4254,8 @@
       openFirstMatch(sections);
     };
 
+    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), content] : content);
+
     const trustSection = h('div', { className:'pwpl-v1-grid' }, [
       h('label', { className:'components-base-control__label' }, [
         h('input', { type:'checkbox', checked: !!trustTrio, onChange:(e)=> setTrustTrio(e.target.checked?1:0) }), ' Show trust row under CTA'
@@ -2822,7 +4272,7 @@
     ]);
 
     const sections = [
-      { id: 'advanced-trust', title: 'Trust & Inline CTA', content: trustSection },
+      { id: 'advanced-trust', title: 'Trust & Inline CTA', content: renderCard(trustSection) },
     ];
 
     return h('section', { className:'pwpl-v1-block' }, [

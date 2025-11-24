@@ -1660,247 +1660,302 @@ class PWPL_Admin_Meta {
         $meta  = new PWPL_Meta();
         $settings = $this->settings();
 
-        $badges_input = $_POST['pwpl_table_badges'] ?? [];
-        $badges       = $meta->sanitize_badges( $badges_input );
-        update_post_meta( $post_id, PWPL_Meta::TABLE_BADGES, $badges );
+        if ( isset( $_POST['pwpl_table_badges'] ) ) {
+            $badges_input = (array) $_POST['pwpl_table_badges'];
+            $badges       = $meta->sanitize_badges( $badges_input );
+            update_post_meta( $post_id, PWPL_Meta::TABLE_BADGES, $badges );
+        }
 
-        $theme_input = $input['theme'] ?? '';
-        $theme       = $meta->sanitize_theme( $theme_input ?: 'classic' );
-        update_post_meta( $post_id, PWPL_Meta::TABLE_THEME, $theme );
+        if ( array_key_exists( 'theme', $input ) ) {
+            $theme_input = (string) $input['theme'];
+            $theme       = $meta->sanitize_theme( $theme_input );
+            update_post_meta( $post_id, PWPL_Meta::TABLE_THEME, $theme );
+        }
 
         $layout_input = isset( $input['layout'] ) ? (array) $input['layout'] : [];
         $ui_input     = isset( $input['ui'] ) ? (array) $input['ui'] : [];
-        $layout_widths_input = isset( $layout_input['widths'] ) ? (array) $layout_input['widths'] : [];
-        $layout_widths       = $meta->sanitize_layout_widths( $layout_widths_input );
 
-        if ( $this->layout_has_values( $layout_widths ) ) {
-            update_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS, $layout_widths );
-        } else {
-            delete_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS );
+        // Only update widths if the sub-array is present; otherwise preserve existing meta
+        if ( array_key_exists( 'widths', $layout_input ) ) {
+            $layout_widths_input = (array) $layout_input['widths'];
+            $layout_widths       = $meta->sanitize_layout_widths( $layout_widths_input );
+            if ( $this->layout_has_values( $layout_widths ) ) {
+                update_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS, $layout_widths );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::LAYOUT_WIDTHS );
+            }
         }
 
-        $layout_columns_input = isset( $layout_input['columns'] ) ? (array) $layout_input['columns'] : [];
-        $layout_columns       = $meta->sanitize_layout_cards( $layout_columns_input );
-
-        if ( $this->layout_has_values( $layout_columns ) ) {
-            update_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS, $layout_columns );
-        } else {
-            delete_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS );
+        // Only update columns if provided
+        if ( array_key_exists( 'columns', $layout_input ) ) {
+            $layout_columns_input = (array) $layout_input['columns'];
+            $layout_columns       = $meta->sanitize_layout_cards( $layout_columns_input );
+            if ( $this->layout_has_values( $layout_columns ) ) {
+                update_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS, $layout_columns );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::LAYOUT_COLUMNS );
+            }
         }
 
-        $layout_card_widths_input = isset( $layout_input['card_widths'] ) ? (array) $layout_input['card_widths'] : [];
-        $layout_card_widths       = $meta->sanitize_layout_card_widths( $layout_card_widths_input );
+        // Only update card widths if provided
+        if ( array_key_exists( 'card_widths', $layout_input ) ) {
+            $layout_card_widths_input = (array) $layout_input['card_widths'];
+            $layout_card_widths       = $meta->sanitize_layout_card_widths( $layout_card_widths_input );
+            if ( $this->layout_has_values( $layout_card_widths ) ) {
+                update_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, $layout_card_widths );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS );
+            }
+        }
 
-        if ( $this->layout_has_values( $layout_card_widths ) ) {
-            update_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS, $layout_card_widths );
-        } else {
-            delete_post_meta( $post_id, PWPL_Meta::LAYOUT_CARD_WIDTHS );
+        // Column gap (gutter) — global scalar
+        if ( array_key_exists( 'gap_x', $layout_input ) ) {
+            $gap_val = (int) $layout_input['gap_x'];
+            $gap_val = max( 0, min( 96, $gap_val ) );
+            if ( $gap_val ) {
+                update_post_meta( $post_id, PWPL_Meta::LAYOUT_GAP_X, $gap_val );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::LAYOUT_GAP_X );
+            }
+        }
+
+        // Table height (single scalar)
+        if ( array_key_exists( 'height', $layout_input ) ) {
+            $height_val = (int) $layout_input['height'];
+            $height_val = max( 0, min( 4000, $height_val ) );
+            if ( $height_val ) {
+                update_post_meta( $post_id, PWPL_Meta::TABLE_HEIGHT, $height_val );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::TABLE_HEIGHT );
+            }
         }
 
         // UI toggles
-        $tabs_glass = ! empty( $ui_input['tabs_glass'] ) ? 1 : 0;
-        if ( $tabs_glass ) {
-            update_post_meta( $post_id, PWPL_Meta::TABS_GLASS, 1 );
-        } else {
-            delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS );
+        if ( array_key_exists( 'tabs_glass', $ui_input ) ) {
+            $tabs_glass = ! empty( $ui_input['tabs_glass'] ) ? 1 : 0;
+            if ( $tabs_glass ) {
+                update_post_meta( $post_id, PWPL_Meta::TABS_GLASS, 1 );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS );
+            }
         }
 
         // Tint & intensity
-        $tabs_glass_tint = isset( $ui_input['tabs_glass_tint'] ) ? sanitize_hex_color( $ui_input['tabs_glass_tint'] ) : '';
-        if ( $tabs_glass_tint ) {
-            update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_TINT, $tabs_glass_tint );
-        } else {
-            delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_TINT );
+        if ( array_key_exists( 'tabs_glass_tint', $ui_input ) ) {
+            $tabs_glass_tint = sanitize_hex_color( $ui_input['tabs_glass_tint'] );
+            if ( $tabs_glass_tint ) {
+                update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_TINT, $tabs_glass_tint );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_TINT );
+            }
         }
-        $tabs_glass_intensity = isset( $ui_input['tabs_glass_intensity'] ) ? (int) $ui_input['tabs_glass_intensity'] : 0;
-        $tabs_glass_intensity = max( 0, min( 100, $tabs_glass_intensity ) );
-        if ( $tabs_glass_intensity ) {
-            update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_INTENSITY, $tabs_glass_intensity );
-        } else {
-            delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_INTENSITY );
+        if ( array_key_exists( 'tabs_glass_intensity', $ui_input ) ) {
+            $tabs_glass_intensity = (int) $ui_input['tabs_glass_intensity'];
+            $tabs_glass_intensity = max( 0, min( 100, $tabs_glass_intensity ) );
+            if ( $tabs_glass_intensity ) {
+                update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_INTENSITY, $tabs_glass_intensity );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_INTENSITY );
+            }
         }
-        $tabs_glass_frost = isset( $ui_input['tabs_glass_frost'] ) ? (int) $ui_input['tabs_glass_frost'] : 0;
-        $tabs_glass_frost = max( 0, min( 24, $tabs_glass_frost ) );
-        if ( $tabs_glass_frost ) {
-            update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_FROST, $tabs_glass_frost );
-        } else {
-            delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_FROST );
+        if ( array_key_exists( 'tabs_glass_frost', $ui_input ) ) {
+            $tabs_glass_frost = (int) $ui_input['tabs_glass_frost'];
+            $tabs_glass_frost = max( 0, min( 24, $tabs_glass_frost ) );
+            if ( $tabs_glass_frost ) {
+                update_post_meta( $post_id, PWPL_Meta::TABS_GLASS_FROST, $tabs_glass_frost );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::TABS_GLASS_FROST );
+            }
         }
 
-        $cards_glass = ! empty( $ui_input['cards_glass'] ) ? 1 : 0;
-        if ( $cards_glass ) {
-            update_post_meta( $post_id, PWPL_Meta::CARDS_GLASS, 1 );
-        } else {
-            delete_post_meta( $post_id, PWPL_Meta::CARDS_GLASS );
+        if ( array_key_exists( 'cards_glass', $ui_input ) ) {
+            $cards_glass = ! empty( $ui_input['cards_glass'] ) ? 1 : 0;
+            if ( $cards_glass ) {
+                update_post_meta( $post_id, PWPL_Meta::CARDS_GLASS, 1 );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::CARDS_GLASS );
+            }
         }
 
         // Specs style selector
-        $specs_style = isset( $ui_input['specs_style'] ) ? sanitize_key( $ui_input['specs_style'] ) : 'default';
-        if ( ! in_array( $specs_style, [ 'default', 'flat', 'segmented', 'chips' ], true ) ) {
-            $specs_style = 'default';
+        if ( array_key_exists( 'specs_style', $ui_input ) ) {
+            $specs_style = sanitize_key( $ui_input['specs_style'] );
+            if ( ! in_array( $specs_style, [ 'default', 'flat', 'segmented', 'chips' ], true ) ) {
+                $specs_style = 'default';
+            }
+            update_post_meta( $post_id, PWPL_Meta::SPECS_STYLE, $specs_style );
         }
-        update_post_meta( $post_id, PWPL_Meta::SPECS_STYLE, $specs_style );
 
         // Specs interactions
-        $anim_input = isset( $ui_input['specs_anim'] ) ? (array) $ui_input['specs_anim'] : [];
-        // No preset control in UI anymore. Persist 'off' and rely on flags.
-        update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_PRESET, 'off' );
+        if ( array_key_exists( 'specs_anim', $ui_input ) ) {
+            $anim_input = (array) $ui_input['specs_anim'];
+            // No preset control in UI anymore. Persist 'off' and rely on flags.
+            update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_PRESET, 'off' );
 
-        $flags = isset( $anim_input['flags'] ) && is_array( $anim_input['flags'] ) ? array_map( 'sanitize_key', $anim_input['flags'] ) : [];
-        $flags = array_values( array_intersect( $flags, [ 'row', 'icon', 'divider', 'chip', 'stagger' ] ) );
-        update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_FLAGS, $flags );
+            $flags = isset( $anim_input['flags'] ) && is_array( $anim_input['flags'] ) ? array_map( 'sanitize_key', $anim_input['flags'] ) : [];
+            $flags = array_values( array_intersect( $flags, [ 'row', 'icon', 'divider', 'chip', 'stagger' ] ) );
+            update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_FLAGS, $flags );
 
-        $intensity = isset( $anim_input['intensity'] ) ? (int) $anim_input['intensity'] : 45;
-        $intensity = max( 0, min( 100, $intensity ) );
-        update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_INTENSITY, $intensity );
+            $intensity = isset( $anim_input['intensity'] ) ? (int) $anim_input['intensity'] : 45;
+            $intensity = max( 0, min( 100, $intensity ) );
+            update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_INTENSITY, $intensity );
 
-        $mobile = ! empty( $anim_input['mobile'] ) ? 1 : 0;
-        if ( $mobile ) { update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE ); }
+            $mobile = ! empty( $anim_input['mobile'] ) ? 1 : 0;
+            if ( $mobile ) { update_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::SPECS_ANIM_MOBILE ); }
+        }
 
         // Trust trio + sticky cta
-        $trust_trio = ! empty( $ui_input['trust_trio'] ) ? 1 : 0;
-        if ( $trust_trio ) { update_post_meta( $post_id, PWPL_Meta::TRUST_TRIO_ENABLED, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::TRUST_TRIO_ENABLED ); }
+        if ( array_key_exists( 'trust_trio', $ui_input ) ) {
+            $trust_trio = ! empty( $ui_input['trust_trio'] ) ? 1 : 0;
+            if ( $trust_trio ) { update_post_meta( $post_id, PWPL_Meta::TRUST_TRIO_ENABLED, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::TRUST_TRIO_ENABLED ); }
+        }
 
-        $sticky_cta = ! empty( $ui_input['sticky_cta'] ) ? 1 : 0;
-        if ( $sticky_cta ) { update_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE ); }
+        if ( array_key_exists( 'sticky_cta', $ui_input ) ) {
+            $sticky_cta = ! empty( $ui_input['sticky_cta'] ) ? 1 : 0;
+            if ( $sticky_cta ) { update_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE, 1 ); } else { delete_post_meta( $post_id, PWPL_Meta::STICKY_CTA_MOBILE ); }
+        }
 
         // CTA config
-        $cta_input = isset( $ui_input['cta'] ) ? (array) $ui_input['cta'] : [];
-        $cta_value = apply_filters( 'pwpl_sanitize_cta', $cta_input );
-        // Reuse the meta sanitizer to keep logic consistent
-        $meta_sanitizer = new PWPL_Meta();
-        $cta_clean = $meta_sanitizer->register_meta() ? null : null; // no-op to avoid unused warning
-        // Call the sanitizer inline (duplicated from PWPL_Meta::register_meta anonymous)
-        $v = is_array( $cta_input ) ? $cta_input : [];
-        $out = [];
-        $out['width']  = in_array( $v['width'] ?? 'full', [ 'auto','full' ], true ) ? $v['width'] : 'full';
-        $out['height'] = max( 36, min( 64, (int) ( $v['height'] ?? 48 ) ) );
-        $out['pad_x']  = max( 10, min( 32, (int) ( $v['pad_x'] ?? 22 ) ) );
-        $out['radius'] = max( 0, min( 999, (int) ( $v['radius'] ?? 12 ) ) );
-        $bw = isset( $v['border_width'] ) ? (float) $v['border_width'] : 1.5;
-        $out['border_width'] = max( 0, min( 4, $bw ) );
-        // Prefer font.weight if provided, else top-level weight
-        $font_weight = isset( $v['font']['weight'] ) ? (int) $v['font']['weight'] : 0;
-        if ( $font_weight ) {
-            $out['weight'] = max( 400, min( 900, $font_weight ) );
-        } else {
-            $out['weight'] = max( 500, min( 900, (int) ( $v['weight'] ?? 700 ) ) );
+        if ( array_key_exists( 'cta', $ui_input ) ) {
+            $cta_input = (array) $ui_input['cta'];
+            // Call the sanitizer inline (duplicated logic as in PWPL_Meta::register_meta anonymous sanitizer)
+            $v = $cta_input;
+            $out = [];
+            $out['width']  = in_array( $v['width'] ?? 'full', [ 'auto','full' ], true ) ? $v['width'] : 'full';
+            $out['height'] = max( 36, min( 64, (int) ( $v['height'] ?? 48 ) ) );
+            $out['pad_x']  = max( 10, min( 32, (int) ( $v['pad_x'] ?? 22 ) ) );
+            $out['radius'] = max( 0, min( 999, (int) ( $v['radius'] ?? 12 ) ) );
+            $bw = isset( $v['border_width'] ) ? (float) $v['border_width'] : 1.5;
+            $out['border_width'] = max( 0, min( 4, $bw ) );
+            $font_weight = isset( $v['font']['weight'] ) ? (int) $v['font']['weight'] : 0;
+            if ( $font_weight ) { $out['weight'] = max( 400, min( 900, $font_weight ) ); }
+            else { $out['weight'] = max( 500, min( 900, (int) ( $v['weight'] ?? 700 ) ) ); }
+            $out['lift']   = max( 0, min( 3, (int) ( $v['lift'] ?? 1 ) ) );
+            $out['min_w']  = max( 0, min( 4000, (int) ( $v['min_w'] ?? 0 ) ) );
+            $out['max_w']  = max( 0, min( 4000, (int) ( $v['max_w'] ?? 0 ) ) );
+            $out['focus']  = (string) ( $v['focus'] ?? '' );
+            $out['normal'] = [
+                'bg'     => (string) ( $v['normal']['bg'] ?? '' ),
+                'color'  => (string) ( $v['normal']['color'] ?? '' ),
+                'border' => (string) ( $v['normal']['border'] ?? '' ),
+            ];
+            $out['hover'] = [
+                'bg'     => (string) ( $v['hover']['bg'] ?? '' ),
+                'color'  => (string) ( $v['hover']['color'] ?? '' ),
+                'border' => (string) ( $v['hover']['border'] ?? '' ),
+            ];
+            $tracking_raw = isset( $v['font']['tracking'] ) ? trim( (string) $v['font']['tracking'] ) : '';
+            if ( $tracking_raw !== '' && preg_match( '/^[-+]?[0-9]*\.?[0-9]+$/', $tracking_raw ) ) { $tracking_raw .= 'em'; }
+            $preset = isset( $v['font']['preset'] ) ? sanitize_key( $v['font']['preset'] ) : '';
+            $preset_map = [
+                'system'        => 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
+                'inter'         => '"Inter", system-ui, -apple-system, sans-serif',
+                'poppins'       => '"Poppins", system-ui, -apple-system, sans-serif',
+                'open_sans'     => '"Open Sans", system-ui, -apple-system, sans-serif',
+                'montserrat'    => '"Montserrat", system-ui, -apple-system, sans-serif',
+                'lato'          => '"Lato", system-ui, -apple-system, sans-serif',
+                'space_grotesk' => '"Space Grotesk", system-ui, sans-serif',
+                'rubik'         => '"Rubik", system-ui, -apple-system, sans-serif',
+            ];
+            $family = (string) ( $v['font']['family'] ?? '' );
+            if ( $family === '' && $preset && isset( $preset_map[ $preset ] ) ) { $family = $preset_map[ $preset ]; }
+            $out['font'] = [
+                'family'    => $family,
+                'size'      => max( 10, min( 28, (int) ( $v['font']['size'] ?? 0 ) ) ),
+                'transform' => in_array( $v['font']['transform'] ?? 'none', [ 'none', 'uppercase' ], true ) ? $v['font']['transform'] : 'none',
+                'tracking'  => $tracking_raw,
+            ];
+            update_post_meta( $post_id, PWPL_Meta::CTA_CONFIG, $out );
         }
-        $out['lift']   = max( 0, min( 3, (int) ( $v['lift'] ?? 1 ) ) );
-        $out['min_w']  = max( 0, min( 4000, (int) ( $v['min_w'] ?? 0 ) ) );
-        $out['max_w']  = max( 0, min( 4000, (int) ( $v['max_w'] ?? 0 ) ) );
-        $out['focus']  = (string) ( $v['focus'] ?? '' );
-        $out['normal'] = [
-            'bg'     => (string) ( $v['normal']['bg'] ?? '' ),
-            'color'  => (string) ( $v['normal']['color'] ?? '' ),
-            'border' => (string) ( $v['normal']['border'] ?? '' ),
-        ];
-        $out['hover'] = [
-            'bg'     => (string) ( $v['hover']['bg'] ?? '' ),
-            'color'  => (string) ( $v['hover']['color'] ?? '' ),
-            'border' => (string) ( $v['hover']['border'] ?? '' ),
-        ];
-        // Normalize tracking: numeric becomes em unit
-        $tracking_raw = isset( $v['font']['tracking'] ) ? trim( (string) $v['font']['tracking'] ) : '';
-        if ( $tracking_raw !== '' && preg_match( '/^[-+]?[0-9]*\.?[0-9]+$/', $tracking_raw ) ) {
-            $tracking_raw .= 'em';
-        }
-        $preset = isset( $v['font']['preset'] ) ? sanitize_key( $v['font']['preset'] ) : '';
-        $preset_map = [
-            'system'        => 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-            'inter'         => '"Inter", system-ui, -apple-system, sans-serif',
-            'poppins'       => '"Poppins", system-ui, -apple-system, sans-serif',
-            'open_sans'     => '"Open Sans", system-ui, -apple-system, sans-serif',
-            'montserrat'    => '"Montserrat", system-ui, -apple-system, sans-serif',
-            'lato'          => '"Lato", system-ui, -apple-system, sans-serif',
-            'space_grotesk' => '"Space Grotesk", system-ui, -apple-system, sans-serif',
-            'rubik'         => '"Rubik", system-ui, -apple-system, sans-serif',
-        ];
-        $family = (string) ( $v['font']['family'] ?? '' );
-        if ( $family === '' && $preset && isset( $preset_map[ $preset ] ) ) {
-            $family = $preset_map[ $preset ];
-        }
-        $out['font'] = [
-            'family'    => $family,
-            'size'      => max( 10, min( 28, (int) ( $v['font']['size'] ?? 0 ) ) ),
-            'transform' => in_array( $v['font']['transform'] ?? 'none', [ 'none', 'uppercase' ], true ) ? $v['font']['transform'] : 'none',
-            'tracking'  => $tracking_raw,
-        ];
-        update_post_meta( $post_id, PWPL_Meta::CTA_CONFIG, $out );
 
         $card_input = isset( $input['card'] ) ? (array) $input['card'] : [];
         $card_clean = $meta->sanitize_card_config( $card_input );
-        update_post_meta( $post_id, PWPL_Meta::CARD_CONFIG, $card_clean );
+
+        // Merge with existing card config to avoid wiping values from other tabs
+        $existing_card_raw = get_post_meta( $post_id, PWPL_Meta::CARD_CONFIG, true );
+        $existing_card     = is_array( $existing_card_raw ) ? $meta->sanitize_card_config( $existing_card_raw ) : [];
+        $merged_card       = $existing_card;
+        if ( is_array( $card_clean ) && $card_clean ) {
+            $merged_card = array_replace_recursive( $existing_card, $card_clean );
+        }
+        update_post_meta( $post_id, PWPL_Meta::CARD_CONFIG, $merged_card );
         // Trust items textarea -> array
-        $trust_items_input = isset( $ui_input['trust_items'] ) ? (string) $ui_input['trust_items'] : '';
-        $lines = array_filter( array_map( function( $line ) {
-            $t = trim( (string) $line );
-            return $t !== '' ? wp_strip_all_tags( $t ) : '';
-        }, preg_split( '/\r\n|\r|\n/', $trust_items_input ) ) );
-        if ( ! empty( $lines ) ) {
-            update_post_meta( $post_id, PWPL_Meta::TRUST_ITEMS, array_values( $lines ) );
-        } else {
-            delete_post_meta( $post_id, PWPL_Meta::TRUST_ITEMS );
+        if ( array_key_exists( 'trust_items', $ui_input ) ) {
+            $trust_items_input = (string) $ui_input['trust_items'];
+            $lines = array_filter( array_map( function( $line ) {
+                $t = trim( (string) $line );
+                return $t !== '' ? wp_strip_all_tags( $t ) : '';
+            }, preg_split( '/\r\n|\r|\n/', $trust_items_input ) ) );
+            if ( ! empty( $lines ) ) {
+                update_post_meta( $post_id, PWPL_Meta::TRUST_ITEMS, array_values( $lines ) );
+            } else {
+                delete_post_meta( $post_id, PWPL_Meta::TRUST_ITEMS );
+            }
         }
 
         // Optional plan card size controls (legacy breakpoint container)
-        $breakpoints_input  = isset( $input['breakpoints'] ) ? (array) $input['breakpoints'] : [];
-        $breakpoint_values  = $meta->sanitize_table_breakpoints( $breakpoints_input );
-        if ( ! empty( $breakpoint_values ) ) {
-            foreach ( $breakpoint_values as $device => $values ) {
-                if ( isset( $breakpoint_values[ $device ]['card_min'] ) ) {
-                    unset( $breakpoint_values[ $device ]['card_min'] );
-                }
-                if ( empty( $breakpoint_values[ $device ] ) ) {
-                    unset( $breakpoint_values[ $device ] );
+        if ( array_key_exists( 'breakpoints', $input ) ) {
+            $breakpoints_input  = (array) $input['breakpoints'];
+            $breakpoint_values  = $meta->sanitize_table_breakpoints( $breakpoints_input );
+            if ( ! empty( $breakpoint_values ) ) {
+                foreach ( $breakpoint_values as $device => $values ) {
+                    if ( isset( $breakpoint_values[ $device ]['card_min'] ) ) {
+                        unset( $breakpoint_values[ $device ]['card_min'] );
+                    }
+                    if ( empty( $breakpoint_values[ $device ] ) ) {
+                        unset( $breakpoint_values[ $device ] );
+                    }
                 }
             }
-        }
-        if ( empty( $breakpoint_values ) ) {
-            delete_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS );
-        } else {
-            update_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS, $breakpoint_values );
+            if ( empty( $breakpoint_values ) ) {
+                delete_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS );
+            } else {
+                update_post_meta( $post_id, PWPL_Meta::TABLE_BREAKPOINTS, $breakpoint_values );
+            }
         }
 
-        $dimensions = isset( $input['dimensions'] ) ? (array) $input['dimensions'] : [];
-        $dimensions = $meta->sanitize_dimensions( $dimensions );
-        update_post_meta( $post_id, PWPL_Meta::DIMENSION_META, $dimensions );
+        if ( array_key_exists( 'dimensions', $input ) ) {
+            $dimensions = (array) $input['dimensions'];
+            $dimensions = $meta->sanitize_dimensions( $dimensions );
+            update_post_meta( $post_id, PWPL_Meta::DIMENSION_META, $dimensions );
+        }
 
-        $allowed = $input['allowed'] ?? [];
+        $allowed = isset( $input['allowed'] ) ? (array) $input['allowed'] : null;
         $allowed_order_input = isset( $input['allowed_order'] ) && is_array( $input['allowed_order'] ) ? $input['allowed_order'] : [];
+        if ( is_array( $allowed ) ) {
+            $platforms = isset( $allowed['platform'] ) ? (array) $allowed['platform'] : [];
+            $platform_slugs = wp_list_pluck( (array) $settings->get( 'platforms' ), 'slug' );
+            $platforms = array_values( array_intersect( array_map( 'sanitize_title', $platforms ), $platform_slugs ) );
 
-        $platforms = isset( $allowed['platform'] ) ? (array) $allowed['platform'] : [];
-        $platform_slugs = wp_list_pluck( (array) $settings->get( 'platforms' ), 'slug' );
-        $platforms = array_values( array_intersect( array_map( 'sanitize_title', $platforms ), $platform_slugs ) );
-
-        if ( ! empty( $allowed_order_input['platform'] ) ) {
-            $order = array_filter( array_map( 'sanitize_title', explode( ',', $allowed_order_input['platform'] ) ) );
-            if ( $order ) {
-                $ordered = [];
-                foreach ( $order as $slug ) {
-                    if ( in_array( $slug, $platforms, true ) && ! in_array( $slug, $ordered, true ) ) {
-                        $ordered[] = $slug;
+            if ( ! empty( $allowed_order_input['platform'] ) ) {
+                $order = array_filter( array_map( 'sanitize_title', explode( ',', $allowed_order_input['platform'] ) ) );
+                if ( $order ) {
+                    $ordered = [];
+                    foreach ( $order as $slug ) {
+                        if ( in_array( $slug, $platforms, true ) && ! in_array( $slug, $ordered, true ) ) {
+                            $ordered[] = $slug;
+                        }
                     }
-                }
-                foreach ( $platforms as $slug ) {
-                    if ( ! in_array( $slug, $ordered, true ) ) {
-                        $ordered[] = $slug;
+                    foreach ( $platforms as $slug ) {
+                        if ( ! in_array( $slug, $ordered, true ) ) {
+                            $ordered[] = $slug;
+                        }
                     }
+                    $platforms = $ordered;
                 }
-                $platforms = $ordered;
             }
+            update_post_meta( $post_id, PWPL_Meta::ALLOWED_PLATFORMS, $platforms );
+
+            $periods = isset( $allowed['period'] ) ? (array) $allowed['period'] : [];
+            $period_slugs = wp_list_pluck( (array) $settings->get( 'periods' ), 'slug' );
+            $periods = array_values( array_intersect( array_map( 'sanitize_title', $periods ), $period_slugs ) );
+            update_post_meta( $post_id, PWPL_Meta::ALLOWED_PERIODS, $periods );
+
+            $locations = isset( $allowed['location'] ) ? (array) $allowed['location'] : [];
+            $location_slugs = wp_list_pluck( (array) $settings->get( 'locations' ), 'slug' );
+            $locations = array_values( array_intersect( array_map( 'sanitize_title', $locations ), $location_slugs ) );
+            update_post_meta( $post_id, PWPL_Meta::ALLOWED_LOCATIONS, $locations );
         }
-        update_post_meta( $post_id, PWPL_Meta::ALLOWED_PLATFORMS, $platforms );
-
-        $periods = isset( $allowed['period'] ) ? (array) $allowed['period'] : [];
-        $period_slugs = wp_list_pluck( (array) $settings->get( 'periods' ), 'slug' );
-        $periods = array_values( array_intersect( array_map( 'sanitize_title', $periods ), $period_slugs ) );
-        update_post_meta( $post_id, PWPL_Meta::ALLOWED_PERIODS, $periods );
-
-        $locations = isset( $allowed['location'] ) ? (array) $allowed['location'] : [];
-        $location_slugs = wp_list_pluck( (array) $settings->get( 'locations' ), 'slug' );
-        $locations = array_values( array_intersect( array_map( 'sanitize_title', $locations ), $location_slugs ) );
-        update_post_meta( $post_id, PWPL_Meta::ALLOWED_LOCATIONS, $locations );
     }
 
     public function save_plan( $post_id ) {

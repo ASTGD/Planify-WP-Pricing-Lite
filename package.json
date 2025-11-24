@@ -1,0 +1,26 @@
+{
+  "name": "planify-wp-pricing-lite",
+  "version": "1.0.0",
+  "description": "Lightweight, developer‑friendly WordPress plugin to create and render pricing tables.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ASTGD/Planify-WP-Pricing-Lite.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ASTGD/Planify-WP-Pricing-Lite/issues"
+  },
+  "homepage": "https://github.com/ASTGD/Planify-WP-Pricing-Lite#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.10.1"
+  }
+}

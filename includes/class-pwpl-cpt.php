@@ -34,6 +34,7 @@ class PWPL_CPT {
             'public' => false,
             'show_ui' => true,
             'show_in_rest' => true,
+            'show_in_menu' => false,
             'menu_position' => 25,
             'menu_icon' => 'dashicons-index-card',
             'supports' => [ 'title' ],
@@ -49,7 +50,7 @@ class PWPL_CPT {
             'public' => false,
             'show_ui' => true,
             'show_in_rest' => true,
-            'show_in_menu' => 'edit.php?post_type=pwpl_table',
+            'show_in_menu' => false,
             'supports' => [ 'title', 'page-attributes' ],
             'hierarchical' => false,
             'has_archive' => false,
@@ -57,49 +58,29 @@ class PWPL_CPT {
     }
 
     public function ensure_submenus() {
-        // Reorder and de-duplicate the auto-generated submenus under Pricing Tables.
-        $parent = 'edit.php?post_type=pwpl_table';
+        // Keep the plugin's top-level Pricing Tables menu tidy and avoid duplicates.
+        $parent = 'pwpl-tables-dashboard';
         global $submenu;
         if ( ! isset( $submenu[ $parent ] ) ) {
             return;
         }
 
-        // Ensure the Add New Plan entry exists before we re-order.
-        $slugs = wp_list_pluck( (array) $submenu[ $parent ], 2 );
-        if ( ! in_array( 'post-new.php?post_type=pwpl_plan', $slugs, true ) ) {
-            add_submenu_page(
-                $parent,
-                __( 'Add New Plan', 'planify-wp-pricing-lite' ),
-                __( 'Add New Plan', 'planify-wp-pricing-lite' ),
-                'edit_posts',
-                'post-new.php?post_type=pwpl_plan',
-                ''
-            );
-        }
-
         // Collapse duplicates by slug (WP may add entries automatically; we avoid duplicates).
-        $seen = [];
-        $filtered = [];
-        foreach ( $submenu[ $parent ] as $item ) {
-            $slug = isset( $item[2] ) ? $item[2] : '';
-            if ( $slug && ! isset( $seen[ $slug ] ) ) {
-                $seen[ $slug ] = true;
-                $filtered[] = $item;
-            }
-        }
-
-        // Map by slug to rebuild order.
         $by_slug = [];
-        foreach ( $filtered as $item ) {
-            $by_slug[ $item[2] ] = $item;
+        foreach ( (array) $submenu[ $parent ] as $item ) {
+            $slug = isset( $item[2] ) ? $item[2] : '';
+            if ( ! $slug || isset( $by_slug[ $slug ] ) ) {
+                continue;
+            }
+            if ( $slug === 'pwpl-tables-dashboard' ) {
+                $item[0] = __( 'Pricing Tables', 'planify-wp-pricing-lite' );
+            }
+            $by_slug[ $slug ] = $item;
         }
 
         $desired = [
-            'edit.php?post_type=pwpl_table',      // All Pricing Tables
-            'post-new.php?post_type=pwpl_table',  // Add New Pricing Table
-            'edit.php?post_type=pwpl_plan',       // All Plans
-            'post-new.php?post_type=pwpl_plan',   // Add New Plan
-            'pwpl-settings',                      // Settings
+            'pwpl-tables-dashboard', // Dashboard view (cards)
+            'pwpl-settings',         // Settings
         ];
 
         $ordered = [];

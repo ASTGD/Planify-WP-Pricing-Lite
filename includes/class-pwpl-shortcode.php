@@ -555,6 +555,58 @@ class PWPL_Shortcode {
                         $style_vars[ $vars['weight_var'] ] = (int) $entry['weight'];
                     }
                 }
+
+                // Title-specific extras: alignment and text shadow
+                if ( isset( $typo['title'] ) && is_array( $typo['title'] ) ) {
+                    $title_typo = $typo['title'];
+                    if ( ! empty( $title_typo['align'] ) && in_array( $title_typo['align'], [ 'left', 'center', 'right' ], true ) ) {
+                        $style_vars['--card-title-align'] = $title_typo['align'];
+                    }
+
+                    $shadow_css = '';
+                    $shadow_enabled = ! empty( $title_typo['shadow_enable'] );
+                    $shadow_style   = isset( $title_typo['shadow_style'] ) ? sanitize_key( (string) $title_typo['shadow_style'] ) : '';
+                    $sx = isset( $title_typo['shadow_x'] ) ? (int) $title_typo['shadow_x'] : 0;
+                    $sy = isset( $title_typo['shadow_y'] ) ? (int) $title_typo['shadow_y'] : 0;
+                    $sb = isset( $title_typo['shadow_blur'] ) ? (int) $title_typo['shadow_blur'] : 0;
+                    $sc = isset( $title_typo['shadow_color'] ) ? (string) $title_typo['shadow_color'] : '';
+
+                    if ( $shadow_enabled ) {
+                        switch ( $shadow_style ) {
+                            case 'none':
+                                $shadow_css = 'none';
+                                break;
+                            case 'soft':
+                                $shadow_css = '0 2px 4px ' . $sc;
+                                break;
+                            case 'medium':
+                                $shadow_css = '0 3px 8px ' . $sc;
+                                break;
+                            case 'deep':
+                                $shadow_css = '0 6px 16px ' . $sc;
+                                break;
+                            case 'glow':
+                                $shadow_css = '0 0 6px ' . $sc . ', 0 0 12px ' . $sc;
+                                break;
+                            case 'long':
+                                $shadow_css = '2px 2px 0 ' . $sc . ', 4px 4px 0 ' . $sc . ', 6px 6px 0 ' . $sc;
+                                break;
+                            case 'custom':
+                            default:
+                                $shadow_css = $sx . 'px ' . $sy . 'px ' . $sb . 'px ' . $sc;
+                                break;
+                        }
+                        // If color empty, fallback to a subtle default
+                        if ( '' === trim( (string) $sc ) ) {
+                            $shadow_css = 'none';
+                        }
+                        if ( '' !== $shadow_css ) {
+                            $style_vars['--card-title-shadow'] = $shadow_css;
+                        }
+                    } else {
+                        $style_vars['--card-title-shadow'] = 'none';
+                    }
+                }
             }
         }
 
