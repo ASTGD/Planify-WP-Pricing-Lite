@@ -43,6 +43,8 @@ The FireVPS theme included in this branch ships an opinionated, high‑conversio
 
 ## Getting Started
 
+When you click **Planify** for the first time, the Pricing Tables dashboard shows a guided welcome state with steps to configure currency, create your first table, add plans, and embed the shortcode.
+
 ### 1. Install & Activate
 
 1. Copy this folder to:  
@@ -51,7 +53,7 @@ The FireVPS theme included in this branch ships an opinionated, high‑conversio
 
 ### 2. Configure Global Settings
 
-Go to **Pricing Tables → Settings** (`pwpl-settings`):
+Go to **Planify → Settings** (`pwpl-settings`):
 
 - Set **currency** (symbol, position, separators, decimals).
 - Define global **Platforms**, **Periods**, and **Locations**:
@@ -62,8 +64,8 @@ These values power the filters and variant pickers across all tables.
 
 ### 3. Create a Pricing Table
 
-1. Go to **Pricing Tables → All Pricing Tables** to see the dashboard cards view (counts, recent tables, quick actions).
-2. Go to **Pricing Tables → Add New**.
+1. Click **Planify** in the WP Admin menu to open the Pricing Tables dashboard. On first run you’ll see a welcome view with a “Create your first pricing table” call to action.
+2. Use **Add Pricing Table** from the dashboard header (or a table card’s quick action once tables exist) to create a new table. When tables exist, the dashboard shows stats, plan counts, updated dates, and quick actions for each table.
 3. Give your table a title (e.g. “VPS Hosting”).
 4. Use the **Table Editor – V1 (Preview)** meta box to:
    - Choose a **theme** (e.g. FireVPS, Warm, Blue, Modern Discount, Classic).
@@ -74,14 +76,21 @@ These values power the filters and variant pickers across all tables.
 
 ### 4. Create Plans & Variants
 
-1. From the Pricing Tables dashboard, click **Manage Plans** on a table to open its per-table Plans Dashboard (cards view). Clicking a plan opens a right-hand drawer with the modern plan editor (Basics, Specs, Pricing, Promotions, Advanced). You can still open the full editor via the link in the drawer.
+1. From the Pricing Tables dashboard (Planify → Pricing Tables), click **Manage Plans** on a table to open its per-table Plans Dashboard. The Plans view uses a **two-pane layout**:
+   - A tight **plan list** on the left (one row per plan),
+   - A wide **Plan Drawer** editor on the right.
+   Selecting a row loads the Plan Drawer inline on desktop; on narrow widths the same drawer appears as a modal.
 2. Assign the plan to a Pricing Table (Manage Plans will pre-assign it).
 3. Fill in:
    - Specs: CPU, RAM, storage, bandwidth, etc.
-   - Price variants: combinations of Platform / Period / Location:
-     - Base price and optional sale price,
+   - Pricing Variants:
+     - Define one or more variants per Platform / Period / Location combination,
+     - Each variant has base price and optional sale price,
      - CTA label, URL, target, `rel`, and availability.
-   - Optional plan‑level badge overrides and “Featured” flag.
+     - Variants are managed in a navigator + detail layout: a middle column list and a right-hand details card, with filters for Platform/Period/Location.
+   - Promotions & Advanced:
+     - Optional plan‑level badge overrides (period / location / platform groups + priority),
+     - “Featured” flag and optional plan theme override.
 4. Publish. Repeat for each plan you want in the table.
 
 ### 5. Embed in Pages
@@ -102,6 +111,14 @@ Replace `123` with the ID of your `pwpl_table` post. The frontend JS handles:
 
 ---
 
+### Admin navigation
+
+- The **Planify** top-level menu opens the Pricing Tables dashboard. On first run it shows a guided welcome/empty state; once tables exist it shows a cards view with stats, plan counts, updated dates, shortcodes with copy buttons, and quick actions (Edit Table, Manage Plans).
+- Each table’s **Manage Plans** action opens the per-table Plans Dashboard (two-pane layout with inline Plan Drawer and “Open full editor” links for each plan).
+- Plugin **Settings** live under **Planify → Settings** using the existing `pwpl-settings` slug.
+
+---
+
 ## Architecture Overview
 
 High‑level structure:
@@ -114,9 +131,8 @@ High‑level structure:
 - **Core classes (`includes/`)**
   - `class-pwpl-plugin.php` – wires together CPTs, meta, shortcode, admin, settings, and V1 UI.
   - `class-pwpl-cpt.php` – registers:
-    - `pwpl_table` (pricing tables),
-    - `pwpl_plan` (plans attached to a table),
-    - Aligns the admin submenu structure.
+    - `pwpl_table` (pricing tables, hidden from the default CPT menu),
+    - `pwpl_plan` (plans attached to a table, hidden from menus; navigated via dashboards).
   - `class-pwpl-meta.php` – all structured post meta:
     - Dimensions, allowed values and badges,
     - Layout widths, breakpoints, card config, CTA config,
@@ -129,7 +145,8 @@ High‑level structure:
     - Enqueued frontend assets and localized currency settings.
   - `class-pwpl-admin.php` – classic admin enhancements:
     - Enqueues `assets/admin/css/admin.css` and `assets/admin/js/admin.js`,
-    - Adds sortable columns and ordering for plans.
+    - Adds sortable columns and ordering for plans,
+    - Registers the top-level Pricing Tables dashboard and hidden Plans Dashboard route.
   - `class-pwpl-admin-meta.php` – legacy meta boxes for table & plan configuration (still used for some controls).
   - `class-pwpl-admin-ui-v1.php` – V1 Table Editor meta box:
     - Enqueues `assets/admin/css/admin-v1.css` and `assets/admin/js/table-editor-v1.js`,

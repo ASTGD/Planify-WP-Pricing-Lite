@@ -107,18 +107,17 @@ class PWPL_Admin {
     }
 
     /**
-     * Register the custom dashboard page for Pricing Tables and adjust menu routing.
+     * Register the top-level Pricing Tables menu and dashboard page.
      */
     public function register_dashboard_page() {
-        $parent = 'edit.php?post_type=pwpl_table';
-
-        add_submenu_page(
-            $parent,
-            __( 'Pricing Tables Dashboard', 'planify-wp-pricing-lite' ),
-            __( 'All Pricing Tables', 'planify-wp-pricing-lite' ),
+        add_menu_page(
+            __( 'Pricing Tables', 'planify-wp-pricing-lite' ),
+            __( 'Planify', 'planify-wp-pricing-lite' ),
             'edit_posts',
             'pwpl-tables-dashboard',
-            [ $this, 'render_tables_dashboard' ]
+            [ $this, 'render_tables_dashboard' ],
+            'dashicons-index-card',
+            25
         );
     }
 
@@ -218,9 +217,8 @@ class PWPL_Admin {
      * Hidden submenu and renderer for per-table Plans Dashboard.
      */
     public function register_plans_dashboard_page() {
-        $parent = 'edit.php?post_type=pwpl_table';
         add_submenu_page(
-            $parent,
+            null,
             __( 'Plans Dashboard', 'planify-wp-pricing-lite' ),
             __( 'Plans Dashboard', 'planify-wp-pricing-lite' ),
             'edit_posts',

@@ -6,6 +6,128 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 
 ---
 
+## 1.8.3 – Populated dashboard polish
+
+### Added
+- Refined Pricing Tables dashboard header/actions and help panel for sites with existing tables, aligning visuals with the first-run experience.
+
+### Changed
+- Table stats, cards, and shortcode sections now use the updated Planify styling with clearer plan counts, updated dates, and quick actions.
+
+---
+
+## 1.8.2 – First-run welcome dashboard
+
+### Added
+- Guided first-run empty-state for the Planify dashboard with hero CTA, getting-started checklist (settings → table → plans → embed), and inline learning links.
+
+### Changed
+- When no tables exist, the Pricing Tables dashboard now shows a product-style welcome view instead of the grid, while the populated state remains unchanged.
+
+---
+
+## 1.8.1 – Admin menu cleanup
+
+### Added
+- Dedicated top-level **Planify** menu that opens the Pricing Tables dashboard cards view and acts as the plugin’s home.
+- **Settings** now lives as a submenu under Pricing Tables for quicker access.
+
+### Changed
+- Removed raw CPT menus (Tables/Plans lists and add-new shortcuts) from the sidebar so the dashboard is the primary entry point and tweaked the main menu label to match the plugin name.
+
+---
+
+## 1.8.0 – Two‑Pane Plans Dashboard & Inline Drawer
+
+### Added
+- **Two‑pane Plans Dashboard** for each pricing table: a tight, scrollable plan list on the left and a wide editor pane on the right to clearly distinguish plans management from the main tables grid.
+- **Inline Plan Drawer** in the right pane on desktop, reusing the existing V1 Plan Drawer form (Plan Basics, Specs, Pricing Variants, Promotions, Advanced) without covering the plan list; on narrow widths the drawer still uses the centered modal.
+- **Variant navigator filters** rendered as compact dropdowns with checkbox lists for Platform / Period / Location, allowing multi-select filtering of variants in the middle column.
+- **Advanced toggle** section beneath the drawer that expands into a full-width area, grouping Promotions (Overrides) and Plan theme override controls and leaving space for future advanced options.
+
+### Changed
+- Plans Dashboard no longer renders plans as large cards; instead it uses compact rows showing title, subtitle, primary price summary, dimension chips and status/featured badges. Clicking a row highlights it and loads its drawer in the right pane.
+- Drawer layout spacing and container sizing tuned for the new inline mode: the right pane now scrolls vertically while keeping the drawer header/footer and three-column internals intact.
+
+### Fixed
+- Drawer no longer opens below the detail pane when triggered from the Plans Dashboard; in desktop view it consistently renders inside the right-hand panel.
+- Avoided overlapping scrollbars and horizontal overflow in the new two-pane layout when many plans or variants are present.
+
+---
+
+## 1.7.3 – Plan Sheet width tweak
+
+### Fixed
+- Increased Plan Sheet max width to 1180px (with tighter horizontal margin) so the right column no longer overflows, especially when variants are expanded.
+
+---
+
+## 1.7.2 – Plan Sheet scroll fix
+
+### Fixed
+- Made the sheet form a proper 3-row grid (header/body/footer) so the inner body always scrolls; converted the body to a flex column for predictable gaps.
+
+---
+
+## 1.7.1 – Plan Sheet UX fixes
+
+### Added
+- Background scroll lock while the Plan Sheet is open, ensuring scroll stays inside the modal.
+- Default-compact variants: only the first variant opens by default; others start collapsed with summary chips.
+
+### Changed
+- Modal grid now uses `minmax(0, 1fr)` for the body row and explicit `overflow-y: auto` + `min-height: 0` to restore reliable scrolling.
+- Two-column layout rebalanced to ~60/40 and collapses earlier on narrower screens to avoid cramped fields.
+
+### Fixed
+- Scrollability issues where the page behind could “steal” scroll; mitigated vertical overflow without horizontal scrollbars.
+
+---
+
+## 1.7.0 – Plan Sheet Editor
+
+### Added
+- Centered Plan Sheet modal with improved desktop two-column layout and collapsible variant cards (summary headers + expandable details).
+
+### Changed
+- Fixed sheet scroll/sizing: sticky header/footer with the body now scrolling cleanly (no hidden content), refined spacing and inputs to feel closer to V1.
+- Pricing variants are more scannable via summary chips (platform/period/location/price) with status chips for sale/unavailable; details expand on demand.
+
+### Fixed
+- Reduced cramped layout and overflow issues when editing plans with many specs/variants in the modal.
+
+---
+
+## 1.6.0 – Plan Sheet Modal
+
+### Added
+- Centered plan editing **sheet modal** that opens from the Plans Dashboard with a wider viewport and two-column desktop layout (Basics/Specs left, Pricing/Promotions/Advanced right).
+
+### Changed
+- Replaced the narrow right-hand drawer with a spacious, scrollable sheet: sticky header/footer, modern V1-styled cards, and improved spacing; fully collapses to one column on narrow admin widths.
+- Modal now traps focus, supports overlay/ESC close, and keeps all existing meta field names and save behavior intact.
+
+### Fixed
+- Reduced cramped layout and scrolling pain when editing plans with many specs/variants; mitigated horizontal overflow risks.
+
+---
+
+## 1.5.0 – Plan Drawer UI polish
+
+### Added
+- Refined Plan Drawer visuals to mirror the V1 design system (cards, accent bars, modern buttons/inputs, consistent spacing).
+- Re-grouped pricing variants into compact rows (dims, price/sale, CTA, meta) to keep the drawer readable in narrow widths.
+
+### Changed
+- Removed the duplicate plan title field inside “Plan Basics” (title now lives in the sticky header only); tightened basics grid and table context.
+- Restyled specs/variants remove buttons, inputs, and footer actions to eliminate legacy meta-box styling and align with dashboard/Table Editor V1 look.
+- Updated section padding, shadows, and background for better hierarchy and comfort when many specs/variants are present.
+
+### Fixed
+- Reduced visual residue from old WP styles and mitigated horizontal overflow risks inside the drawer.
+
+---
+
 ## 1.4.1 – Plan Drawer polish
 
 ### Added

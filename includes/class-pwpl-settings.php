@@ -36,7 +36,7 @@ class PWPL_Settings {
 
     public function add_menu() {
         add_submenu_page(
-            'edit.php?post_type=pwpl_table',
+            'pwpl-tables-dashboard',
             __( 'Planify Settings', 'planify-wp-pricing-lite' ),
             __( 'Settings', 'planify-wp-pricing-lite' ),
             'manage_options',

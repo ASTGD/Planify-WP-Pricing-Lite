@@ -19,10 +19,13 @@ Its scope is the whole plugin.
   - Core layout & tokens: `assets/css/frontend.css`, `assets/css/themes.css`.
   - FireVPS theme (hero experience): `themes/firevps/template.php`, `themes/firevps/theme.css`, `themes/firevps/theme.js`.
 - **Admin navigation**
-  - The top-level “Pricing Tables” menu now opens a custom dashboard (cards view) instead of the native list table.
-  - The legacy list is still accessible as “All Tables (List)”. When you touch the dashboard, enforce grid/flex with gaps, no horizontal overflow, and wrap content for long titles/large datasets.
-  - Each table card links to a per-table **Plans Dashboard** (cards view). Future changes there must also use grid/flex with gaps, avoid horizontal overflow, and handle many plans/long titles gracefully. Buttons use the same copy/notice patterns as existing admin JS.
-  - The Plans Dashboard includes a right-hand **Plan Drawer** with a dedicated modern form (Baselines/Specs/Pricing/Promotions/Advanced) instead of the legacy meta box. All plan fields use the same meta names and sanitizers as the classic edit screen; keep layouts responsive (grid/flex + gap) and avoid horizontal scroll at narrow admin widths. Keep “Open full editor” as a secondary link.
+  - The top-level “Planify” menu is the canonical entry point; it opens the Pricing Tables dashboard cards view instead of the native list table. Submenus under it should stay lean: “Pricing Tables” (dashboard) and “Settings”.
+  - Raw CPT menus (“Plans”, “All Tables” list) are hidden from the sidebar; editors reach those screens via dashboard quick actions/links. The dashboard includes a first-run guided empty state (hero + steps + help) when no tables exist; preserve/extend this pattern for new features.
+  - For populated sites, keep the cards-based dashboard as the canonical home: refined header/actions, stats row, table cards with plan counts/shortcodes/quick actions, and a concise help panel.
+  - When you touch the dashboard, enforce grid/flex with gaps, no horizontal overflow, and wrap content for long titles/large datasets.
+  - Each table card links to a per-table **Plans Dashboard** with a **two‑pane layout**: a narrow plan list on the left and a wide editor pane on the right. The left pane must stay tight so the editor has plenty of room; use grid/flex with gaps and make the list independently scrollable for many plans.
+  - The Plans Dashboard’s editor pane hosts the V1 **Plan Drawer** inline on desktop and as a modal on narrow widths. The drawer is a modern form (Plan Basics / Specs / Pricing Variants / Promotions / Advanced) that reuses the same meta names and sanitizers as the classic edit screen. Keep layouts responsive (grid/flex + gap), avoid horizontal scroll, and keep “Open full editor” as a secondary link.
+  - Inside the Plan Drawer, pricing variants use a navigator + detail pattern (middle column list + right column card) with multi‑select filters and an Advanced toggle that expands a full‑width area for Promotions + theme overrides. Header/footer remain sticky; avoid horizontal overflow and preserve existing save logic.
 - **Tooling**:
   - Node dev deps: `@playwright/test` (sample tests only).
   - No build scripts are defined; JS/CSS files in `assets/` and `themes/` should be treated as the active sources.
@@ -119,6 +122,14 @@ Codex should **not** wait for the user to report broken padding/margins/overflow
   - Describe the current V1 behavior (CPTs, dimensions/variants, themes, FireVPS experience).
   - Keep language accessible to non‑developers and project managers.
   - Mention the core stack briefly: WordPress plugin, PHP, vanilla JS + jQuery + WP Components, CSS (no external CSS frameworks).
+
+### Doc & Changelog Expectations for Agents
+
+- Whenever you implement or materially adjust a **feature**, **layout**, or **visual style** (admin or frontend), you must:
+  - Update `README.md` (and `readme.txt` when applicable) to describe the new behavior/UI at a high level.
+  - Update `CHANGELOG.md` with a new entry under the next version heading summarizing what changed (Added/Changed/Fixed).
+  - Update this `AGENTS.md` only when the architectural expectations or “how to work in this repo” rules themselves change.
+- Treat these updates as part of the feature work; do them proactively without waiting for an explicit user request.
 
 ## Summary
 

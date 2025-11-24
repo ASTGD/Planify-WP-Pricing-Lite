@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Planify WP Pricing Lite
  * Description: Modern, responsive pricing tables for WordPress with a V1 table editor and FireVPS-ready theme.
- * Version: 1.4.1
+ * Version: 1.7.4
  * Author: Planify
  * Text Domain: planify-wp-pricing-lite
  * Requires at least: 6.0
@@ -11,7 +11,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'PWPL_VERSION', '1.4.1' );
+define( 'PWPL_VERSION', '1.7.4' );
 define( 'PWPL_FILE', __FILE__ );
 define( 'PWPL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PWPL_URL', plugin_dir_url( __FILE__ ) );
