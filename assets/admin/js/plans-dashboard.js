@@ -338,8 +338,13 @@
     if (!tpl.length) return;
     let html = tpl.html().replace(/__INDEX__/g, nextIndex);
     container.data('next-index', nextIndex + 1);
-    container.append(html);
     if (target === 'variants') {
+      const actions = container.find('.pwpl-variants__actions');
+      if (actions.length) {
+        $(html).insertBefore(actions);
+      } else {
+        container.append(html);
+      }
       const navContainer = drawer.find('.pwpl-variants-nav');
       const navItem = buildNavItem(nextIndex);
       if (navItem && navContainer.length) {
@@ -348,6 +353,15 @@
       updateVariantsEmptyState();
       applyFilters();
       setActiveVariant(nextIndex);
+    } else if (target === 'specs') {
+      const actions = container.find('.pwpl-specs__actions');
+      if (actions.length) {
+        $(html).insertBefore(actions);
+      } else {
+        container.append(html);
+      }
+    } else {
+      container.append(html);
     }
   });
 
