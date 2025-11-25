@@ -37,7 +37,6 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 - Plans Dashboard now includes helper text for populated tables, clarifying inline editing vs. full editor without altering behavior.
 
 ---
-
 ## 1.8.3 – Populated dashboard polish
 
 ### Added

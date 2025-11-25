@@ -60,20 +60,25 @@ class PWPL_Admin {
             $plans_js = PWPL_DIR . 'assets/admin/js/plans-dashboard.js';
             if ( file_exists( $plans_js ) ) {
                 wp_enqueue_script( 'pwpl-admin-plans-dashboard', PWPL_URL . 'assets/admin/js/plans-dashboard.js', [ 'jquery', 'wp-util' ], filemtime( $plans_js ), true );
-                wp_localize_script( 'pwpl-admin-plans-dashboard', 'PWPL_Plans', [
-                    'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-                    'nonce'   => wp_create_nonce( 'pwpl_plans_nonce' ),
-                    'i18n'    => [
-                        'loading' => __( 'Loading…', 'planify-wp-pricing-lite' ),
-                        'error'   => __( 'Unable to load the plan.', 'planify-wp-pricing-lite' ),
-                    ],
-                ] );
-                // Onboarding for Plan Editor tour
-                $onboarding = new PWPL_Onboarding();
+                wp_localize_script(
+                    'pwpl-admin-plans-dashboard',
+                    'PWPL_Plans',
+                    [
+                        'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+                        'nonce'   => wp_create_nonce( 'pwpl_plans_nonce' ),
+                        'i18n'    => [
+                            'loading' => __( 'Loading…', 'planify-wp-pricing-lite' ),
+                            'error'   => __( 'Unable to load the plan.', 'planify-wp-pricing-lite' ),
+                        ],
+                    ]
+                );
+
+                // Onboarding for Plan Editor tour.
+                $onboarding       = new PWPL_Onboarding();
                 $plan_tour_status = $onboarding->get_tour_status( PWPL_Onboarding::TOUR_PLAN_EDITOR );
-                $selected_plan = isset( $_GET['selected_plan'] ) ? (int) $_GET['selected_plan'] : 0;
-                $auto_start = ( 'not_started' === $plan_tour_status ) && $selected_plan;
-                $tour_steps = [
+                $selected_plan    = isset( $_GET['selected_plan'] ) ? (int) $_GET['selected_plan'] : 0;
+                $auto_start       = ( 'not_started' === $plan_tour_status ) && $selected_plan;
+                $tour_steps       = [
                     [
                         'id'     => 'welcome',
                         'target' => '.pwpl-plans__header',
@@ -123,23 +128,28 @@ class PWPL_Admin {
                         'body'   => __( 'Use Save / Save & Close for quick updates, or “Open full editor” for legacy meta boxes.', 'planify-wp-pricing-lite' ),
                     ],
                 ];
-                wp_localize_script( 'pwpl-onboarding', 'PWPL_Tours', [
-                    'activeTour' => $auto_start ? PWPL_Onboarding::TOUR_PLAN_EDITOR : null,
-                    'tours'      => [
-                        PWPL_Onboarding::TOUR_PLAN_EDITOR => $tour_steps,
-                    ],
-                    'state'      => [
-                        PWPL_Onboarding::TOUR_PLAN_EDITOR => [
-                            'status' => $plan_tour_status,
+
+                wp_localize_script(
+                    'pwpl-onboarding',
+                    'PWPL_Tours',
+                    [
+                        'activeTour' => $auto_start ? PWPL_Onboarding::TOUR_PLAN_EDITOR : null,
+                        'tours'      => [
+                            PWPL_Onboarding::TOUR_PLAN_EDITOR => $tour_steps,
                         ],
-                    ],
-                    'nonce'   => wp_create_nonce( 'pwpl_tour_state' ),
-                    'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-                    'labels'  => [
-                        'next'   => __( 'Next', 'planify-wp-pricing-lite' ),
-                        'finish' => __( 'Finish', 'planify-wp-pricing-lite' ),
-                    ],
-                ] );
+                        'state'      => [
+                            PWPL_Onboarding::TOUR_PLAN_EDITOR => [
+                                'status' => $plan_tour_status,
+                            ],
+                        ],
+                        'nonce'   => wp_create_nonce( 'pwpl_tour_state' ),
+                        'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+                        'labels'  => [
+                            'next'   => __( 'Next', 'planify-wp-pricing-lite' ),
+                            'finish' => __( 'Finish', 'planify-wp-pricing-lite' ),
+                        ],
+                    ]
+                );
             }
         }
     }
@@ -308,21 +318,20 @@ class PWPL_Admin {
         if ( ! $post || 'pwpl_table' !== $post->post_type ) {
             return $location;
         }
-        $referer = isset( $_POST['_wp_http_referer'] ) ? (string) wp_unslash( $_POST['_wp_http_referer'] ) : '';
+        $referer        = isset( $_POST['_wp_http_referer'] ) ? (string) wp_unslash( $_POST['_wp_http_referer'] ) : '';
         $came_from_dash = $referer && false !== strpos( $referer, 'pwpl_from_dash=1' );
         if ( ! $came_from_dash ) {
             return $location;
         }
         return add_query_arg(
             [
-                'page'         => 'pwpl-tables-dashboard',
-                'pwpl_notice'  => 'table_created',
-                'pwpl_table'   => $post_id,
+                'page'        => 'pwpl-tables-dashboard',
+                'pwpl_notice' => 'table_created',
+                'pwpl_table'  => $post_id,
             ],
             admin_url( 'admin.php' )
         );
     }
-
     public function render_plans_dashboard() {
         if ( ! current_user_can( 'edit_posts' ) ) {
             wp_die( __( 'You do not have permission to access this page.', 'planify-wp-pricing-lite' ) );
@@ -335,7 +344,6 @@ class PWPL_Admin {
         }
 
         $selected_plan = isset( $_GET['selected_plan'] ) ? (int) $_GET['selected_plan'] : 0;
-
         $status_filter  = isset( $_GET['status'] ) ? sanitize_key( $_GET['status'] ) : 'all';
         $search_term    = isset( $_GET['s'] ) ? wp_unslash( $_GET['s'] ) : '';
         $search_term    = is_string( $search_term ) ? trim( $search_term ) : '';
@@ -442,9 +450,10 @@ class PWPL_Admin {
         }
 
         $new_title = $plan->post_title ? $plan->post_title . ' (Copy)' : sprintf( __( 'Plan #%d (Copy)', 'planify-wp-pricing-lite' ), $plan_id );
-        $new_id = wp_insert_post( [
-            'post_type'   => 'pwpl_plan',
-            'post_status' => 'draft',
+        $new_id    = wp_insert_post(
+            [
+                'post_type'   => 'pwpl_plan',
+                'post_status' => 'draft',
             'post_title'  => $new_title,
             'menu_order'  => $plan->menu_order,
         ], true );
@@ -606,13 +615,13 @@ class PWPL_Admin {
             </div>
             <div class="pwpl-drawer__body">
                 <?php
-                $plan = $plan; // keep variable available in template
-                $table = get_post( $table_id );
-                $meta  = $payload;
-                $tables_list = $tables;
-                $options_list = $options;
-                $table_id_local = $table_id;
-                $plan_status = $plan->post_status;
+                $plan            = $plan; // keep variable available in template.
+                $table           = get_post( $table_id );
+                $meta            = $payload;
+                $tables_list     = $tables;
+                $options_list    = $options;
+                $table_id_local  = $table_id;
+                $plan_status     = $plan->post_status;
                 include trailingslashit( PWPL_DIR ) . 'templates/admin/plan-drawer-form.php';
                 ?>
             </div>
@@ -668,17 +677,19 @@ class PWPL_Admin {
         $admin_meta = new PWPL_Admin_Meta();
         $admin_meta->save_plan( $plan_id );
 
+        // Optional status update from the drawer (draft/publish).
         $new_status = isset( $_POST['pwpl_plan_status'] ) ? sanitize_key( wp_unslash( $_POST['pwpl_plan_status'] ) ) : '';
         if ( in_array( $new_status, [ 'draft', 'publish' ], true ) ) {
             $current_post = get_post( $plan_id );
             if ( $current_post && $current_post->post_status !== $new_status ) {
-                wp_update_post( [
-                    'ID'          => $plan_id,
-                    'post_status' => $new_status,
-                ] );
+                wp_update_post(
+                    [
+                        'ID'          => $plan_id,
+                        'post_status' => $new_status,
+                    ]
+                );
             }
         }
-
         $mode     = isset( $_POST['pwpl_save_mode'] ) && $_POST['pwpl_save_mode'] === 'close' ? 'close' : 'stay';
         $args = [
             'page'           => 'pwpl-plans-dashboard',
