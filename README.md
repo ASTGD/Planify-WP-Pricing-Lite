@@ -207,6 +207,8 @@ The FireVPS theme is the best reference for a fully‑featured implementation.
   - Admin assets only load on `pwpl_table` / `pwpl_plan` screens and the settings page.
 - Node tooling:
   - `@playwright/test` is included but only ships example specs; there is no full E2E suite yet.
+- Future roadmap:
+  - Table Editor V2 will refine layout/visuals without changing behavior, and later phases will add **per-control Interactive Helpers** (inline “?” help + short section tours) built on top of the current onboarding system.
 
 For contribution guidelines and how Codex should behave in this repo, see `AGENTS.md`.
 

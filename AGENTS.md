@@ -124,6 +124,7 @@ Codex should **not** wait for the user to report broken padding/margins/overflow
   - Describe the current V1 behavior (CPTs, dimensions/variants, themes, FireVPS experience).
   - Keep language accessible to non‑developers and project managers.
   - Mention the core stack briefly: WordPress plugin, PHP, vanilla JS + jQuery + WP Components, CSS (no external CSS frameworks).
+  - Note: future Table Editor V2 and Plan Editor work may add per-control Interactive Helpers (inline “?” help + short section tours) built on top of the existing onboarding system; when that work happens, prefer reusing the existing tour engine and `data-pwpl-tour` hooks instead of introducing new patterns.
 
 ### Doc & Changelog Expectations for Agents
 
