@@ -199,16 +199,22 @@ class PWPL_Admin_UI_V1 {
 
             $tour_steps = [
                 [
-                    'id'     => 'layout-nav',
-                    'target' => '[data-pwpl-tour="table-layout-nav"]',
-                    'title'  => __( 'Layout & Spacing', 'planify-wp-pricing-lite' ),
-                    'body'   => __( 'Control table width, number of columns, and spacing between plan cards.', 'planify-wp-pricing-lite' ),
+                    'id'     => 'title',
+                    'target' => '#titlewrap',
+                    'title'  => __( 'Name your table', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Give this pricing table a clear name, e.g. “VPS Hosting”.', 'planify-wp-pricing-lite' ),
                 ],
                 [
-                    'id'     => 'editor-main',
-                    'target' => '[data-pwpl-tour="table-editor-main"]',
-                    'title'  => __( 'Editor workspace', 'planify-wp-pricing-lite' ),
-                    'body'   => __( 'This area hosts the controls for the active section. Changes here shape how your table appears on the frontend.', 'planify-wp-pricing-lite' ),
+                    'id'     => 'nav',
+                    'target' => '[data-pwpl-tour="table-nav"]',
+                    'title'  => __( 'Sections', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Use these tabs to switch between layout, typography, colors, animation, badges, advanced, and filters.', 'planify-wp-pricing-lite' ),
+                ],
+                [
+                    'id'     => 'layout-section',
+                    'target' => '[data-pwpl-tour="table-layout-section"]',
+                    'title'  => __( 'Layout & Spacing', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Control table width, number of columns, and spacing between plan cards.', 'planify-wp-pricing-lite' ),
                 ],
                 [
                     'id'     => 'theme-section',

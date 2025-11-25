@@ -2906,7 +2906,7 @@
     }, section.content));
 
     return h('section', { className: 'pwpl-v1-block' }, [
-      SectionHeader({ title: layoutLabel, description: 'All layout, spacing, CTA sizing, and specs style controls.' }),
+      SectionHeader({ title: layoutLabel, description: 'All layout, spacing, CTA sizing, and specs style controls.', dataTour:'table-layout-section' }),
       h(Card, null, h(CardBody, null,
         h(Accordion, {
           searchValue: searchTerm,
@@ -3022,12 +3022,11 @@
       { key: 'advanced', label: i18n(sidebar.advanced) },
       { key: 'filters', label: i18n(sidebar.filters) },
     ];
-    return h('nav', { className: 'pwpl-v1-sidebar' },
+    return h('nav', { className: 'pwpl-v1-sidebar', 'data-pwpl-tour':'table-nav' },
       items.map(item => h('button', {
         type: 'button',
         className: 'pwpl-v1-nav' + (active === item.key ? ' is-active' : ''),
         onClick: () => onChange(item.key),
-        'data-pwpl-tour': item.key === 'layout' ? 'table-layout-nav' : undefined,
       }, item.label))
     );
   }

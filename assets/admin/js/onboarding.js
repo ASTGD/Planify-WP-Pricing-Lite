@@ -88,23 +88,10 @@
     }).catch(() => {});
   }
 
-  function setCardPosition(target) {
-    const rect = target.getBoundingClientRect();
+  function setCardPosition() {
     const cardRect = state.card.getBoundingClientRect();
-    const padding = 12;
-    let top = rect.bottom + padding + w.scrollY;
-    let left = rect.left + w.scrollX;
-    const vw = w.innerWidth;
-    if (left + cardRect.width > vw - 10) {
-      left = vw - cardRect.width - 10;
-    }
-    if (left < 10) {
-      left = 10;
-    }
-    // If near bottom, place above.
-    if (rect.bottom + cardRect.height + padding > w.innerHeight && rect.top > cardRect.height) {
-      top = rect.top - cardRect.height - padding + w.scrollY;
-    }
+    const top = w.scrollY + Math.max(20, (w.innerHeight - cardRect.height) / 2);
+    const left = Math.max(10, (w.innerWidth - cardRect.width) / 2);
     state.card.style.top = `${top}px`;
     state.card.style.left = `${left}px`;
   }
@@ -118,7 +105,7 @@
     const target = d.querySelector(step.target);
     if ( ! target ) {
       // Skip missing targets.
-      window.PWPL_Onboarding.nextStep(true);
+      API.nextStep(true);
       return;
     }
     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -137,7 +124,7 @@
     state.prevBtn.style.visibility = state.activeIndex === 0 ? 'hidden' : 'visible';
     state.nextBtn.textContent = state.activeIndex === state.steps.length - 1 ? (Tours.labels && Tours.labels.finish || 'Finish') : (Tours.labels && Tours.labels.next || 'Next');
 
-    setCardPosition(target);
+    setCardPosition();
     state.card.focus({ preventScroll: true });
   }
 
@@ -160,15 +147,12 @@
     },
     nextStep: (skipMissing) => {
       if (!state.steps.length) return;
-      if (!skipMissing) {
-        state.activeIndex = Math.min(state.activeIndex + 1, state.steps.length - 1);
-      } else {
-        state.activeIndex = state.activeIndex + 1;
-      }
-      if (state.activeIndex >= state.steps.length) {
+      const nextIndex = state.activeIndex + 1;
+      if (nextIndex >= state.steps.length) {
         API.endTour({ completed: true });
         return;
       }
+      state.activeIndex = nextIndex;
       renderStep();
     },
     prevStep: () => {

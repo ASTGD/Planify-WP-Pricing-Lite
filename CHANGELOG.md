@@ -12,7 +12,7 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 - Generic onboarding/coachmarks system plus an optional 60-second tour for Table Editor V1 (layout, theme/colors, filters, shortcode/publish).
 
 ### Changed
-- Table Editor V1 now surfaces a start/skip banner and tour steps without altering existing editing behavior.
+- Table Editor V1 now surfaces a start/skip banner and tour steps without altering existing editing behavior. Polished tour flow: centered modal, correct targets (title, sections, layout, theme/colors, filters, shortcode), and working Back/Finish controls.
 
 ---
 
