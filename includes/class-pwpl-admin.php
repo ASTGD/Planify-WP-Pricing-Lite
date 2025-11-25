@@ -15,6 +15,7 @@ class PWPL_Admin {
         add_action( 'manage_pwpl_plan_posts_custom_column', [ $this, 'render_plan_columns' ], 10, 2 );
         add_filter( 'manage_edit-pwpl_plan_sortable_columns', [ $this, 'sortable_plan_columns' ] );
         add_action( 'pre_get_posts', [ $this, 'order_plan_admin_query' ] );
+        add_filter( 'redirect_post_location', [ $this, 'redirect_new_table_to_dashboard' ], 10, 2 );
     }
 
     public function enqueue( $hook ) {
@@ -224,6 +225,29 @@ class PWPL_Admin {
             'edit_posts',
             'pwpl-plans-dashboard',
             [ $this, 'render_plans_dashboard' ]
+        );
+    }
+
+    /**
+     * After creating a Pricing Table from the dashboard CTA, route back with a notice to manage plans.
+     */
+    public function redirect_new_table_to_dashboard( $location, $post_id ) {
+        $post = get_post( $post_id );
+        if ( ! $post || 'pwpl_table' !== $post->post_type ) {
+            return $location;
+        }
+        $referer = isset( $_POST['_wp_http_referer'] ) ? (string) wp_unslash( $_POST['_wp_http_referer'] ) : '';
+        $came_from_dash = $referer && false !== strpos( $referer, 'pwpl_from_dash=1' );
+        if ( ! $came_from_dash ) {
+            return $location;
+        }
+        return add_query_arg(
+            [
+                'page'         => 'pwpl-tables-dashboard',
+                'pwpl_notice'  => 'table_created',
+                'pwpl_table'   => $post_id,
+            ],
+            admin_url( 'admin.php' )
         );
     }
 

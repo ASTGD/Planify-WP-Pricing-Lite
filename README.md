@@ -80,6 +80,7 @@ These values power the filters and variant pickers across all tables.
    - A tight **plan list** on the left (one row per plan),
    - A wide **Plan Drawer** editor on the right.
    Selecting a row loads the Plan Drawer inline on desktop; on narrow widths the same drawer appears as a modal.
+   - When a table has **no plans yet**, the Plans Dashboard shows a guided empty state with a “Create first plan” CTA and a quick explainer of plans/variants/badges.
 2. Assign the plan to a Pricing Table (Manage Plans will pre-assign it).
 3. Fill in:
    - Specs: CPU, RAM, storage, bandwidth, etc.
@@ -113,7 +114,7 @@ Replace `123` with the ID of your `pwpl_table` post. The frontend JS handles:
 
 ### Admin navigation
 
-- The **Planify** top-level menu opens the Pricing Tables dashboard. On first run it shows a guided welcome/empty state; once tables exist it shows a cards view with stats, plan counts, updated dates, shortcodes with copy buttons, and quick actions (Edit Table, Manage Plans).
+- The **Planify** top-level menu opens the Pricing Tables dashboard. On first run it shows a guided welcome/empty state; once tables exist it shows a cards view with stats, plan counts, updated dates, shortcodes with copy buttons, and quick actions (Edit Table, Manage Plans). After creating a table from the dashboard CTA, you’ll get a notice with a direct link to Manage Plans.
 - Each table’s **Manage Plans** action opens the per-table Plans Dashboard (two-pane layout with inline Plan Drawer and “Open full editor” links for each plan).
 - Plugin **Settings** live under **Planify → Settings** using the existing `pwpl-settings` slug.
 

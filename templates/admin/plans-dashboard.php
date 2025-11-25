@@ -198,10 +198,9 @@ if ( ! empty( $_GET['pwpl_notice'] ) ) {
         <div class="pwpl-plans-layout__sidebar">
             <div class="pwpl-plan-list">
                 <?php if ( empty( $plans ) ) : ?>
-                    <div class="pwpl-plans__empty">
-                        <p class="pwpl-plans__empty-title"><?php esc_html_e( 'No plans yet', 'planify-wp-pricing-lite' ); ?></p>
-                        <p class="pwpl-plans__empty-text"><?php esc_html_e( 'Create a plan to add it to this pricing table.', 'planify-wp-pricing-lite' ); ?></p>
-                        <a class="button button-primary" href="<?php echo esc_url( $add_plan ); ?>"><?php esc_html_e( 'Add Plan', 'planify-wp-pricing-lite' ); ?></a>
+                    <div class="pwpl-plans__empty-list">
+                        <span class="dashicons dashicons-index-card"></span>
+                        <p><?php esc_html_e( 'Plans will appear here once you add them.', 'planify-wp-pricing-lite' ); ?></p>
                     </div>
                 <?php else : ?>
                     <?php foreach ( $plans as $index => $plan ) :
@@ -294,10 +293,43 @@ if ( ! empty( $_GET['pwpl_notice'] ) ) {
         </div>
 
         <div class="pwpl-plans-layout__detail">
-            <div id="pwpl-plan-drawer-panel">
-                <div class="pwpl-drawer-placeholder"><?php esc_html_e( 'Select a plan to edit.', 'planify-wp-pricing-lite' ); ?></div>
-                <div id="pwpl-plan-drawer-inline" class="pwpl-drawer pwpl-drawer--inline" aria-hidden="true" hidden></div>
-            </div>
+            <?php if ( empty( $plans ) ) : ?>
+                <div class="pwpl-plans-empty">
+                    <div class="pwpl-plans-empty__header">
+                        <div>
+                            <p class="pwpl-plans-empty__eyebrow"><?php echo esc_html( $table->post_title ?: sprintf( __( 'Table #%d', 'planify-wp-pricing-lite' ), $table_id ) ); ?></p>
+                            <h2><?php esc_html_e( 'Create your first plan', 'planify-wp-pricing-lite' ); ?></h2>
+                            <p class="pwpl-plans-empty__subtitle">
+                                <?php esc_html_e( 'Add plans to this table and configure specs, pricing variants, promotions, and featured flags.', 'planify-wp-pricing-lite' ); ?>
+                            </p>
+                        </div>
+                        <div class="pwpl-plans-empty__icon" aria-hidden="true">
+                            <span class="dashicons dashicons-admin-multisite"></span>
+                        </div>
+                    </div>
+                    <div class="pwpl-plans-empty__content">
+                        <div class="pwpl-plans-empty__actions">
+                            <a class="button button-primary" href="<?php echo esc_url( $add_plan ); ?>">
+                                <?php esc_html_e( 'Create first plan', 'planify-wp-pricing-lite' ); ?>
+                            </a>
+                            <p class="pwpl-plans-empty__hint"><?php esc_html_e( 'You can still open the full editor after creating a plan.', 'planify-wp-pricing-lite' ); ?></p>
+                        </div>
+                        <ul class="pwpl-plans-empty__list">
+                            <li><?php esc_html_e( 'Each plan becomes a card inside this table.', 'planify-wp-pricing-lite' ); ?></li>
+                            <li><?php esc_html_e( 'Add pricing variants across Platform × Period × Location.', 'planify-wp-pricing-lite' ); ?></li>
+                            <li><?php esc_html_e( 'Mark plans as Featured and configure badges/promotions.', 'planify-wp-pricing-lite' ); ?></li>
+                        </ul>
+                    </div>
+                </div>
+            <?php else : ?>
+                <div id="pwpl-plan-drawer-panel">
+                    <div class="pwpl-plan-drawer__helper">
+                        <?php esc_html_e( 'Select a plan on the left to edit it inline. Use “Open full editor” for edge cases.', 'planify-wp-pricing-lite' ); ?>
+                    </div>
+                    <div class="pwpl-drawer-placeholder"><?php esc_html_e( 'Select a plan to edit.', 'planify-wp-pricing-lite' ); ?></div>
+                    <div id="pwpl-plan-drawer-inline" class="pwpl-drawer pwpl-drawer--inline" aria-hidden="true" hidden></div>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

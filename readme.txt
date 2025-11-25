@@ -18,6 +18,7 @@ Planify WP Pricing Lite provides a foundation for managing pricing tables via cu
 * Pricing Tables dashboard (cards view) and per-table Plans Dashboard
 * First-run dashboard guidance (configure settings → create table → add plans → embed)
 * Dashboard cards show stats, plan counts, updated dates, shortcodes, and quick actions
+* Guided journey from first table to first plan (dashboard notice + Plans Dashboard empty state)
 * Admin settings page for basic defaults under Planify → Settings
 * Frontend/admin assets scaffold
 
