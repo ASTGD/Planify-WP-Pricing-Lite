@@ -68,6 +68,78 @@ class PWPL_Admin {
                         'error'   => __( 'Unable to load the plan.', 'planify-wp-pricing-lite' ),
                     ],
                 ] );
+                // Onboarding for Plan Editor tour
+                $onboarding = new PWPL_Onboarding();
+                $plan_tour_status = $onboarding->get_tour_status( PWPL_Onboarding::TOUR_PLAN_EDITOR );
+                $selected_plan = isset( $_GET['selected_plan'] ) ? (int) $_GET['selected_plan'] : 0;
+                $auto_start = ( 'not_started' === $plan_tour_status ) && $selected_plan;
+                $tour_steps = [
+                    [
+                        'id'     => 'welcome',
+                        'target' => '.pwpl-plans__header',
+                        'title'  => __( 'Welcome to the Plans Dashboard', 'planify-wp-pricing-lite' ),
+                        'body'   => __( 'Manage all plans for this table: list on the left, editor on the right.', 'planify-wp-pricing-lite' ),
+                    ],
+                    [
+                        'id'     => 'plan-list',
+                        'target' => '.pwpl-plan-list',
+                        'title'  => __( 'Plan list', 'planify-wp-pricing-lite' ),
+                        'body'   => __( 'Each row is a plan. Click one to load it in the editor.', 'planify-wp-pricing-lite' ),
+                    ],
+                    [
+                        'id'     => 'drawer-basics',
+                        'target' => '.pwpl-drawer-section:nth-of-type(1)',
+                        'title'  => __( 'Plan Basics', 'planify-wp-pricing-lite' ),
+                        'body'   => __( 'Assign the plan, add a subtitle, and mark it as featured.', 'planify-wp-pricing-lite' ),
+                    ],
+                    [
+                        'id'     => 'drawer-specs',
+                        'target' => '.pwpl-drawer-section:nth-of-type(2)',
+                        'title'  => __( 'Specs', 'planify-wp-pricing-lite' ),
+                        'body'   => __( 'Add the key specs for this plan (CPU, RAM, storage, etc.).', 'planify-wp-pricing-lite' ),
+                    ],
+                    [
+                        'id'     => 'drawer-variants-nav',
+                        'target' => '.pwpl-sheet-col--variants-nav',
+                        'title'  => __( 'Pricing Variants navigator', 'planify-wp-pricing-lite' ),
+                        'body'   => __( 'Filter and pick variants by Platform, Period, and Location on the left.', 'planify-wp-pricing-lite' ),
+                    ],
+                    [
+                        'id'     => 'drawer-variants-detail',
+                        'target' => '.pwpl-sheet-col--secondary',
+                        'title'  => __( 'Variant details', 'planify-wp-pricing-lite' ),
+                        'body'   => __( 'Edit prices, CTA label, URL, and availability for the selected variant.', 'planify-wp-pricing-lite' ),
+                    ],
+                    [
+                        'id'     => 'drawer-promotions',
+                        'target' => '.pwpl-drawer-section--nested:first-of-type',
+                        'title'  => __( 'Promotions & overrides', 'planify-wp-pricing-lite' ),
+                        'body'   => __( 'Configure plan-specific badges that override table promotions if needed.', 'planify-wp-pricing-lite' ),
+                    ],
+                    [
+                        'id'     => 'drawer-footer',
+                        'target' => '.pwpl-drawer__footer',
+                        'title'  => __( 'Save & full editor', 'planify-wp-pricing-lite' ),
+                        'body'   => __( 'Use Save / Save & Close for quick updates, or “Open full editor” for legacy meta boxes.', 'planify-wp-pricing-lite' ),
+                    ],
+                ];
+                wp_localize_script( 'pwpl-onboarding', 'PWPL_Tours', [
+                    'activeTour' => $auto_start ? PWPL_Onboarding::TOUR_PLAN_EDITOR : null,
+                    'tours'      => [
+                        PWPL_Onboarding::TOUR_PLAN_EDITOR => $tour_steps,
+                    ],
+                    'state'      => [
+                        PWPL_Onboarding::TOUR_PLAN_EDITOR => [
+                            'status' => $plan_tour_status,
+                        ],
+                    ],
+                    'nonce'   => wp_create_nonce( 'pwpl_tour_state' ),
+                    'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+                    'labels'  => [
+                        'next'   => __( 'Next', 'planify-wp-pricing-lite' ),
+                        'finish' => __( 'Finish', 'planify-wp-pricing-lite' ),
+                    ],
+                ] );
             }
         }
     }
@@ -262,6 +334,8 @@ class PWPL_Admin {
             wp_die( __( 'Invalid table.', 'planify-wp-pricing-lite' ) );
         }
 
+        $selected_plan = isset( $_GET['selected_plan'] ) ? (int) $_GET['selected_plan'] : 0;
+
         $status_filter  = isset( $_GET['status'] ) ? sanitize_key( $_GET['status'] ) : 'all';
         $search_term    = isset( $_GET['s'] ) ? wp_unslash( $_GET['s'] ) : '';
         $search_term    = is_string( $search_term ) ? trim( $search_term ) : '';
@@ -336,7 +410,7 @@ class PWPL_Admin {
             'search_term'  => $search_term,
             'featured_only'=> $featured_only,
             'catalog'      => $catalog,
-            'selected_plan'=> isset( $_GET['selected_plan'] ) ? (int) $_GET['selected_plan'] : 0,
+            'selected_plan'=> $selected_plan,
         ];
 
         $template = trailingslashit( PWPL_DIR ) . 'templates/admin/plans-dashboard.php';
@@ -462,7 +536,16 @@ class PWPL_Admin {
         }
 
         update_post_meta( $new_id, PWPL_Meta::PLAN_TABLE_ID, $table_id );
-        wp_safe_redirect( admin_url( 'post.php?action=edit&post=' . $new_id ) );
+        wp_safe_redirect(
+            add_query_arg(
+                [
+                    'page'          => 'pwpl-plans-dashboard',
+                    'pwpl_table'    => $table_id,
+                    'selected_plan' => $new_id,
+                ],
+                admin_url( 'admin.php' )
+            )
+        );
         exit;
     }
 

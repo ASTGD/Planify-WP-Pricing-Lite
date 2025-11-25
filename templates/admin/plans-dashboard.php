@@ -16,6 +16,7 @@ $back_url  = admin_url( 'admin.php?page=pwpl-tables-dashboard' );
 $edit_url  = get_edit_post_link( $table_id );
 $add_plan  = wp_nonce_url( admin_url( 'admin-post.php?action=pwpl_create_plan_for_table&pwpl_table=' . $table_id ), 'pwpl_create_plan_' . $table_id );
 $shortcode = sprintf( '[pwpl_table id="%d"]', $table_id );
+$selected_plan = isset( $_GET['selected_plan'] ) ? (int) $_GET['selected_plan'] : 0;
 
 $meta_helper = new PWPL_Meta();
 
@@ -124,6 +125,7 @@ if ( ! empty( $_GET['pwpl_notice'] ) ) {
                     </button>
                 </div>
                 <p class="pwpl-copy-feedback" data-pwpl-feedback aria-live="polite"></p>
+                <p class="pwpl-plans__tour-replay"><a href="#" data-pwpl-tour-start="planEditorV2"><?php esc_html_e( 'Getting started tour for Plan Editor', 'planify-wp-pricing-lite' ); ?></a></p>
             </div>
         </div>
         <div class="pwpl-plans__actions">
@@ -279,17 +281,17 @@ if ( ! empty( $_GET['pwpl_notice'] ) ) {
                                     </div>
                                 <?php endif; ?>
                             </div>
-                            <div class="pwpl-plan-row__actions">
-                                <a class="pwpl-plan-row__link" href="<?php echo esc_url( get_edit_post_link( $plan->ID ) ); ?>"><?php esc_html_e( 'Open full editor', 'planify-wp-pricing-lite' ); ?></a>
-                                <a class="pwpl-plan-row__link" href="<?php echo esc_url( $dup_link ); ?>"><?php esc_html_e( 'Duplicate', 'planify-wp-pricing-lite' ); ?></a>
-                                <a class="pwpl-plan-row__link pwpl-plan-row__link--danger" href="<?php echo esc_url( $trash_link ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Move this plan to the trash?', 'planify-wp-pricing-lite' ) ); ?>');">
-                                    <?php esc_html_e( 'Trash', 'planify-wp-pricing-lite' ); ?>
-                                </a>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
+                    <div class="pwpl-plan-row__actions">
+                        <a class="pwpl-plan-row__link" href="<?php echo esc_url( get_edit_post_link( $plan->ID ) ); ?>"><?php esc_html_e( 'Open full editor', 'planify-wp-pricing-lite' ); ?></a>
+                        <a class="pwpl-plan-row__link" href="<?php echo esc_url( $dup_link ); ?>"><?php esc_html_e( 'Duplicate', 'planify-wp-pricing-lite' ); ?></a>
+                        <a class="pwpl-plan-row__link pwpl-plan-row__link--danger" href="<?php echo esc_url( $trash_link ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Move this plan to the trash?', 'planify-wp-pricing-lite' ) ); ?>');">
+                            <?php esc_html_e( 'Trash', 'planify-wp-pricing-lite' ); ?>
+                        </a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
         </div>
 
         <div class="pwpl-plans-layout__detail">
