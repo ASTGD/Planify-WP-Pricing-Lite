@@ -102,6 +102,11 @@
       window.PWPL_Onboarding.endTour({ completed: false });
       return;
     }
+    if (step.setTab && typeof w.PWPL_AdminV1_setActiveTab === 'function') {
+      try {
+        w.PWPL_AdminV1_setActiveTab(step.setTab);
+      } catch(e){}
+    }
     const target = d.querySelector(step.target);
     if ( ! target ) {
       // Skip missing targets.

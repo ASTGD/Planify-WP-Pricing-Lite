@@ -3027,6 +3027,14 @@
         type: 'button',
         className: 'pwpl-v1-nav' + (active === item.key ? ' is-active' : ''),
         onClick: () => onChange(item.key),
+        'data-pwpl-tour': item.key === 'layout' ? 'tab-layout'
+          : item.key === 'typography' ? 'tab-typography'
+          : item.key === 'colors' ? 'tab-colors'
+          : item.key === 'animation' ? 'tab-animation'
+          : item.key === 'badges' ? 'tab-badges'
+          : item.key === 'advanced' ? 'tab-advanced'
+          : item.key === 'filters' ? 'tab-filters'
+          : undefined,
       }, item.label))
     );
   }
@@ -3159,6 +3167,19 @@
     const [componentsReady, setComponentsReady] = useState(hasRequiredComponents());
 
     if (useEffect){
+      useEffect(() => {
+        w.PWPL_AdminV1_setActiveTab = (key) => {
+          const allowed = ['layout','typography','colors','animation','badges','advanced','filters'];
+          if (allowed.indexOf(key) === -1) return;
+          setActive(key);
+        };
+        return () => {
+          if (w.PWPL_AdminV1_setActiveTab) {
+            delete w.PWPL_AdminV1_setActiveTab;
+          }
+        };
+      }, []);
+
       useEffect(() => {
         if (componentsReady) {
           return;

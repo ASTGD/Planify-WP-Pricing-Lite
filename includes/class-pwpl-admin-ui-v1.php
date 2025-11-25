@@ -199,6 +199,12 @@ class PWPL_Admin_UI_V1 {
 
             $tour_steps = [
                 [
+                    'id'     => 'welcome',
+                    'target' => '#titlewrap',
+                    'title'  => __( 'Welcome to the Table Editor', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'This quick tour will walk you through how to name your table, navigate sections, and publish it. You can skip anytime.', 'planify-wp-pricing-lite' ),
+                ],
+                [
                     'id'     => 'title',
                     'target' => '#titlewrap',
                     'title'  => __( 'Name your table', 'planify-wp-pricing-lite' ),
@@ -211,22 +217,53 @@ class PWPL_Admin_UI_V1 {
                     'body'   => __( 'Use these tabs to switch between layout, typography, colors, animation, badges, advanced, and filters.', 'planify-wp-pricing-lite' ),
                 ],
                 [
-                    'id'     => 'layout-section',
-                    'target' => '[data-pwpl-tour="table-layout-section"]',
+                    'id'     => 'layout',
+                    'target' => '[data-pwpl-tour="tab-layout"]',
                     'title'  => __( 'Layout & Spacing', 'planify-wp-pricing-lite' ),
                     'body'   => __( 'Control table width, number of columns, and spacing between plan cards.', 'planify-wp-pricing-lite' ),
+                    'setTab' => 'layout',
                 ],
                 [
-                    'id'     => 'theme-section',
-                    'target' => '[data-pwpl-tour="table-theme-section"]',
+                    'id'     => 'typography',
+                    'target' => '[data-pwpl-tour="tab-typography"]',
+                    'title'  => __( 'Typography', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Adjust headings, body text, and pricing typography for the table.', 'planify-wp-pricing-lite' ),
+                    'setTab' => 'typography',
+                ],
+                [
+                    'id'     => 'colors',
+                    'target' => '[data-pwpl-tour="tab-colors"]',
                     'title'  => __( 'Theme & colors', 'planify-wp-pricing-lite' ),
                     'body'   => __( 'Pick a theme and primary colors to define the overall visual language.', 'planify-wp-pricing-lite' ),
+                    'setTab' => 'colors',
                 ],
                 [
-                    'id'     => 'filters-section',
-                    'target' => '[data-pwpl-tour="table-filters-section"]',
+                    'id'     => 'animation',
+                    'target' => '[data-pwpl-tour="tab-animation"]',
+                    'title'  => __( 'Animation', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Control how specs and interactions animate for more “alive” tables.', 'planify-wp-pricing-lite' ),
+                    'setTab' => 'animation',
+                ],
+                [
+                    'id'     => 'badges',
+                    'target' => '[data-pwpl-tour="tab-badges"]',
+                    'title'  => __( 'Badges & Promotions', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Configure table-level promotions and badges such as “Save 40%”.', 'planify-wp-pricing-lite' ),
+                    'setTab' => 'badges',
+                ],
+                [
+                    'id'     => 'advanced',
+                    'target' => '[data-pwpl-tour="tab-advanced"]',
+                    'title'  => __( 'Advanced', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Control extras like trust row and sticky mobile CTA.', 'planify-wp-pricing-lite' ),
+                    'setTab' => 'advanced',
+                ],
+                [
+                    'id'     => 'filters',
+                    'target' => '[data-pwpl-tour="tab-filters"]',
                     'title'  => __( 'Filters & dimensions', 'planify-wp-pricing-lite' ),
                     'body'   => __( 'Choose which Platforms, Periods, and Locations to expose as filters for this table.', 'planify-wp-pricing-lite' ),
+                    'setTab' => 'filters',
                 ],
                 [
                     'id'     => 'shortcode-area',
@@ -237,7 +274,7 @@ class PWPL_Admin_UI_V1 {
             ];
 
             wp_localize_script( 'pwpl-onboarding', 'PWPL_Tours', [
-                'activeTour' => null,
+                'activeTour' => ( 'not_started' === $tour_status ) ? PWPL_Onboarding::TOUR_TABLE_EDITOR : null,
                 'tours'      => [
                     PWPL_Onboarding::TOUR_TABLE_EDITOR => $tour_steps,
                 ],
@@ -260,15 +297,6 @@ class PWPL_Admin_UI_V1 {
         wp_nonce_field( 'pwpl_save_table_' . $post->ID, 'pwpl_table_nonce' );
         $onboarding = new PWPL_Onboarding();
         $tour_status = $onboarding->get_tour_status( PWPL_Onboarding::TOUR_TABLE_EDITOR );
-        if ( 'not_started' === $tour_status ) {
-            echo '<div class="pwpl-tour-banner" data-pwpl-tour-banner>';
-            echo '<p class="pwpl-tour-banner__text">' . esc_html__( 'New here? Take a quick 60-second tour of the Table Editor.', 'planify-wp-pricing-lite' ) . '</p>';
-            echo '<div class="pwpl-tour-banner__actions">';
-            echo '<button type="button" class="button button-primary" data-pwpl-tour-start="' . esc_attr( PWPL_Onboarding::TOUR_TABLE_EDITOR ) . '">' . esc_html__( 'Start tour', 'planify-wp-pricing-lite' ) . '</button>';
-            echo '<button type="button" class="button" data-pwpl-tour-skip="' . esc_attr( PWPL_Onboarding::TOUR_TABLE_EDITOR ) . '">' . esc_html__( 'Skip', 'planify-wp-pricing-lite' ) . '</button>';
-            echo '</div>';
-            echo '</div>';
-        }
         echo '<div id="pwpl-admin-v1-root"></div>';
         // Hidden inputs will be rendered by the React app to ensure values submit with the post.
     }
