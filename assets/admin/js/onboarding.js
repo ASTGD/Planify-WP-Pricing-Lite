@@ -196,4 +196,9 @@
       skipBtn.closest('[data-pwpl-tour-banner]')?.remove();
     }
   });
+
+  // Auto-start when activeTour is provided (e.g., first-time users)
+  if (Tours.activeTour) {
+    API.startTour(Tours.activeTour);
+  }
 })(window, document);

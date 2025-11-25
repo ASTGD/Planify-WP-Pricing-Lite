@@ -297,6 +297,7 @@ class PWPL_Admin_UI_V1 {
         wp_nonce_field( 'pwpl_save_table_' . $post->ID, 'pwpl_table_nonce' );
         $onboarding = new PWPL_Onboarding();
         $tour_status = $onboarding->get_tour_status( PWPL_Onboarding::TOUR_TABLE_EDITOR );
+        echo '<div class="pwpl-tour-replay"><a href="#" data-pwpl-tour-start="' . esc_attr( PWPL_Onboarding::TOUR_TABLE_EDITOR ) . '">' . esc_html__( 'Getting started tour', 'planify-wp-pricing-lite' ) . '</a></div>';
         echo '<div id="pwpl-admin-v1-root"></div>';
         // Hidden inputs will be rendered by the React app to ensure values submit with the post.
     }
