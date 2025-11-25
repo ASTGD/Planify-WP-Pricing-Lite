@@ -72,6 +72,7 @@ These values power the filters and variant pickers across all tables.
    - Configure widths, breakpoints and card layout.
    - Enable filters (Platform / Period / Location) and pick allowed values.
    - Set badges, CTA styling, specs behavior, trust items and sticky mobile bar.
+   - Optional: take the built-in **Table Editor tour** for a 60-second walkthrough of layout, theme/colors, filters, and where to grab the shortcode.
 5. Publish the table.
 
 ### 4. Create Plans & Variants
@@ -117,6 +118,7 @@ Replace `123` with the ID of your `pwpl_table` post. The frontend JS handles:
 - The **Planify** top-level menu opens the Pricing Tables dashboard. On first run it shows a guided welcome/empty state; once tables exist it shows a cards view with stats, plan counts, updated dates, shortcodes with copy buttons, and quick actions (Edit Table, Manage Plans). After creating a table from the dashboard CTA, you’ll get a notice with a direct link to Manage Plans.
 - Each table’s **Manage Plans** action opens the per-table Plans Dashboard (two-pane layout with inline Plan Drawer and “Open full editor” links for each plan).
 - Plugin **Settings** live under **Planify → Settings** using the existing `pwpl-settings` slug.
+- Table Editor V1 includes an optional onboarding tour to highlight key areas (layout, theme/colors, filters, shortcode/publish).
 
 ---
 

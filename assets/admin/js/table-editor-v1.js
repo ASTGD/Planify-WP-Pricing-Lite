@@ -2270,8 +2270,12 @@
     // Lightweight tooltip using title attribute for hover
     return h('span', { className: 'pwpl-help', title: text || '' , style:{ marginLeft:6, cursor:'help', fontSize:'12px', opacity:.7 } }, '❓');
   }
-  function SectionHeader({ title, description }){
-    return h('div', { className: 'pwpl-v1-section-header' }, [
+  function SectionHeader({ title, description, dataTour }){
+    const attrs = { className: 'pwpl-v1-section-header' };
+    if (dataTour) {
+      attrs['data-pwpl-tour'] = dataTour;
+    }
+    return h('div', attrs, [
       h('div', { className: 'pwpl-v1-section-left' }, [
         h('h1', { className: 'pwpl-v1-title' }, title),
         description ? h('p', { className: 'pwpl-v1-desc' }, description) : null,
@@ -3022,7 +3026,8 @@
       items.map(item => h('button', {
         type: 'button',
         className: 'pwpl-v1-nav' + (active === item.key ? ' is-active' : ''),
-        onClick: () => onChange(item.key)
+        onClick: () => onChange(item.key),
+        'data-pwpl-tour': item.key === 'layout' ? 'table-layout-nav' : undefined,
       }, item.label))
     );
   }
@@ -3129,7 +3134,7 @@
     const isPublished = String(status) === 'publish';
     const primaryLabel = saving ? (isPublished ? 'Updating…' : 'Publishing…') : (isPublished ? 'Update' : 'Publish');
 
-    return h('div', { className:'pwpl-v1-topbar' }, [
+    return h('div', { className:'pwpl-v1-topbar', 'data-pwpl-tour':'table-shortcode-area' }, [
       h('button', { type:'button', className:'button', onClick: doCopy }, copied ? 'Shortcode Copied' : 'Copy Shortcode'),
       h('button', { type:'button', className:'button button-primary', onClick: publishOrUpdate, disabled: saving }, primaryLabel),
     ]);
@@ -3189,7 +3194,7 @@
     return h('div', { className: 'pwpl-v1' }, [
       h(TopBar),
       h(Sidebar, { active, onChange: setActive }),
-      h('main', { className: 'pwpl-v1-main' }, [
+      h('main', { className: 'pwpl-v1-main', 'data-pwpl-tour':'table-editor-main' }, [
         active === 'layout' ? h(LayoutSpacingBlock) : null,
         active === 'typography' ? h(TypographyBlock) : null,
         active === 'colors' ? h(ColorsSurfacesBlock) : null,
@@ -3416,7 +3421,7 @@
     ];
 
     return h('section', { className:'pwpl-v1-block' }, [
-      SectionHeader({ title:'Filters', description:'Enable dimensions and choose allowed values.' }),
+      SectionHeader({ title:'Filters', description:'Enable dimensions and choose allowed values.', dataTour:'table-filters-section' }),
       h(Card, null, h(CardBody, null,
         h(Accordion, {
           searchValue: searchTerm,
@@ -4106,7 +4111,7 @@
     ];
 
     return h('section', { className:'pwpl-v1-block' }, [
-      SectionHeader({ title: i18n(data.i18n.sidebar.colors), description: 'Surface colors. Gradients can be added in a later pass.' }),
+      SectionHeader({ title: i18n(data.i18n.sidebar.colors), description: 'Surface colors. Gradients can be added in a later pass.', dataTour:'table-theme-section' }),
       h(Card, null, h(CardBody, null,
         h(Accordion, {
           searchValue: searchTerm,

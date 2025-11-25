@@ -177,10 +177,92 @@ class PWPL_Admin_UI_V1 {
                 ],
             ] );
         }
+
+        // Onboarding (generic coachmarks) — load after core editor assets.
+        $onboarding = new PWPL_Onboarding();
+        $tour_status = $onboarding->get_tour_status( PWPL_Onboarding::TOUR_TABLE_EDITOR );
+
+        $onboarding_css = PWPL_DIR . 'assets/admin/css/onboarding.css';
+        if ( file_exists( $onboarding_css ) ) {
+            wp_enqueue_style( 'pwpl-onboarding', PWPL_URL . 'assets/admin/css/onboarding.css', [ 'pwpl-admin-v1' ], filemtime( $onboarding_css ) );
+        }
+
+        $onboarding_js = PWPL_DIR . 'assets/admin/js/onboarding.js';
+        if ( file_exists( $onboarding_js ) ) {
+            wp_enqueue_script(
+                'pwpl-onboarding',
+                PWPL_URL . 'assets/admin/js/onboarding.js',
+                [ 'pwpl-admin-v1' ],
+                filemtime( $onboarding_js ),
+                true
+            );
+
+            $tour_steps = [
+                [
+                    'id'     => 'layout-nav',
+                    'target' => '[data-pwpl-tour="table-layout-nav"]',
+                    'title'  => __( 'Layout & Spacing', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Control table width, number of columns, and spacing between plan cards.', 'planify-wp-pricing-lite' ),
+                ],
+                [
+                    'id'     => 'editor-main',
+                    'target' => '[data-pwpl-tour="table-editor-main"]',
+                    'title'  => __( 'Editor workspace', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'This area hosts the controls for the active section. Changes here shape how your table appears on the frontend.', 'planify-wp-pricing-lite' ),
+                ],
+                [
+                    'id'     => 'theme-section',
+                    'target' => '[data-pwpl-tour="table-theme-section"]',
+                    'title'  => __( 'Theme & colors', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Pick a theme and primary colors to define the overall visual language.', 'planify-wp-pricing-lite' ),
+                ],
+                [
+                    'id'     => 'filters-section',
+                    'target' => '[data-pwpl-tour="table-filters-section"]',
+                    'title'  => __( 'Filters & dimensions', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Choose which Platforms, Periods, and Locations to expose as filters for this table.', 'planify-wp-pricing-lite' ),
+                ],
+                [
+                    'id'     => 'shortcode-area',
+                    'target' => '[data-pwpl-tour="table-shortcode-area"]',
+                    'title'  => __( 'Publish & shortcode', 'planify-wp-pricing-lite' ),
+                    'body'   => __( 'Copy the shortcode to embed this table once you publish or update it.', 'planify-wp-pricing-lite' ),
+                ],
+            ];
+
+            wp_localize_script( 'pwpl-onboarding', 'PWPL_Tours', [
+                'activeTour' => null,
+                'tours'      => [
+                    PWPL_Onboarding::TOUR_TABLE_EDITOR => $tour_steps,
+                ],
+                'state'      => [
+                    PWPL_Onboarding::TOUR_TABLE_EDITOR => [
+                        'status' => $tour_status,
+                    ],
+                ],
+                'nonce'    => wp_create_nonce( 'pwpl_tour_state' ),
+                'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
+                'labels'   => [
+                    'next'   => __( 'Next', 'planify-wp-pricing-lite' ),
+                    'finish' => __( 'Finish', 'planify-wp-pricing-lite' ),
+                ],
+            ] );
+        }
     }
 
     public function render_editor_v1( $post ) {
         wp_nonce_field( 'pwpl_save_table_' . $post->ID, 'pwpl_table_nonce' );
+        $onboarding = new PWPL_Onboarding();
+        $tour_status = $onboarding->get_tour_status( PWPL_Onboarding::TOUR_TABLE_EDITOR );
+        if ( 'not_started' === $tour_status ) {
+            echo '<div class="pwpl-tour-banner" data-pwpl-tour-banner>';
+            echo '<p class="pwpl-tour-banner__text">' . esc_html__( 'New here? Take a quick 60-second tour of the Table Editor.', 'planify-wp-pricing-lite' ) . '</p>';
+            echo '<div class="pwpl-tour-banner__actions">';
+            echo '<button type="button" class="button button-primary" data-pwpl-tour-start="' . esc_attr( PWPL_Onboarding::TOUR_TABLE_EDITOR ) . '">' . esc_html__( 'Start tour', 'planify-wp-pricing-lite' ) . '</button>';
+            echo '<button type="button" class="button" data-pwpl-tour-skip="' . esc_attr( PWPL_Onboarding::TOUR_TABLE_EDITOR ) . '">' . esc_html__( 'Skip', 'planify-wp-pricing-lite' ) . '</button>';
+            echo '</div>';
+            echo '</div>';
+        }
         echo '<div id="pwpl-admin-v1-root"></div>';
         // Hidden inputs will be rendered by the React app to ensure values submit with the post.
     }

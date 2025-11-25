@@ -7,6 +7,7 @@ class PWPL_Plugin {
         ( new PWPL_Meta() )->init();
         ( new PWPL_Shortcode() )->init();
         if ( is_admin() ) {
+            ( new PWPL_Onboarding() )->init();
             ( new PWPL_Admin() )->init();
             ( new PWPL_Admin_Meta() )->init();
             ( new PWPL_Settings() )->init();
