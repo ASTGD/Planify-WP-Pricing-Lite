@@ -10,6 +10,7 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 
 ### Added
 - Refined Plan Drawer layout in the Plans Dashboard: structured cards for Basics, Specs, Pricing Variants, Promotions, and Advanced, aligned with Table Editor V1 styling.
+- Plan status control inside the Plan Drawer, allowing Draft/Published changes without opening the classic editor.
 
 ### Changed
 - Improved spacing, typography, and responsiveness in the Plan Drawer without changing behavior or meta schema.

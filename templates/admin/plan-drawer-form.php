@@ -29,6 +29,7 @@ $badge_shadow   = isset( $meta['badge_shadow'] ) ? (int) $meta['badge_shadow'] :
 $subtitle       = isset( $meta['subtitle'] ) ? (string) $meta['subtitle'] : '';
 $badges_override= isset( $meta['badges_override'] ) && is_array( $meta['badges_override'] ) ? $meta['badges_override'] : [];
 $plan_theme     = isset( $meta['plan_theme'] ) ? (string) $meta['plan_theme'] : '';
+$current_status = ( 'publish' === $plan->post_status ) ? 'publish' : 'draft';
 
 if ( empty( $specs ) ) {
     $specs = [ [] ];
@@ -91,6 +92,14 @@ $render_select = function( $name, $list, $current, $placeholder = '' ) {
                         <output id="pwpl_plan_badge_shadow_value"><?php echo esc_html( $badge_shadow ); ?></output>
                     </div>
                     <span class="pwpl-field__hint"><?php esc_html_e( '0 inherits from table. Increase to intensify the badge glow.', 'planify-wp-pricing-lite' ); ?></span>
+                </label>
+                <label class="pwpl-field">
+                    <span class="pwpl-field__label"><?php esc_html_e( 'Status', 'planify-wp-pricing-lite' ); ?></span>
+                    <select name="pwpl_plan_status" class="pwpl-control">
+                        <option value="draft" <?php selected( $current_status, 'draft' ); ?>><?php esc_html_e( 'Draft', 'planify-wp-pricing-lite' ); ?></option>
+                        <option value="publish" <?php selected( $current_status, 'publish' ); ?>><?php esc_html_e( 'Published', 'planify-wp-pricing-lite' ); ?></option>
+                    </select>
+                    <span class="pwpl-field__hint"><?php esc_html_e( 'Draft plans do not appear on the frontend. Published plans are visible when the table is rendered.', 'planify-wp-pricing-lite' ); ?></span>
                 </label>
                 <div class="pwpl-field pwpl-field--muted">
                     <span class="pwpl-field__label"><?php esc_html_e( 'Table context', 'planify-wp-pricing-lite' ); ?></span>

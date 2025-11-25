@@ -82,7 +82,7 @@ These values power the filters and variant pickers across all tables.
    - A wide **Plan Drawer** editor on the right.
    Selecting a row loads the Plan Drawer inline on desktop; on narrow widths the same drawer appears as a modal.
    - When a table has **no plans yet**, the Plans Dashboard shows a guided empty state with a “Create first plan” CTA and a quick explainer of plans/variants/badges.
-   - The Plan Drawer uses a structured, card-based layout (Basics, Specs, Pricing Variants, Promotions, Advanced) aligned with the Table Editor V1 styling for a modern Plan Editor experience.
+   - The Plan Drawer uses a structured, card-based layout (Basics, Specs, Pricing Variants, Promotions, Advanced) aligned with the Table Editor V1 styling for a modern Plan Editor experience, including a Draft/Published status control so you can publish plans without leaving the Plans Dashboard.
 2. Assign the plan to a Pricing Table (Manage Plans will pre-assign it).
 3. Fill in:
    - Specs: CPU, RAM, storage, bandwidth, etc.

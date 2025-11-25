@@ -612,6 +612,7 @@ class PWPL_Admin {
                 $tables_list = $tables;
                 $options_list = $options;
                 $table_id_local = $table_id;
+                $plan_status = $plan->post_status;
                 include trailingslashit( PWPL_DIR ) . 'templates/admin/plan-drawer-form.php';
                 ?>
             </div>
@@ -666,6 +667,17 @@ class PWPL_Admin {
         // Reuse existing save handler.
         $admin_meta = new PWPL_Admin_Meta();
         $admin_meta->save_plan( $plan_id );
+
+        $new_status = isset( $_POST['pwpl_plan_status'] ) ? sanitize_key( wp_unslash( $_POST['pwpl_plan_status'] ) ) : '';
+        if ( in_array( $new_status, [ 'draft', 'publish' ], true ) ) {
+            $current_post = get_post( $plan_id );
+            if ( $current_post && $current_post->post_status !== $new_status ) {
+                wp_update_post( [
+                    'ID'          => $plan_id,
+                    'post_status' => $new_status,
+                ] );
+            }
+        }
 
         $mode     = isset( $_POST['pwpl_save_mode'] ) && $_POST['pwpl_save_mode'] === 'close' ? 'close' : 'stay';
         $args = [
