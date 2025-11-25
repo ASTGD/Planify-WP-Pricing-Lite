@@ -11,7 +11,7 @@
 .pwpl-drawer__titlewrap input[type="text"]{width:100%}
 .pwpl-drawer__close{background:none;border:1px solid #e2e8f0;font-size:18px;line-height:1;cursor:pointer;color:#475569;border-radius:10px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;transition:background .15s ease,color .15s ease,border-color .15s ease}
 .pwpl-drawer__close:hover{background:#f1f5f9;color:#0f172a;border-color:#cbd5e1}
-.pwpl-drawer__body{overflow-y:auto;overflow-x:hidden;min-height:0;padding:18px 20px 24px;display:flex;flex-direction:column;gap:16px}
+.pwpl-drawer__body{overflow-y:auto;overflow-x:hidden;min-height:0;padding:18px 20px 24px;display:flex;flex-direction:column;gap:16px;background:#f8fafc}
 .pwpl-sheet-columns{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start}
 .pwpl-sheet-columns--three{grid-template-columns:minmax(0,1.15fr) minmax(0,0.95fr) minmax(0,1.1fr);align-items:start;gap:16px;min-height:0}
 .pwpl-sheet-columns--three>.pwpl-sheet-col{min-height:0;max-height:calc(100vh - 420px);overflow-y:auto;padding-right:8px}
@@ -25,7 +25,8 @@
 .pwpl-drawer-section::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:12px 0 0 12px;background:linear-gradient(180deg,#1d4ed8,#1d4ed8cc)}
 .pwpl-drawer-section--full{grid-column:1/-1}
 .pwpl-drawer-section--nested{box-shadow:none;border-color:#e5e7eb}
-.pwpl-drawer-section__header{font-weight:700;color:#0f172a;border-bottom:1px solid #edf2f7;padding-bottom:8px;letter-spacing:0.1px}
+.pwpl-drawer-section__header{font-weight:700;color:#0f172a;border-bottom:1px solid #edf2f7;padding-bottom:8px;letter-spacing:0.1px;display:grid;gap:4px}
+.pwpl-drawer-section__subhead{margin:0;font-size:13px;color:#475569;font-weight:500;line-height:1.5}
 .pwpl-drawer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
 .pwpl-drawer-grid--basics{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
 .pwpl-field{display:grid;gap:6px}

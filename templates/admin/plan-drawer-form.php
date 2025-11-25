@@ -29,6 +29,7 @@ $badge_shadow   = isset( $meta['badge_shadow'] ) ? (int) $meta['badge_shadow'] :
 $subtitle       = isset( $meta['subtitle'] ) ? (string) $meta['subtitle'] : '';
 $badges_override= isset( $meta['badges_override'] ) && is_array( $meta['badges_override'] ) ? $meta['badges_override'] : [];
 $plan_theme     = isset( $meta['plan_theme'] ) ? (string) $meta['plan_theme'] : '';
+$current_status = ( 'publish' === $plan->post_status ) ? 'publish' : 'draft';
 
 if ( empty( $specs ) ) {
     $specs = [ [] ];
@@ -59,7 +60,10 @@ $render_select = function( $name, $list, $current, $placeholder = '' ) {
 <div class="pwpl-sheet-columns pwpl-sheet-columns--three">
     <div class="pwpl-sheet-col pwpl-sheet-col--primary">
         <div class="pwpl-drawer-section">
-            <div class="pwpl-drawer-section__header"><?php esc_html_e( 'Plan Basics', 'planify-wp-pricing-lite' ); ?></div>
+            <div class="pwpl-drawer-section__header">
+                <?php esc_html_e( 'Plan Basics', 'planify-wp-pricing-lite' ); ?>
+                <p class="pwpl-drawer-section__subhead"><?php esc_html_e( 'Assign the plan, add a subtitle, set featured, and adjust badge glow.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
             <div class="pwpl-drawer-grid pwpl-drawer-grid--basics">
                 <label class="pwpl-field">
                     <span class="pwpl-field__label"><?php esc_html_e( 'Assign to Pricing Table', 'planify-wp-pricing-lite' ); ?></span>
@@ -89,6 +93,14 @@ $render_select = function( $name, $list, $current, $placeholder = '' ) {
                     </div>
                     <span class="pwpl-field__hint"><?php esc_html_e( '0 inherits from table. Increase to intensify the badge glow.', 'planify-wp-pricing-lite' ); ?></span>
                 </label>
+                <label class="pwpl-field">
+                    <span class="pwpl-field__label"><?php esc_html_e( 'Status', 'planify-wp-pricing-lite' ); ?></span>
+                    <select name="pwpl_plan_status" class="pwpl-control">
+                        <option value="draft" <?php selected( $current_status, 'draft' ); ?>><?php esc_html_e( 'Draft', 'planify-wp-pricing-lite' ); ?></option>
+                        <option value="publish" <?php selected( $current_status, 'publish' ); ?>><?php esc_html_e( 'Published', 'planify-wp-pricing-lite' ); ?></option>
+                    </select>
+                    <span class="pwpl-field__hint"><?php esc_html_e( 'Draft plans do not appear on the frontend. Published plans are visible when the table is rendered.', 'planify-wp-pricing-lite' ); ?></span>
+                </label>
                 <div class="pwpl-field pwpl-field--muted">
                     <span class="pwpl-field__label"><?php esc_html_e( 'Table context', 'planify-wp-pricing-lite' ); ?></span>
                     <p class="pwpl-field__hint"><?php echo esc_html( $table->post_title ?: sprintf( __( 'Table #%d', 'planify-wp-pricing-lite' ), $table_id ) ); ?> • <?php printf( esc_html__( 'ID %d', 'planify-wp-pricing-lite' ), $table_id ); ?></p>
@@ -97,7 +109,10 @@ $render_select = function( $name, $list, $current, $placeholder = '' ) {
         </div>
 
         <div class="pwpl-drawer-section">
-            <div class="pwpl-drawer-section__header"><?php esc_html_e( 'Specifications', 'planify-wp-pricing-lite' ); ?></div>
+            <div class="pwpl-drawer-section__header">
+                <?php esc_html_e( 'Specifications', 'planify-wp-pricing-lite' ); ?>
+                <p class="pwpl-drawer-section__subhead"><?php esc_html_e( 'Add plan specs like CPU, RAM, storage, bandwidth, etc.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
             <div class="pwpl-specs" data-target="specs" data-next-index="<?php echo esc_attr( count( $specs ) ); ?>">
                 <?php foreach ( $specs as $index => $row ) :
                     $label = $row['label'] ?? '';
@@ -119,7 +134,10 @@ $render_select = function( $name, $list, $current, $placeholder = '' ) {
 
     <div class="pwpl-sheet-col pwpl-sheet-col--variants-nav">
         <div class="pwpl-drawer-section">
-            <div class="pwpl-drawer-section__header"><?php esc_html_e( 'Pricing Variants', 'planify-wp-pricing-lite' ); ?></div>
+            <div class="pwpl-drawer-section__header">
+                <?php esc_html_e( 'Pricing Variants', 'planify-wp-pricing-lite' ); ?>
+                <p class="pwpl-drawer-section__subhead"><?php esc_html_e( 'Navigator on the left, details on the right. Variants stack across Platform × Period × Location.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
             <div class="pwpl-variants-filters" aria-label="<?php esc_attr_e( 'Filter variants', 'planify-wp-pricing-lite' ); ?>">
                 <div class="pwpl-filter-row">
                     <div class="pwpl-filter-field pwpl-filter-menu" data-filter-dim="platform">
@@ -233,7 +251,10 @@ $render_select = function( $name, $list, $current, $placeholder = '' ) {
 
     <div class="pwpl-sheet-col pwpl-sheet-col--secondary">
         <div class="pwpl-drawer-section">
-            <div class="pwpl-drawer-section__header"><?php esc_html_e( 'Variant details', 'planify-wp-pricing-lite' ); ?></div>
+            <div class="pwpl-drawer-section__header">
+                <?php esc_html_e( 'Variant details', 'planify-wp-pricing-lite' ); ?>
+                <p class="pwpl-drawer-section__subhead"><?php esc_html_e( 'Select a variant on the left to edit pricing, CTA, and availability.', 'planify-wp-pricing-lite' ); ?></p>
+            </div>
             <div class="pwpl-variants" data-target="variants" data-next-index="<?php echo esc_attr( count( $variants ) ); ?>">
                 <?php foreach ( $variants as $index => $row ) :
                     $platform = $row['platform'] ?? '';

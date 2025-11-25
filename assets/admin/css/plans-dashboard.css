@@ -169,10 +169,29 @@
   overflow-y: auto;
   overflow-x: hidden;
 }
+.pwpl-plan-list--empty {
+  align-content: center;
+}
 @media (max-width: 1024px) {
   .pwpl-plan-list {
     max-height: none;
   }
+}
+
+.pwpl-plans__empty-list {
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  color: #475569;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.pwpl-plans__empty-list .dashicons {
+  font-size: 28px;
+  color: #2563eb;
 }
 
 .pwpl-plan-row {
@@ -279,15 +298,89 @@
 }
 .pwpl-drawer-placeholder[hidden]{display:none!important}
 
-.pwpl-plans__empty {
+.pwpl-plan-drawer__helper {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
+  font-weight: 600;
+}
+.pwpl-plans-empty {
   background: #fff;
-  border: 1px dashed #cbd5e1;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 20px;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  box-shadow: 0 3px 10px rgba(15,23,42,0.05);
+}
+
+.pwpl-plans-empty__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pwpl-plans-empty__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #475569;
+  font-weight: 700;
+}
+
+.pwpl-plans-empty h2 {
+  margin: 4px 0;
+  font-size: 22px;
+}
+
+.pwpl-plans-empty__subtitle {
+  margin: 0;
+  color: #475569;
+}
+
+.pwpl-plans-empty__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(14,165,233,0.12));
+  border: 1px solid rgba(148,163,184,0.3);
+  display: grid;
+  place-items: center;
+}
+
+.pwpl-plans-empty__icon .dashicons {
+  font-size: 28px;
+  color: #2563eb;
+}
+
+.pwpl-plans-empty__content {
   display: grid;
   gap: 10px;
 }
 
+.pwpl-plans-empty__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pwpl-plans-empty__hint {
+  margin: 0;
+  color: #475569;
+  font-size: 13px;
+}
+
+.pwpl-plans-empty__list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: #475569;
+}
 .pwpl-plans__empty-title {
   margin: 0;
   font-size: 18px;

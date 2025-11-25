@@ -14,11 +14,39 @@ $draft_plans      = isset( $plan_counts->draft ) ? (int) $plan_counts->draft : 0
 $tables_without_plans = isset( $tables_without_plans ) ? (int) $tables_without_plans : 0;
 
 $list_view_url = add_query_arg( 'post_type', 'pwpl_table', admin_url( 'edit.php' ) );
-$create_table  = admin_url( 'post-new.php?post_type=pwpl_table' );
+$create_table  = admin_url( 'post-new.php?post_type=pwpl_table&pwpl_from_dash=1' );
 $create_plan   = admin_url( 'post-new.php?post_type=pwpl_plan' );
 $settings_url  = admin_url( 'admin.php?page=pwpl-settings' );
 $has_tables    = ! empty( $tables ) || $total_tables > 0;
 $needs_plans   = $tables_without_plans > 0;
+
+if ( ! empty( $_GET['pwpl_notice'] ) ) {
+    $notice = sanitize_key( $_GET['pwpl_notice'] );
+    if ( 'table_created' === $notice && ! empty( $_GET['pwpl_table'] ) ) {
+        $table_notice_id = (int) $_GET['pwpl_table'];
+        $table_notice    = get_post( $table_notice_id );
+        if ( $table_notice && $table_notice->post_type === 'pwpl_table' ) {
+            $manage_link = add_query_arg(
+                [
+                    'page'       => 'pwpl-plans-dashboard',
+                    'pwpl_table' => $table_notice_id,
+                ],
+                admin_url( 'admin.php' )
+            );
+            $msg = sprintf(
+                /* translators: %s: table title */
+                __( 'Pricing Table "%s" created. Next, add plans to this table.', 'planify-wp-pricing-lite' ),
+                esc_html( $table_notice->post_title ?: sprintf( __( 'Table #%d', 'planify-wp-pricing-lite' ), $table_notice_id ) )
+            );
+            printf(
+                '<div class="notice notice-success is-dismissible"><p>%1$s <a class="button button-primary" href="%2$s">%3$s</a></p></div>',
+                wp_kses_post( $msg ),
+                esc_url( $manage_link ),
+                esc_html__( 'Manage Plans', 'planify-wp-pricing-lite' )
+            );
+        }
+    }
+}
 ?>
 <div class="wrap pwpl-dashboard">
     <?php if ( ! $has_tables ) : ?>

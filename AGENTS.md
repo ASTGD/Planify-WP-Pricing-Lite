@@ -22,6 +22,9 @@ Its scope is the whole plugin.
   - The top-level “Planify” menu is the canonical entry point; it opens the Pricing Tables dashboard cards view instead of the native list table. Submenus under it should stay lean: “Pricing Tables” (dashboard) and “Settings”.
   - Raw CPT menus (“Plans”, “All Tables” list) are hidden from the sidebar; editors reach those screens via dashboard quick actions/links. The dashboard includes a first-run guided empty state (hero + steps + help) when no tables exist; preserve/extend this pattern for new features.
   - For populated sites, keep the cards-based dashboard as the canonical home: refined header/actions, stats row, table cards with plan counts/shortcodes/quick actions, and a concise help panel.
+  - The core journey is Settings → Pricing Table → Plans Dashboard → Embed. Preserve the post-creation notice + Manage Plans link and the guided Plans Dashboard empty state when a table has no plans.
+  - Table Editor V1 now has an optional onboarding tour. Preserve/extend the `data-pwpl-tour` hooks and tour configuration if adjusting editor markup or adding future tours (e.g., Plan Editor).
+  - The Plan Drawer (Plans Dashboard) is the canonical Plan Editor; keep its structured sections (Basics, Specs, Pricing Variants, Promotions, Advanced) aligned with the rest of the admin UI. Future interactive helpers should attach to these sections.
   - When you touch the dashboard, enforce grid/flex with gaps, no horizontal overflow, and wrap content for long titles/large datasets.
   - Each table card links to a per-table **Plans Dashboard** with a **two‑pane layout**: a narrow plan list on the left and a wide editor pane on the right. The left pane must stay tight so the editor has plenty of room; use grid/flex with gaps and make the list independently scrollable for many plans.
   - The Plans Dashboard’s editor pane hosts the V1 **Plan Drawer** inline on desktop and as a modal on narrow widths. The drawer is a modern form (Plan Basics / Specs / Pricing Variants / Promotions / Advanced) that reuses the same meta names and sanitizers as the classic edit screen. Keep layouts responsive (grid/flex + gap), avoid horizontal scroll, and keep “Open full editor” as a secondary link.
@@ -122,6 +125,7 @@ Codex should **not** wait for the user to report broken padding/margins/overflow
   - Describe the current V1 behavior (CPTs, dimensions/variants, themes, FireVPS experience).
   - Keep language accessible to non‑developers and project managers.
   - Mention the core stack briefly: WordPress plugin, PHP, vanilla JS + jQuery + WP Components, CSS (no external CSS frameworks).
+  - Note: future Table Editor V2 and Plan Editor work may add per-control Interactive Helpers (inline “?” help + short section tours) built on top of the existing onboarding system; when that work happens, prefer reusing the existing tour engine and `data-pwpl-tour` hooks instead of introducing new patterns.
 
 ### Doc & Changelog Expectations for Agents
 

@@ -6,6 +6,37 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 
 ---
 
+## 1.8.6 – Plan Editor V2 styling
+
+### Added
+- Refined Plan Drawer layout in the Plans Dashboard: structured cards for Basics, Specs, Pricing Variants, Promotions, and Advanced, aligned with Table Editor V1 styling.
+- Plan status control inside the Plan Drawer, allowing Draft/Published changes without opening the classic editor.
+
+### Changed
+- Improved spacing, typography, and responsiveness in the Plan Drawer without changing behavior or meta schema.
+
+---
+
+## 1.8.5 – Table Editor onboarding tour
+
+### Added
+- Generic onboarding/coachmarks system plus an optional 60-second tour for Table Editor V1 (layout, theme/colors, filters, shortcode/publish).
+
+### Changed
+- Table Editor V1 now surfaces a guided tour without altering existing editing behavior. Polished flow: centered modal, correct targets (title, sections, each tab: layout, typography, colors, animation, badges, advanced, filters), shortcode/publish, and working Back/Finish controls with tab switching.
+
+---
+
+## 1.8.4 – First table → first plan journey
+
+### Added
+- Post-creation notice on the Pricing Tables dashboard with a direct “Manage Plans” link after creating a table from the dashboard CTA.
+- Guided empty state for the per-table Plans Dashboard when no plans exist: hero copy, “Create first plan” CTA, and bullets explaining plans/variants/promotions.
+
+### Changed
+- Plans Dashboard now includes helper text for populated tables, clarifying inline editing vs. full editor without altering behavior.
+
+---
 ## 1.8.3 – Populated dashboard polish
 
 ### Added
