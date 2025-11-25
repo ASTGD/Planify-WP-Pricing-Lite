@@ -6,6 +6,16 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 
 ---
 
+## 1.8.6 – Plan Editor V2 styling
+
+### Added
+- Refined Plan Drawer layout in the Plans Dashboard: structured cards for Basics, Specs, Pricing Variants, Promotions, and Advanced, aligned with Table Editor V1 styling.
+
+### Changed
+- Improved spacing, typography, and responsiveness in the Plan Drawer without changing behavior or meta schema.
+
+---
+
 ## 1.8.5 – Table Editor onboarding tour
 
 ### Added
