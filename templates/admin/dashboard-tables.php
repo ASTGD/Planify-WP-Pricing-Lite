@@ -142,18 +142,22 @@ if ( ! empty( $_GET['pwpl_notice'] ) ) {
                 </p>
             </div>
             <div class="pwpl-dash__actions">
-                <a class="button button-primary pwpl-dash__btn" href="<?php echo esc_url( $create_table ); ?>">
-                    <?php esc_html_e( 'Add Pricing Table', 'planify-wp-pricing-lite' ); ?>
-                </a>
-                <a class="button pwpl-dash__btn" href="<?php echo esc_url( $create_plan ); ?>">
-                    <?php esc_html_e( 'Create Plan', 'planify-wp-pricing-lite' ); ?>
-                </a>
-                <a class="pwpl-dash__link" href="<?php echo esc_url( $settings_url ); ?>">
-                    <?php esc_html_e( 'Global Settings', 'planify-wp-pricing-lite' ); ?>
-                </a>
-                <a class="button-link pwpl-dash__link" href="<?php echo esc_url( $list_view_url ); ?>">
-                    <?php esc_html_e( 'Switch to list view', 'planify-wp-pricing-lite' ); ?>
-                </a>
+                <div class="pwpl-dash__actions-primary">
+                    <a class="button button-primary pwpl-dash__btn" href="<?php echo esc_url( $create_table ); ?>">
+                        <?php esc_html_e( 'Add Pricing Table', 'planify-wp-pricing-lite' ); ?>
+                    </a>
+                    <a class="button pwpl-dash__btn" href="<?php echo esc_url( $create_plan ); ?>">
+                        <?php esc_html_e( 'Create Plan', 'planify-wp-pricing-lite' ); ?>
+                    </a>
+                </div>
+                <div class="pwpl-dash__actions-secondary">
+                    <a class="pwpl-dash__link" href="<?php echo esc_url( $settings_url ); ?>">
+                        <?php esc_html_e( 'Global Settings', 'planify-wp-pricing-lite' ); ?>
+                    </a>
+                    <a class="button-link pwpl-dash__link" href="<?php echo esc_url( $list_view_url ); ?>">
+                        <?php esc_html_e( 'Switch to list view', 'planify-wp-pricing-lite' ); ?>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -185,11 +189,13 @@ if ( ! empty( $_GET['pwpl_notice'] ) ) {
             <div class="pwpl-dash__main">
                 <div class="pwpl-dash__grid">
                     <?php foreach ( $tables as $table ) :
-                        $table_id   = (int) $table->ID;
-                        $is_draft   = ( 'publish' !== $table->post_status );
-                        $count_info = $plan_map[ $table_id ] ?? [ 'total' => 0, 'publish' => 0, 'draft' => 0 ];
-                        $shortcode  = sprintf( '[pwpl_table id="%d"]', $table_id );
-                        $input_id   = 'pwpl-shortcode-' . $table_id;
+                        $table_id    = (int) $table->ID;
+                        $is_draft    = ( 'publish' !== $table->post_status );
+                        $count_info  = $plan_map[ $table_id ] ?? [ 'total' => 0, 'publish' => 0, 'draft' => 0 ];
+                        $shortcode   = sprintf( '[pwpl_table id="%d"]', $table_id );
+                        $input_id    = 'pwpl-shortcode-' . $table_id;
+                        $trash_link  = wp_nonce_url( admin_url( 'admin-post.php?action=pwpl_trash_table&table_id=' . $table_id ), 'pwpl_trash_table_' . $table_id );
+                        $can_trash   = current_user_can( 'delete_post', $table_id );
                         ?>
                         <div class="pwpl-card">
                             <div class="pwpl-card__header pwpl-card__section">
@@ -261,6 +267,11 @@ if ( ! empty( $_GET['pwpl_notice'] ) ) {
                                 <a class="button" href="<?php echo esc_url( add_query_arg( [ 'page' => 'pwpl-plans-dashboard', 'pwpl_table' => $table_id ], admin_url( 'admin.php' ) ) ); ?>">
                                     <?php esc_html_e( 'Manage Plans', 'planify-wp-pricing-lite' ); ?>
                                 </a>
+                                <?php if ( $can_trash ) : ?>
+                                    <a class="button-link pwpl-card__link--danger" href="<?php echo esc_url( $trash_link ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Move this pricing table to the trash?', 'planify-wp-pricing-lite' ) ); ?>');">
+                                        <?php esc_html_e( 'Move to Trash', 'planify-wp-pricing-lite' ); ?>
+                                    </a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>

@@ -7,6 +7,7 @@ class PWPL_Admin {
         add_action( 'admin_menu', [ $this, 'register_plans_dashboard_page' ], 9 );
         add_action( 'admin_post_pwpl_duplicate_plan', [ $this, 'handle_duplicate_plan' ] );
         add_action( 'admin_post_pwpl_trash_plan', [ $this, 'handle_trash_plan' ] );
+        add_action( 'admin_post_pwpl_trash_table', [ $this, 'handle_trash_table' ] );
         add_action( 'admin_post_pwpl_create_plan_for_table', [ $this, 'handle_create_plan_for_table' ] );
         add_action( 'admin_post_pwpl_save_plan_drawer', [ $this, 'handle_save_plan_drawer' ] );
         add_action( 'wp_ajax_pwpl_render_plan_drawer', [ $this, 'ajax_render_plan_drawer' ] );
@@ -214,11 +215,12 @@ class PWPL_Admin {
 
         // Handle notices (e.g., duplication)
         if ( ! empty( $_GET['pwpl_notice'] ) ) {
-            $notice = sanitize_key( $_GET['pwpl_notice'] );
+            $notice   = sanitize_key( $_GET['pwpl_notice'] );
             $messages = [
                 'plan_duplicated' => __( 'Plan duplicated.', 'planify-wp-pricing-lite' ),
                 'plan_deleted'    => __( 'Plan moved to trash.', 'planify-wp-pricing-lite' ),
                 'plan_error'      => __( 'Unable to complete the action.', 'planify-wp-pricing-lite' ),
+                'table_trashed'   => __( 'Pricing Table moved to trash.', 'planify-wp-pricing-lite' ),
             ];
             if ( isset( $messages[ $notice ] ) ) {
                 printf( '<div class="notice notice-success is-dismissible"><p>%s</p></div>', esc_html( $messages[ $notice ] ) );
@@ -509,6 +511,34 @@ class PWPL_Admin {
 
         wp_trash_post( $plan_id );
         wp_safe_redirect( add_query_arg( [ 'page' => 'pwpl-plans-dashboard', 'pwpl_table' => $table_id, 'pwpl_notice' => 'plan_deleted' ], admin_url( 'admin.php' ) ) );
+        exit;
+    }
+
+    /**
+     * Move a pricing table to trash from the dashboard.
+     */
+    public function handle_trash_table() {
+        $table_id = isset( $_GET['table_id'] ) ? (int) $_GET['table_id'] : 0;
+        $nonce    = isset( $_GET['_wpnonce'] ) ? $_GET['_wpnonce'] : '';
+
+        if ( ! $table_id || ! current_user_can( 'delete_post', $table_id ) ) {
+            wp_die( __( 'You do not have permission to perform this action.', 'planify-wp-pricing-lite' ) );
+        }
+
+        if ( ! wp_verify_nonce( $nonce, 'pwpl_trash_table_' . $table_id ) ) {
+            wp_safe_redirect( add_query_arg( [ 'page' => 'pwpl-tables-dashboard', 'pwpl_notice' => 'plan_error' ], admin_url( 'admin.php' ) ) );
+            exit;
+        }
+
+        $table = get_post( $table_id );
+        if ( ! $table || 'pwpl_table' !== $table->post_type ) {
+            wp_safe_redirect( add_query_arg( [ 'page' => 'pwpl-tables-dashboard', 'pwpl_notice' => 'plan_error' ], admin_url( 'admin.php' ) ) );
+            exit;
+        }
+
+        wp_trash_post( $table_id );
+
+        wp_safe_redirect( add_query_arg( [ 'page' => 'pwpl-tables-dashboard', 'pwpl_notice' => 'table_trashed' ], admin_url( 'admin.php' ) ) );
         exit;
     }
 

@@ -6,6 +6,16 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 
 ---
 
+## 1.8.7 – Dashboard card polish
+
+### Added
+- “Move to Trash” action on each Pricing Table card with capability checks and confirmation, so tables can be trashed without leaving the dashboard.
+
+### Changed
+- Refined dashboard header/actions and card grid for cleaner spacing and responsiveness across 1, 2, or many tables; shortcode + actions stay aligned without overflow.
+
+---
+
 ## 1.8.6 – Plan Editor V2 styling
 
 ### Added
