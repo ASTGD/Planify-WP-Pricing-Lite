@@ -181,6 +181,11 @@ class PWPL_Admin_UI_V1 {
         // Onboarding (generic coachmarks) — load after core editor assets.
         $onboarding = new PWPL_Onboarding();
         $tour_status = $onboarding->get_tour_status( PWPL_Onboarding::TOUR_TABLE_EDITOR );
+        $wizard_landing_status = $onboarding->get_tour_status( PWPL_Onboarding::TOUR_TABLE_WIZARD_LANDING );
+        $from_wizard = ! empty( $_GET['pwpl_wizard'] );
+        $wizard_tpl    = isset( $_GET['pwpl_template_id'] ) ? sanitize_key( $_GET['pwpl_template_id'] ) : '';
+        $wizard_layout = isset( $_GET['pwpl_layout_id'] ) ? sanitize_key( $_GET['pwpl_layout_id'] ) : '';
+        $wizard_style  = isset( $_GET['pwpl_card_style'] ) ? sanitize_key( $_GET['pwpl_card_style'] ) : '';
 
         $onboarding_css = PWPL_DIR . 'assets/admin/css/onboarding.css';
         if ( file_exists( $onboarding_css ) ) {
@@ -282,6 +287,9 @@ class PWPL_Admin_UI_V1 {
                     PWPL_Onboarding::TOUR_TABLE_EDITOR => [
                         'status' => $tour_status,
                     ],
+                    PWPL_Onboarding::TOUR_TABLE_WIZARD_LANDING => [
+                        'status' => $wizard_landing_status,
+                    ],
                 ],
                 'nonce'    => wp_create_nonce( 'pwpl_tour_state' ),
                 'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
@@ -297,7 +305,81 @@ class PWPL_Admin_UI_V1 {
         wp_nonce_field( 'pwpl_save_table_' . $post->ID, 'pwpl_table_nonce' );
         $onboarding = new PWPL_Onboarding();
         $tour_status = $onboarding->get_tour_status( PWPL_Onboarding::TOUR_TABLE_EDITOR );
+        $wizard_landing_status = $onboarding->get_tour_status( PWPL_Onboarding::TOUR_TABLE_WIZARD_LANDING );
+        $from_wizard   = ! empty( $_GET['pwpl_wizard'] );
+        $wizard_tpl    = isset( $_GET['pwpl_template_id'] ) ? sanitize_key( $_GET['pwpl_template_id'] ) : '';
+        $wizard_layout = isset( $_GET['pwpl_layout_id'] ) ? sanitize_key( $_GET['pwpl_layout_id'] ) : '';
+        $wizard_style  = isset( $_GET['pwpl_card_style'] ) ? sanitize_key( $_GET['pwpl_card_style'] ) : '';
+
+        $callout_html = '';
+        if ( $from_wizard && 'not_started' === $wizard_landing_status ) {
+            $template_label = $wizard_tpl;
+            $layout_label   = $wizard_layout;
+            $style_label    = $wizard_style;
+            if ( class_exists( 'PWPL_Table_Templates' ) ) {
+                $tpl_obj = PWPL_Table_Templates::get_template( $wizard_tpl );
+                if ( $tpl_obj ) {
+                    $template_label = $tpl_obj['label'] ?? $wizard_tpl;
+                    if ( ! empty( $wizard_layout ) && isset( $tpl_obj['layouts'][ $wizard_layout ]['label'] ) ) {
+                        $layout_label = $tpl_obj['layouts'][ $wizard_layout ]['label'];
+                    }
+                    if ( ! empty( $wizard_style ) && isset( $tpl_obj['card_styles'][ $wizard_style ]['label'] ) ) {
+                        $style_label = $tpl_obj['card_styles'][ $wizard_style ]['label'];
+                    }
+                }
+            }
+            $plan_count = (int) get_posts( [
+                'post_type'      => 'pwpl_plan',
+                'post_status'    => [ 'publish', 'draft' ],
+                'meta_key'       => PWPL_Meta::PLAN_TABLE_ID,
+                'meta_value'     => (int) $post->ID,
+                'fields'         => 'ids',
+                'posts_per_page' => -1,
+                'no_found_rows'  => true,
+            ] );
+            $plans_url = add_query_arg(
+                [
+                    'page'       => 'pwpl-plans-dashboard',
+                    'pwpl_table' => (int) $post->ID,
+                ],
+                admin_url( 'admin.php' )
+            );
+            ob_start();
+            ?>
+            <div class="pwpl-wizard-callout" data-pwpl-tour="wizard-landing">
+                <div class="pwpl-wizard-callout__body">
+                    <h2 class="pwpl-wizard-callout__title">
+                        <?php echo esc_html( sprintf( __( 'Table created from “%s”', 'planify-wp-pricing-lite' ), $template_label ) ); ?>
+                    </h2>
+                    <p class="pwpl-wizard-callout__desc">
+                        <?php
+                        printf(
+                            /* translators: 1: layout, 2: card style, 3: plan count */
+                            esc_html__( 'We pre-configured layout (%1$s), card style (%2$s), and added %3$d demo plans. You can adjust details here or jump straight to the Plans Dashboard.', 'planify-wp-pricing-lite' ),
+                            esc_html( $layout_label ?: __( 'Default', 'planify-wp-pricing-lite' ) ),
+                            esc_html( $style_label ?: __( 'Default', 'planify-wp-pricing-lite' ) ),
+                            (int) $plan_count
+                        );
+                        ?>
+                    </p>
+                    <div class="pwpl-wizard-callout__actions">
+                        <a class="button button-primary" href="<?php echo esc_url( $plans_url ); ?>">
+                            <?php esc_html_e( 'Open Plans Dashboard', 'planify-wp-pricing-lite' ); ?>
+                        </a>
+                        <button type="button" class="button button-link pwpl-wizard-callout__tour" data-pwpl-tour-start="<?php echo esc_attr( PWPL_Onboarding::TOUR_TABLE_EDITOR ); ?>">
+                            <?php esc_html_e( 'Take a quick tour', 'planify-wp-pricing-lite' ); ?>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" class="pwpl-wizard-callout__dismiss" data-pwpl-tour-dismiss="<?php echo esc_attr( PWPL_Onboarding::TOUR_TABLE_WIZARD_LANDING ); ?>" aria-label="<?php esc_attr_e( 'Dismiss', 'planify-wp-pricing-lite' ); ?>">×</button>
+            </div>
+            <?php
+            $callout_html = ob_get_clean();
+        }
         echo '<div class="pwpl-tour-replay"><a href="#" data-pwpl-tour-start="' . esc_attr( PWPL_Onboarding::TOUR_TABLE_EDITOR ) . '">' . esc_html__( 'Getting started tour', 'planify-wp-pricing-lite' ) . '</a></div>';
+        if ( $callout_html ) {
+            echo $callout_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        }
         echo '<div id="pwpl-admin-v1-root"></div>';
         // Hidden inputs will be rendered by the React app to ensure values submit with the post.
     }

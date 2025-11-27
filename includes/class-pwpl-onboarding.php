@@ -6,6 +6,8 @@ class PWPL_Onboarding {
     const META_TABLE_EDITOR = 'pwpl_table_editor_tour_status';
     const TOUR_PLAN_EDITOR  = 'planEditorV2';
     const META_PLAN_EDITOR  = 'pwpl_plan_editor_tour_status';
+    const TOUR_TABLE_WIZARD_LANDING = 'tableWizardLanding';
+    const META_TABLE_WIZARD_LANDING = 'pwpl_table_wizard_landing_status';
 
     public function init() {
         add_action( 'wp_ajax_pwpl_save_tour_state', [ $this, 'ajax_save_tour_state' ] );
@@ -27,6 +29,10 @@ class PWPL_Onboarding {
             $status = get_user_meta( $user_id, self::META_PLAN_EDITOR, true );
             return $status ?: 'not_started';
         }
+        if ( self::TOUR_TABLE_WIZARD_LANDING === $tour_id ) {
+            $status = get_user_meta( $user_id, self::META_TABLE_WIZARD_LANDING, true );
+            return $status ?: 'not_started';
+        }
         return 'not_started';
     }
 
@@ -44,6 +50,9 @@ class PWPL_Onboarding {
         }
         if ( self::TOUR_PLAN_EDITOR === $tour_id ) {
             update_user_meta( $user_id, self::META_PLAN_EDITOR, $status );
+        }
+        if ( self::TOUR_TABLE_WIZARD_LANDING === $tour_id ) {
+            update_user_meta( $user_id, self::META_TABLE_WIZARD_LANDING, $status );
         }
     }
 

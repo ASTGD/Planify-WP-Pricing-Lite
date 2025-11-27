@@ -105,7 +105,15 @@ class PWPL_Rest_Wizard {
             );
         }
 
-        $edit_url = get_edit_post_link( $table_id, 'raw' );
+        $edit_url = add_query_arg(
+            [
+                'pwpl_wizard'      => 1,
+                'pwpl_template_id' => $template_id,
+                'pwpl_layout_id'   => $layout_id,
+                'pwpl_card_style'  => $card_style_id,
+            ],
+            get_edit_post_link( $table_id, 'raw' )
+        );
 
         return rest_ensure_response( [
             'table_id' => (int) $table_id,
