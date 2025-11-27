@@ -15,6 +15,7 @@ $tables_without_plans = isset( $tables_without_plans ) ? (int) $tables_without_p
 
 $list_view_url = add_query_arg( 'post_type', 'pwpl_table', admin_url( 'edit.php' ) );
 $create_table  = admin_url( 'post-new.php?post_type=pwpl_table&pwpl_from_dash=1' );
+$wizard_url    = admin_url( 'admin.php?page=pwpl-table-wizard' );
 $create_plan   = admin_url( 'post-new.php?post_type=pwpl_plan' );
 $settings_url  = admin_url( 'admin.php?page=pwpl-settings' );
 $has_tables    = ! empty( $tables ) || $total_tables > 0;
@@ -58,8 +59,11 @@ if ( ! empty( $_GET['pwpl_notice'] ) ) {
                         <?php esc_html_e( 'Create beautiful, conversion-ready pricing tables in minutes. Start with your first table, then add plans and embed anywhere.', 'planify-wp-pricing-lite' ); ?>
                     </p>
                     <div class="pwpl-empty__actions">
-                        <a class="button button-primary" href="<?php echo esc_url( $create_table ); ?>">
-                            <?php esc_html_e( 'Create your first pricing table', 'planify-wp-pricing-lite' ); ?>
+                        <a class="button button-primary" href="<?php echo esc_url( $wizard_url ); ?>">
+                            <?php esc_html_e( 'Create your first pricing table (wizard)', 'planify-wp-pricing-lite' ); ?>
+                        </a>
+                        <a class="button" href="<?php echo esc_url( $create_table ); ?>">
+                            <?php esc_html_e( 'Add table (classic)', 'planify-wp-pricing-lite' ); ?>
                         </a>
                         <a class="button" href="<?php echo esc_url( $settings_url ); ?>">
                             <?php esc_html_e( 'Configure currency & dimensions', 'planify-wp-pricing-lite' ); ?>
@@ -94,6 +98,7 @@ if ( ! empty( $_GET['pwpl_notice'] ) ) {
                             <div>
                                 <h3><?php esc_html_e( 'Create your first pricing table', 'planify-wp-pricing-lite' ); ?></h3>
                                 <p><?php esc_html_e( 'Name it (e.g. VPS Hosting) and pick a theme in the editor.', 'planify-wp-pricing-lite' ); ?></p>
+                                <a class="pwpl-step__link" href="<?php echo esc_url( $wizard_url ); ?>"><?php esc_html_e( 'Start wizard', 'planify-wp-pricing-lite' ); ?></a>
                                 <a class="pwpl-step__link" href="<?php echo esc_url( $create_table ); ?>"><?php esc_html_e( 'Add Pricing Table', 'planify-wp-pricing-lite' ); ?></a>
                             </div>
                         </div>
@@ -148,6 +153,9 @@ if ( ! empty( $_GET['pwpl_notice'] ) ) {
                     </a>
                     <a class="button pwpl-dash__btn" href="<?php echo esc_url( $create_plan ); ?>">
                         <?php esc_html_e( 'Create Plan', 'planify-wp-pricing-lite' ); ?>
+                    </a>
+                    <a class="button pwpl-dash__btn" href="<?php echo esc_url( $wizard_url ); ?>">
+                        <?php esc_html_e( 'New table (wizard)', 'planify-wp-pricing-lite' ); ?>
                     </a>
                 </div>
                 <div class="pwpl-dash__actions-secondary">

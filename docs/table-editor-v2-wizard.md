@@ -59,8 +59,18 @@ Finish: create a real `pwpl_table` + demo `pwpl_plan` posts with existing meta k
 1. **Foundations (done here):** template registry + wizard helper (no UI/REST).
 2. Add `pwpl/v1/preview-table` + minimal preview frame.
 3. Add wizard admin page + React shell; implement Step 1 (template picker + preview).
-4. Add Step 2 (layout) and Step 3 (card style), wired to preview.
-5. Add `pwpl/v1/create-table-from-wizard` to create table/plans and redirect to Table Editor V2.
-6. Wire entry points from the dashboard and update docs/changelog.
+4. Add Step 2 (layout) and Step 3 (card style), wired to preview (done).
+5. Add `pwpl/v1/create-table-from-wizard` to create table/plans and redirect to Table Editor V2 (done).
+6. Wire entry points from the dashboard and update docs/changelog (done).
 
 Keep all meta keys/sanitizers unchanged; reuse the existing data contract and rendering stack.
+
+## 5. Entry points & flow (current)
+
+- Wizard lives at `admin.php?page=pwpl-table-wizard` under the Planify menu.
+- Dashboard links:
+  - Empty state: primary CTA “Create your first pricing table (wizard)” plus a classic fallback.
+  - Populated: secondary action “New table (wizard)” in the header actions.
+- Flow:
+  - Choose template → layout → card style → Create table.
+  - Wizard calls `pwpl/v1/create-table-from-wizard`, creates `pwpl_table` + demo `pwpl_plan`, then redirects to the table edit screen (Table Editor V2).

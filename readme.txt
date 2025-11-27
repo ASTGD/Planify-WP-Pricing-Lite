@@ -11,7 +11,7 @@ Lightweight, developer‑friendly pricing tables for WordPress.
 
 == Description ==
 Planify WP Pricing Lite provides a foundation for managing pricing tables via custom post types and rendering them with a shortcode. A top-level **Planify** menu opens the Pricing Tables dashboard cards view where you can add tables, jump into per-table Plans Dashboards, and reach plugin settings. On first run, a guided welcome state shows you how to configure settings, create your first table, add plans, and embed the shortcode.
-Foundation work for a future **New Table Wizard** (template registry + backend helper) is included; the UI will follow while reusing the existing meta model.
+Includes an optional **New Table Wizard (v1)** that starts from ready-made templates, lets you pick layout and plan card styles, then creates a table with demo plans and opens the full Table Editor for fine-tuning.
 
 == Features ==
 * CPTs: `pwpl_table` and `pwpl_plan`

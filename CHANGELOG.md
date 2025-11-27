@@ -6,6 +6,17 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 
 ---
 
+## 1.8.9 – New Table Wizard (v1)
+
+### Added
+- New Table Wizard under the Planify menu: pick a template, layout, and card style with live preview, then create a table with demo plans and jump into Table Editor V2.
+- Pricing Tables dashboard links to the wizard from the empty state and as a secondary “New table (wizard)” action when tables exist.
+
+### Changed
+- No behavioral changes to existing editor/frontend; this is a guided creation flow on top of current meta.
+
+---
+
 ## 1.8.8 – Table Wizard foundations
 
 ### Added
