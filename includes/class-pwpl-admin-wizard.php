@@ -76,7 +76,7 @@ class PWPL_Admin_Wizard {
                     'root'       => esc_url_raw( rest_url() ),
                     'nonce'      => wp_create_nonce( 'wp_rest' ),
                     'previewUrl' => esc_url_raw( rest_url( 'pwpl/v1/preview-table' ) ),
-                    'createUrl'  => esc_url_raw( rest_url( 'pwpl/v1/create-table-from-wizard' ) ), // placeholder for next step
+                    'createUrl'  => esc_url_raw( rest_url( 'pwpl/v1/create-table-from-wizard' ) ),
                 ],
                 'previewFrame' => [
                     'url'   => esc_url_raw( add_query_arg(

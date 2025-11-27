@@ -131,6 +131,17 @@
     box-shadow: 0 3px 8px rgba(37, 99, 235, 0.18);
 }
 
+.pwpl-table-wizard-wrap .pwpl-table-wizard__footer {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.pwpl-table-wizard-wrap .pwpl-table-wizard__submit.is-busy {
+    opacity: .7;
+    pointer-events: none;
+}
+
 @media (max-width: 960px) {
     .pwpl-table-wizard-wrap .pwpl-table-wizard-layout {
         flex-direction: column;

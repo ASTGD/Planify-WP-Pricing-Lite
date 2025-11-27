@@ -39,6 +39,16 @@
     layoutEl.appendChild( previewEl );
     root.appendChild( layoutEl );
 
+    var footer = document.createElement( 'div' );
+    footer.className = 'pwpl-table-wizard__footer';
+    var createBtn = document.createElement( 'button' );
+    createBtn.type = 'button';
+    createBtn.className = 'button button-primary pwpl-table-wizard__submit';
+    createBtn.textContent = ( config.i18n && config.i18n.createLabel ) || 'Create table';
+    createBtn.disabled = ! templates.length;
+    footer.appendChild( createBtn );
+    root.appendChild( footer );
+
     var layoutSectionTitle = document.createElement( 'div' );
     layoutSectionTitle.className = 'pwpl-wizard-section-title';
     layoutSectionTitle.textContent = ( config.i18n && config.i18n.layout ) || 'Layout';
@@ -259,4 +269,45 @@
     if ( templates[0] ) {
         selectTemplate( templates[0].id );
     }
+
+    createBtn.addEventListener( 'click', function() {
+        if ( ! state.selectedTemplateId ) {
+            return;
+        }
+        createBtn.disabled = true;
+        createBtn.classList.add( 'is-busy' );
+
+        var apiFetch = window.wp && wp.apiFetch ? wp.apiFetch : null;
+        if ( ! apiFetch || ! config.rest || ! config.rest.createUrl ) {
+            createBtn.disabled = false;
+            createBtn.classList.remove( 'is-busy' );
+            return;
+        }
+
+        apiFetch( {
+            path: config.rest.createUrl.replace( restUrlRoot(), '' ),
+            method: 'POST',
+            headers: { 'X-WP-Nonce': config.rest.nonce },
+            data: {
+                template_id:   state.selectedTemplateId,
+                layout_id:     state.selectedLayoutId || '',
+                card_style_id: state.selectedCardStyleId || '',
+            },
+        } ).then( function( response ) {
+            if ( response && response.edit_url ) {
+                window.location = response.edit_url;
+            } else {
+                createBtn.disabled = false;
+                createBtn.classList.remove( 'is-busy' );
+                // eslint-disable-next-line no-console
+                console.error( 'Unexpected create-table response', response );
+            }
+        } ).catch( function( err ) {
+            createBtn.disabled = false;
+            createBtn.classList.remove( 'is-busy' );
+            // eslint-disable-next-line no-console
+            console.error( 'Create-table failed', err );
+            alert( ( config.i18n && config.i18n.createError ) || 'Unable to create table. Please try again.' );
+        } );
+    } );
 }() );

@@ -38,6 +38,24 @@ class PWPL_Rest_Wizard {
                 ],
             ]
         );
+
+        register_rest_route(
+            'pwpl/v1',
+            '/create-table-from-wizard',
+            [
+                'methods'             => 'POST',
+                'callback'            => [ $this, 'handle_create_table' ],
+                'permission_callback' => function () {
+                    return current_user_can( 'edit_posts' );
+                },
+                'args'                => [
+                    'template_id'   => [ 'required' => true,  'type' => 'string' ],
+                    'layout_id'     => [ 'required' => false, 'type' => 'string' ],
+                    'card_style_id' => [ 'required' => false, 'type' => 'string' ],
+                    'title'         => [ 'required' => false, 'type' => 'string' ],
+                ],
+            ]
+        );
     }
 
     public function handle_preview( WP_REST_Request $request ) {
@@ -53,6 +71,38 @@ class PWPL_Rest_Wizard {
         $html = PWPL_Table_Renderer::render_from_config( $config );
         return rest_ensure_response( [
             'html' => $html,
+        ] );
+    }
+
+    public function handle_create_table( WP_REST_Request $request ) {
+        $template_id   = (string) $request['template_id'];
+        $layout_id     = $request['layout_id'] ? (string) $request['layout_id'] : null;
+        $card_style_id = $request['card_style_id'] ? (string) $request['card_style_id'] : null;
+        $title         = $request['title'] ? sanitize_text_field( $request['title'] ) : '';
+
+        $table_id = PWPL_Table_Wizard::create_table_from_selection(
+            $template_id,
+            $layout_id,
+            $card_style_id,
+            [
+                'post_title'  => $title,
+                'post_status' => 'publish',
+            ]
+        );
+
+        if ( is_wp_error( $table_id ) || null === $table_id ) {
+            return new WP_Error(
+                'pwpl_create_failed',
+                __( 'Unable to create the table from this selection.', 'planify-wp-pricing-lite' ),
+                [ 'status' => 400 ]
+            );
+        }
+
+        $edit_url = get_edit_post_link( $table_id, 'raw' );
+
+        return rest_ensure_response( [
+            'table_id' => (int) $table_id,
+            'edit_url' => esc_url_raw( $edit_url ),
         ] );
     }
 
