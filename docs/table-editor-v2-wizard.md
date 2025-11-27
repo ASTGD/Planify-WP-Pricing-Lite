@@ -4,7 +4,7 @@ _Last updated: 2025-11-27 • Branch: `feature/table-wizard-v1`_
 
 This doc captures the Table Editor V2 visual system and the planned **New Table Wizard** that will sit above it. Use this as the starting point in new workspaces.
 
-**Status:** Wizard foundations are available in code (`PWPL_Table_Templates`, `PWPL_Table_Wizard`) for template presets + table/plan creation; UI and REST preview endpoints are the next step.
+**Status:** Wizard foundations (`PWPL_Table_Templates`, `PWPL_Table_Wizard`) are in place; preview rendering and REST endpoint (`pwpl/v1/preview-table`) now exist. UI/iframe wiring will follow next.
 
 ---
 

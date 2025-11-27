@@ -279,5 +279,5 @@ When each step is merged into `main`, tag a minor release and capture changelog.
   - Step 2: choose a layout variant (width/columns/rail),
   - Step 3: choose a plan card/column style,
   - Wizard creates a real `pwpl_table` + demo `pwpl_plan` posts, then redirects into Table Editor V2.
-- Status: wizard foundations are now in code (`PWPL_Table_Templates`, `PWPL_Table_Wizard`) to build preview configs and create tables/plans with existing meta keys; UI/REST will follow.
+- Status: wizard foundations are now in code (`PWPL_Table_Templates`, `PWPL_Table_Wizard`) to build preview configs and create tables/plans with existing meta keys; preview rendering + REST (`pwpl/v1/preview-table`) are live. UI/iframe wiring will follow.
 - See `docs/table-editor-v2-wizard.md` for the detailed spec (visual rules, REST endpoints, implementation phases).
