@@ -44,6 +44,16 @@ class PWPL_Admin_Wizard {
             return;
         }
 
+        $css = PWPL_DIR . 'assets/admin/css/table-wizard.css';
+        if ( file_exists( $css ) ) {
+            wp_enqueue_style(
+                'pwpl-table-wizard',
+                PWPL_URL . 'assets/admin/css/table-wizard.css',
+                [ 'wp-components' ],
+                filemtime( $css )
+            );
+        }
+
         $js = PWPL_DIR . 'assets/admin/js/table-wizard.js';
         if ( file_exists( $js ) ) {
             wp_enqueue_script(
