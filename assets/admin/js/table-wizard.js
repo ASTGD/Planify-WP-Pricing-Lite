@@ -35,6 +35,8 @@
     iframeEl.setAttribute( 'title', 'Table preview' );
 
     previewEl.appendChild( iframeEl );
+    // Assemble
+    root.appendChild( stepsBar );
     layoutEl.appendChild( sidebarEl );
     layoutEl.appendChild( previewEl );
     root.appendChild( layoutEl );
@@ -48,6 +50,31 @@
     createBtn.disabled = ! templates.length;
     footer.appendChild( createBtn );
     root.appendChild( footer );
+
+    var stepsBar = document.createElement( 'div' );
+    stepsBar.className = 'pwpl-table-wizard__steps';
+
+    var stepTemplate = document.createElement( 'button' );
+    stepTemplate.type = 'button';
+    stepTemplate.className = 'pwpl-step-indicator';
+    stepTemplate.dataset.step = '1';
+    stepTemplate.textContent = ( config.i18n && config.i18n.stepTemplate ) || 'Step 1 · Template';
+
+    var stepLayout = document.createElement( 'button' );
+    stepLayout.type = 'button';
+    stepLayout.className = 'pwpl-step-indicator';
+    stepLayout.dataset.step = '2';
+    stepLayout.textContent = ( config.i18n && config.i18n.stepLayout ) || 'Step 2 · Layout';
+
+    var stepCardStyle = document.createElement( 'button' );
+    stepCardStyle.type = 'button';
+    stepCardStyle.className = 'pwpl-step-indicator';
+    stepCardStyle.dataset.step = '3';
+    stepCardStyle.textContent = ( config.i18n && config.i18n.stepCardStyle ) || 'Step 3 · Card style';
+
+    stepsBar.appendChild( stepTemplate );
+    stepsBar.appendChild( stepLayout );
+    stepsBar.appendChild( stepCardStyle );
 
     var layoutSectionTitle = document.createElement( 'div' );
     layoutSectionTitle.className = 'pwpl-wizard-section-title';
@@ -161,6 +188,7 @@
         renderLayouts();
         renderCardStyles();
         loadPreview( templateId, state.selectedLayoutId, state.selectedCardStyleId );
+        updateSteps();
     }
 
     function selectLayout( layoutId ) {
@@ -169,6 +197,7 @@
             tile.classList.toggle( 'is-selected', tile.dataset.layoutId === layoutId );
         } );
         loadPreview( state.selectedTemplateId, state.selectedLayoutId, state.selectedCardStyleId );
+        updateSteps();
     }
 
     function selectCardStyle( styleId ) {
@@ -177,6 +206,7 @@
             tile.classList.toggle( 'is-selected', tile.dataset.cardStyleId === styleId );
         } );
         loadPreview( state.selectedTemplateId, state.selectedLayoutId, state.selectedCardStyleId );
+        updateSteps();
     }
 
     function loadPreview( templateId, layoutId, cardStyleId ) {
@@ -185,6 +215,7 @@
         }
 
         previewEl.classList.add( 'is-loading' );
+        sidebarEl.classList.add( 'is-loading' );
 
         var apiFetch = window.wp && wp.apiFetch ? wp.apiFetch : null;
         if ( apiFetch && config.rest && config.rest.previewUrl ) {
@@ -207,6 +238,7 @@
         iframeEl.src = frameUrl;
         iframeEl.onload = function() {
             previewEl.classList.remove( 'is-loading' );
+            sidebarEl.classList.remove( 'is-loading' );
         };
     }
 
@@ -269,6 +301,16 @@
     if ( templates[0] ) {
         selectTemplate( templates[0].id );
     }
+
+    function updateSteps() {
+        var hasLayout = !! state.selectedLayoutId;
+        var hasCardStyle = !! state.selectedCardStyleId;
+        stepTemplate.classList.add( 'is-active' );
+        stepLayout.classList.toggle( 'is-active', hasLayout );
+        stepCardStyle.classList.toggle( 'is-active', hasCardStyle );
+    }
+
+    updateSteps();
 
     createBtn.addEventListener( 'click', function() {
         if ( ! state.selectedTemplateId ) {

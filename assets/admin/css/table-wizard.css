@@ -1,32 +1,89 @@
+.pwpl-table-wizard-wrap {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 140px);
+    gap: 16px;
+}
+
+.pwpl-table-wizard-wrap .pwpl-table-wizard__steps {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+}
+
+.pwpl-table-wizard-wrap .pwpl-step-indicator {
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    font-size: 12px;
+    padding: 4px 10px;
+    color: #64748b;
+    cursor: default;
+}
+
+.pwpl-table-wizard-wrap .pwpl-step-indicator.is-active {
+    border-color: #2563eb;
+    background: #eef3ff;
+    color: #0b1b3a;
+}
+
 .pwpl-table-wizard-wrap .pwpl-table-wizard-layout {
     display: flex;
     gap: 24px;
     align-items: stretch;
+    flex: 1 1 auto;
 }
 
 .pwpl-table-wizard-wrap .pwpl-table-wizard__sidebar {
     flex: 0 0 260px;
     max-width: 280px;
+    overflow-y: auto;
 }
 
 .pwpl-table-wizard-wrap .pwpl-table-wizard__preview {
     flex: 1 1 auto;
     min-width: 0;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .pwpl-table-wizard-wrap .pwpl-table-wizard__preview.is-loading::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: rgba(248, 250, 252, 0.6);
     border-radius: 12px;
+    background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 20%, #f1f5f9 40%);
+    background-size: 200% 100%;
+    animation: pwpl-skeleton-shimmer 1.2s infinite;
     pointer-events: none;
+}
+
+.pwpl-table-wizard-wrap .pwpl-table-wizard__sidebar.is-loading {
+    position: relative;
+}
+
+.pwpl-table-wizard-wrap .pwpl-table-wizard__sidebar.is-loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 20%, #f1f5f9 40%);
+    background-size: 200% 100%;
+    animation: pwpl-skeleton-shimmer 1.2s infinite;
+    border-radius: 12px;
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+@keyframes pwpl-skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 .pwpl-table-wizard-wrap .pwpl-table-wizard__iframe {
     width: 100%;
-    min-height: 520px;
+    flex: 1 1 auto;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     background: #f8fafc;
@@ -76,7 +133,7 @@
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: .06em;
-    margin: 12px 2px 6px;
+    margin: 16px 2px 6px;
 }
 
 .pwpl-table-wizard-wrap .pwpl-layout-list {
