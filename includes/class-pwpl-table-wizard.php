@@ -96,7 +96,35 @@ class PWPL_Table_Wizard {
             return null;
         }
 
-        foreach ( $config['table']['meta'] as $key => $value ) {
+        $table_meta = $config['table']['meta'];
+
+        if ( ! empty( $args['theme'] ) ) {
+            $table_meta[ PWPL_Meta::TABLE_THEME ] = sanitize_key( $args['theme'] );
+        }
+
+        if ( isset( $args['dimensions'] ) && is_array( $args['dimensions'] ) ) {
+            $dims = array_filter( (array) $args['dimensions'] );
+            $enabled = [];
+            foreach ( [ 'platform', 'period', 'location' ] as $dim_key ) {
+                if ( ! empty( $dims[ $dim_key ] ) ) {
+                    $enabled[] = $dim_key;
+                }
+            }
+            if ( ! empty( $enabled ) ) {
+                $table_meta[ PWPL_Meta::DIMENSION_META ] = $enabled;
+            }
+            if ( empty( $dims['platform'] ) ) {
+                $table_meta[ PWPL_Meta::ALLOWED_PLATFORMS ] = [];
+            }
+            if ( empty( $dims['period'] ) ) {
+                $table_meta[ PWPL_Meta::ALLOWED_PERIODS ] = [];
+            }
+            if ( empty( $dims['location'] ) ) {
+                $table_meta[ PWPL_Meta::ALLOWED_LOCATIONS ] = [];
+            }
+        }
+
+        foreach ( $table_meta as $key => $value ) {
             update_post_meta( $table_id, $key, $value );
         }
 

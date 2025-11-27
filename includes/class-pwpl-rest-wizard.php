@@ -53,6 +53,8 @@ class PWPL_Rest_Wizard {
                     'layout_id'     => [ 'required' => false, 'type' => 'string' ],
                     'card_style_id' => [ 'required' => false, 'type' => 'string' ],
                     'title'         => [ 'required' => false, 'type' => 'string' ],
+                    'theme'         => [ 'required' => false, 'type' => 'string' ],
+                    'dimensions'    => [ 'required' => false, 'type' => 'array' ],
                 ],
             ]
         );
@@ -79,6 +81,9 @@ class PWPL_Rest_Wizard {
         $layout_id     = $request['layout_id'] ? (string) $request['layout_id'] : null;
         $card_style_id = $request['card_style_id'] ? (string) $request['card_style_id'] : null;
         $title         = $request['title'] ? sanitize_text_field( $request['title'] ) : '';
+        $theme         = $request['theme'] ? sanitize_key( $request['theme'] ) : '';
+        $dimensions    = $request['dimensions'];
+        $dimensions    = is_array( $dimensions ) ? $dimensions : [];
 
         $table_id = PWPL_Table_Wizard::create_table_from_selection(
             $template_id,
@@ -87,6 +92,8 @@ class PWPL_Rest_Wizard {
             [
                 'post_title'  => $title,
                 'post_status' => 'publish',
+                'theme'       => $theme,
+                'dimensions'  => $dimensions,
             ]
         );
 

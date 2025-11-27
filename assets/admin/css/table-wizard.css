@@ -292,6 +292,54 @@
     pointer-events: none;
 }
 
+.pwpl-table-wizard-wrap .pwpl-table-wizard__details {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding: 8px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    align-items: center;
+    border-top: 1px solid #e2e8f0;
+}
+
+.pwpl-table-wizard-wrap .pwpl-details__label {
+    display: flex;
+    flex-direction: column;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.pwpl-table-wizard-wrap .pwpl-details__input,
+.pwpl-table-wizard-wrap .pwpl-details__select {
+    margin-top: 4px;
+    min-width: 200px;
+}
+
+.pwpl-table-wizard-wrap .pwpl-details__dims {
+    display: flex;
+    gap: 8px;
+}
+
+.pwpl-table-wizard-wrap .pwpl-dim-toggle {
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    padding: 3px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #0f172a;
+}
+
+.pwpl-table-wizard-wrap .pwpl-dim-toggle.is-on {
+    border-color: #2563eb;
+    background: #eef3ff;
+    color: #0b1b3a;
+}
+
 @media (max-width: 960px) {
     .pwpl-table-wizard-wrap .pwpl-table-wizard-layout {
         flex-direction: column;

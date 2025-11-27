@@ -18,7 +18,14 @@
         selectedTemplateId: null,
         selectedLayoutId: null,
         selectedCardStyleId: null,
+        dimensions: {
+            platform: true,
+            period: true,
+            location: false,
+        },
     };
+    var nameInput;
+    var themeSelect;
 
     var layoutEl = document.createElement( 'div' );
     layoutEl.className = 'pwpl-table-wizard-layout';
@@ -42,6 +49,61 @@
     layoutEl.appendChild( sidebarEl );
     layoutEl.appendChild( previewEl );
     root.appendChild( layoutEl );
+
+    var detailsBar = document.createElement( 'div' );
+    detailsBar.className = 'pwpl-table-wizard__details';
+
+    var nameLabel = document.createElement( 'label' );
+    nameLabel.className = 'pwpl-details__label';
+    nameLabel.setAttribute( 'for', 'pwpl-table-wizard-title' );
+    nameLabel.textContent = ( config.i18n && config.i18n.tableName ) || 'Table name';
+    nameInput = document.createElement( 'input' );
+    nameInput.type = 'text';
+    nameInput.className = 'pwpl-details__input';
+    nameInput.id = 'pwpl-table-wizard-title';
+    nameLabel.appendChild( nameInput );
+
+    var themeLabel = document.createElement( 'label' );
+    themeLabel.className = 'pwpl-details__label';
+    themeLabel.setAttribute( 'for', 'pwpl-table-wizard-theme' );
+    themeLabel.textContent = ( config.i18n && config.i18n.theme ) || 'Theme';
+    themeSelect = document.createElement( 'select' );
+    themeSelect.className = 'pwpl-details__select';
+    themeSelect.id = 'pwpl-table-wizard-theme';
+    [
+        { value: '', label: ( config.i18n && config.i18n.themeInherit ) || 'Default' },
+        { value: 'firevps', label: 'FireVPS' },
+        { value: 'warm', label: 'Warm' },
+        { value: 'classic', label: 'Classic' },
+    ].forEach( function( opt ) {
+        var o = document.createElement( 'option' );
+        o.value = opt.value;
+        o.textContent = opt.label;
+        themeSelect.appendChild( o );
+    } );
+    themeLabel.appendChild( themeSelect );
+
+    var dimGroup = document.createElement( 'div' );
+    dimGroup.className = 'pwpl-details__dims';
+    [ 'platform', 'period', 'location' ].forEach( function( dimKey ) {
+        var btn = document.createElement( 'button' );
+        btn.type = 'button';
+        btn.className = 'pwpl-dim-toggle';
+        btn.dataset.dim = dimKey;
+        btn.textContent = dimKey.charAt( 0 ).toUpperCase() + dimKey.slice( 1 );
+        btn.addEventListener( 'click', function() {
+            var isOn = ! btn.classList.contains( 'is-on' );
+            btn.classList.toggle( 'is-on', isOn );
+            btn.setAttribute( 'aria-pressed', isOn ? 'true' : 'false' );
+            state.dimensions[ dimKey ] = isOn;
+        } );
+        dimGroup.appendChild( btn );
+    } );
+
+    detailsBar.appendChild( nameLabel );
+    detailsBar.appendChild( themeLabel );
+    detailsBar.appendChild( dimGroup );
+    root.appendChild( detailsBar );
 
     var footer = document.createElement( 'div' );
     footer.className = 'pwpl-table-wizard__footer';
@@ -258,6 +320,16 @@
             defaultCardStyleId = styleIds[0];
         }
         state.selectedCardStyleId = defaultCardStyleId;
+        if ( nameInput ) {
+            nameInput.value = tpl && tpl.label ? tpl.label : templateId;
+        }
+        // Reset dimensions defaults per template if desired
+        state.dimensions = {
+            platform: true,
+            period: true,
+            location: false,
+        };
+        updateDimToggles();
 
         Array.prototype.forEach.call( sidebarEl.querySelectorAll( '.pwpl-template-card' ), function( card ) {
             card.classList.toggle( 'is-selected', card.dataset.templateId === templateId );
@@ -426,6 +498,16 @@
 
     updateSteps();
 
+    function updateDimToggles() {
+        var toggles = sidebarEl.parentNode ? sidebarEl.parentNode.querySelectorAll( '.pwpl-dim-toggle' ) : [];
+        Array.prototype.forEach.call( toggles, function( btn ) {
+            var dim = btn.dataset.dim;
+            var isOn = !! state.dimensions[ dim ];
+            btn.classList.toggle( 'is-on', isOn );
+            btn.setAttribute( 'aria-pressed', isOn ? 'true' : 'false' );
+        } );
+    }
+
     createBtn.addEventListener( 'click', function() {
         if ( ! state.selectedTemplateId ) {
             return;
@@ -448,6 +530,9 @@
                 template_id:   state.selectedTemplateId,
                 layout_id:     state.selectedLayoutId || '',
                 card_style_id: state.selectedCardStyleId || '',
+                title:         nameInput ? nameInput.value : '',
+                theme:         themeSelect ? themeSelect.value : '',
+                dimensions:    state.dimensions,
             },
         } ).then( function( response ) {
             if ( response && response.edit_url ) {
