@@ -11,6 +11,7 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 ### Added
 - Backend scaffolding for the upcoming New Table Wizard: template registry with starter presets and a wizard helper to build preview configs and create tables/plans using existing meta keys (no UI yet).
 - Preview rendering via new `pwpl/v1/preview-table` REST endpoint and a minimal admin preview frame for iframe use.
+- Admin wizard page shell (`admin.php?page=pwpl-table-wizard`) with script enqueue/localized data for the future React UI (templates + REST/preview URLs).
 
 ### Changed
 - No behavioral changes to the editor or frontend rendering; this is preparatory work only.

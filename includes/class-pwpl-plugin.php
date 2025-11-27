@@ -8,6 +8,7 @@ class PWPL_Plugin {
         ( new PWPL_Shortcode() )->init();
         ( new PWPL_Rest_Wizard() )->init();
         if ( is_admin() ) {
+            ( new PWPL_Admin_Wizard() )->init();
             ( new PWPL_Onboarding() )->init();
             ( new PWPL_Admin() )->init();
             ( new PWPL_Admin_Meta() )->init();
