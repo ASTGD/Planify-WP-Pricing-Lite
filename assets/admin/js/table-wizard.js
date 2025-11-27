@@ -17,6 +17,7 @@
     var state = {
         selectedTemplateId: null,
         selectedLayoutId: null,
+        selectedCardStyleId: null,
     };
 
     var layoutEl = document.createElement( 'div' );
@@ -43,6 +44,12 @@
     layoutSectionTitle.textContent = ( config.i18n && config.i18n.layout ) || 'Layout';
     var layoutList = document.createElement( 'div' );
     layoutList.className = 'pwpl-layout-list';
+
+    var cardStyleSectionTitle = document.createElement( 'div' );
+    cardStyleSectionTitle.className = 'pwpl-wizard-section-title';
+    cardStyleSectionTitle.textContent = ( config.i18n && config.i18n.cardStyle ) || 'Card style';
+    var cardStyleList = document.createElement( 'div' );
+    cardStyleList.className = 'pwpl-card-style-list';
 
     function renderTemplates() {
         sidebarEl.innerHTML = '';
@@ -75,6 +82,8 @@
         sidebarEl.appendChild( templatesWrap );
         sidebarEl.appendChild( layoutSectionTitle );
         sidebarEl.appendChild( layoutList );
+        sidebarEl.appendChild( cardStyleSectionTitle );
+        sidebarEl.appendChild( cardStyleList );
     }
 
     function getTemplateById( id ) {
@@ -126,11 +135,22 @@
         }
         state.selectedLayoutId = defaultLayoutId;
 
+        var cardStyles = tpl && tpl.card_styles ? tpl.card_styles : {};
+        var styleIds = Object.keys( cardStyles );
+        var defaultCardStyleId = null;
+        if ( cardStyles.default ) {
+            defaultCardStyleId = 'default';
+        } else if ( styleIds.length ) {
+            defaultCardStyleId = styleIds[0];
+        }
+        state.selectedCardStyleId = defaultCardStyleId;
+
         Array.prototype.forEach.call( sidebarEl.querySelectorAll( '.pwpl-template-card' ), function( card ) {
             card.classList.toggle( 'is-selected', card.dataset.templateId === templateId );
         } );
         renderLayouts();
-        loadPreview( templateId, state.selectedLayoutId );
+        renderCardStyles();
+        loadPreview( templateId, state.selectedLayoutId, state.selectedCardStyleId );
     }
 
     function selectLayout( layoutId ) {
@@ -138,10 +158,18 @@
         Array.prototype.forEach.call( layoutList.querySelectorAll( '.pwpl-layout-tile' ), function( tile ) {
             tile.classList.toggle( 'is-selected', tile.dataset.layoutId === layoutId );
         } );
-        loadPreview( state.selectedTemplateId, state.selectedLayoutId );
+        loadPreview( state.selectedTemplateId, state.selectedLayoutId, state.selectedCardStyleId );
     }
 
-    function loadPreview( templateId, layoutId ) {
+    function selectCardStyle( styleId ) {
+        state.selectedCardStyleId = styleId || null;
+        Array.prototype.forEach.call( cardStyleList.querySelectorAll( '.pwpl-card-style-tile' ), function( tile ) {
+            tile.classList.toggle( 'is-selected', tile.dataset.cardStyleId === styleId );
+        } );
+        loadPreview( state.selectedTemplateId, state.selectedLayoutId, state.selectedCardStyleId );
+    }
+
+    function loadPreview( templateId, layoutId, cardStyleId ) {
         if ( ! templateId ) {
             return;
         }
@@ -157,6 +185,7 @@
                 data: {
                     template_id: templateId,
                     layout_id: layoutId || '',
+                    card_style_id: cardStyleId || '',
                 },
             } ).catch( function( err ) {
                 // eslint-disable-next-line no-console
@@ -164,7 +193,7 @@
             } );
         }
 
-        var frameUrl = buildPreviewFrameUrl( templateId, layoutId );
+        var frameUrl = buildPreviewFrameUrl( templateId, layoutId, cardStyleId );
         iframeEl.src = frameUrl;
         iframeEl.onload = function() {
             previewEl.classList.remove( 'is-loading' );
@@ -178,7 +207,7 @@
         return '/wp-json/';
     }
 
-    function buildPreviewFrameUrl( templateId, layoutId ) {
+    function buildPreviewFrameUrl( templateId, layoutId, cardStyleId ) {
         var base = config.previewFrame && config.previewFrame.url ? config.previewFrame.url : '';
         try {
             var url = new URL( base, window.location.origin );
@@ -186,10 +215,44 @@
             if ( layoutId ) {
                 url.searchParams.set( 'layout_id', layoutId );
             }
+            if ( cardStyleId ) {
+                url.searchParams.set( 'card_style_id', cardStyleId );
+            }
             return url.toString();
         } catch (e) {
-            return base + ( base.indexOf( '?' ) === -1 ? '?' : '&' ) + 'template_id=' + encodeURIComponent( templateId );
+            var qs = 'template_id=' + encodeURIComponent( templateId );
+            if ( layoutId ) {
+                qs += '&layout_id=' + encodeURIComponent( layoutId );
+            }
+            if ( cardStyleId ) {
+                qs += '&card_style_id=' + encodeURIComponent( cardStyleId );
+            }
+            return base + ( base.indexOf( '?' ) === -1 ? '?' : '&' ) + qs;
         }
+    }
+
+    function renderCardStyles() {
+        cardStyleList.innerHTML = '';
+        var tpl = getTemplateById( state.selectedTemplateId );
+        var styles = tpl && tpl.card_styles ? tpl.card_styles : {};
+        var styleIds = Object.keys( styles );
+        if ( ! styleIds.length ) {
+            return;
+        }
+        styleIds.forEach( function( sid ) {
+            var tile = document.createElement( 'button' );
+            tile.type = 'button';
+            tile.className = 'pwpl-card-style-tile';
+            tile.dataset.cardStyleId = sid;
+            tile.textContent = styles[ sid ].label || sid;
+            if ( state.selectedCardStyleId === sid ) {
+                tile.classList.add( 'is-selected' );
+            }
+            tile.addEventListener( 'click', function() {
+                selectCardStyle( sid );
+            } );
+            cardStyleList.appendChild( tile );
+        } );
     }
 
     renderTemplates();
