@@ -267,6 +267,18 @@ When each step is merged into `main`, tag a minor release and capture changelog.
        'variants'=>[ 'linux|yearly|usa' => ['price'=>'19.99','currency'=>'USD','old_price'=>'39.99','cta_label'=>'Order Now','cta_url'=>'https://...','target'=>'_blank','rel'=>'nofollow noopener'] ],
        'badge' => ['label'=>'50% Off','color'=>'#33cc66']
      ]
-  ]
+ ]
 ]
+
+### B. Admin V2 – Table Editor V2 & New Table Wizard
+
+- The `feature/table-editor-v2-layout` branch introduces a modern **Table Editor V2** shell:
+  - Left sidebar tabs, right‑hand accordion panels, unified card styling, and a clear typography hierarchy.
+  - This work is **visual/layout only**; meta schema, save logic, and frontend rendering stay the same.
+- A future **New Table Wizard** will sit above the editor:
+  - Step 1: choose a template (grid of presets + live preview).
+  - Step 2: choose layout variant (width, column count, rail behavior).
+  - Step 3: choose plan card/column style.
+  - Wizard creates a real `pwpl_table` + demo `pwpl_plan` posts, then redirects into Table Editor V2.
+- See `docs/table-editor-v2-wizard.md` for the detailed spec (visual rules, REST endpoints, and implementation phases).
 ```

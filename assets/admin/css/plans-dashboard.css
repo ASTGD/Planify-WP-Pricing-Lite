@@ -60,11 +60,11 @@
 .pwpl-plans__stat {
   background: #fff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 14px;
+  border-radius: 12px;
+  padding: 16px;
   display: grid;
-  gap: 4px;
-  box-shadow: 0 2px 6px rgba(15,23,42,0.04);
+  gap: 6px;
+  box-shadow: 0 10px 24px rgba(15,23,42,0.06);
 }
 
 .pwpl-plans__stat-label {
@@ -90,9 +90,9 @@
   gap: 10px;
   background: #fff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 10px 12px;
-  box-shadow: 0 2px 6px rgba(15,23,42,0.03);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 24px rgba(15,23,42,0.05);
 }
 
 .pwpl-plans__filters input[type="search"] {
@@ -162,12 +162,13 @@
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 10px;
+  padding: 12px;
   display: grid;
-  gap: 8px;
+  gap: 10px;
   max-height: calc(100vh - 320px);
   overflow-y: auto;
   overflow-x: hidden;
+  box-shadow: 0 10px 24px rgba(15,23,42,0.06);
 }
 .pwpl-plan-list--empty {
   align-content: center;
@@ -187,6 +188,8 @@
   display: grid;
   gap: 8px;
   justify-items: center;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15,23,42,0.06);
 }
 
 .pwpl-plans__empty-list .dashicons {
@@ -198,22 +201,23 @@
   width: 100%;
   text-align: left;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 10px;
+  border-radius: 12px;
+  padding: 10px 12px;
   background: #fff;
   display: grid;
   gap: 6px;
   cursor: pointer;
   box-sizing: border-box;
   transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  box-shadow: 0 6px 14px rgba(15,23,42,0.05);
 }
 .pwpl-plan-row:hover {
   border-color: #cbd5e1;
-  box-shadow: 0 2px 10px rgba(15,23,42,0.06);
+  box-shadow: 0 10px 20px rgba(15,23,42,0.08);
 }
 .pwpl-plan-row.is-active {
   border-color: #1d4ed8;
-  box-shadow: 0 1px 8px rgba(29,78,216,0.15);
+  box-shadow: 0 12px 26px rgba(29,78,216,0.18);
   background: #eef2ff;
 }
 .pwpl-plan-row:focus {
@@ -283,6 +287,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 10px 24px rgba(15,23,42,0.06);
 }
 .pwpl-plan-drawer-panel > * {
   flex: 1 1 auto;

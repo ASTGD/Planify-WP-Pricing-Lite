@@ -67,12 +67,13 @@ These values power the filters and variant pickers across all tables.
 1. Click **Planify** in the WP Admin menu to open the Pricing Tables dashboard. On first run you’ll see a welcome view with a “Create your first pricing table” call to action.
 2. Use **Add Pricing Table** from the dashboard header (or a table card’s quick action once tables exist) to create a new table. When tables exist, the dashboard shows stats, plan counts, updated dates, and quick actions for each table.
 3. Give your table a title (e.g. “VPS Hosting”).
-4. Use the **Table Editor – V1 (Preview)** meta box to:
+4. Use the **Table Editor – V1 (Preview)** meta box (refreshed with the Table Editor V2 layout shell) to:
    - Choose a **theme** (e.g. FireVPS, Warm, Blue, Modern Discount, Classic).
    - Configure widths, breakpoints and card layout.
    - Enable filters (Platform / Period / Location) and pick allowed values.
    - Set badges, CTA styling, specs behavior, trust items and sticky mobile bar.
    - Optional: take the built-in **Table Editor tour** for a 60-second walkthrough of layout, theme/colors, filters, and where to grab the shortcode.
+   - The V2 shell adds a carded header with shortcode + copy, pill-style sidebar tabs, and card-based sections aligned with the dashboard/Plan Drawer while keeping the same fields and save behavior.
 5. Publish the table.
 
 ### 4. Create Plans & Variants

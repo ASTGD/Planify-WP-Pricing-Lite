@@ -2157,14 +2157,20 @@
       if (layoutBasics.length) {
         columns.push(
           h('div', { className: 'pwpl-col' },
-            h('div', { className: 'pwpl-card' }, layoutBasics )
+            h('div', { className: 'pwpl-card' }, [
+              h('div', { className: 'pwpl-group-heading' }, 'Base Typography'),
+              ...layoutBasics
+            ])
           )
         );
       }
       if (layoutStyles.length) {
         columns.push(
           h('div', { className: 'pwpl-col' },
-            h('div', { className: 'pwpl-card' }, layoutStyles )
+            h('div', { className: 'pwpl-card' }, [
+              h('div', { className: 'pwpl-group-heading' }, 'Style & Shadow'),
+              ...layoutStyles
+            ])
           )
         );
       }
@@ -2269,6 +2275,21 @@
   function Help({ text }){
     // Lightweight tooltip using title attribute for hover
     return h('span', { className: 'pwpl-help', title: text || '' , style:{ marginLeft:6, cursor:'help', fontSize:'12px', opacity:.7 } }, '❓');
+  }
+  function SummaryChips({ items = [] }){
+    if (!Array.isArray(items) || !items.length) {
+      return null;
+    }
+    const chips = items.filter((item) => item && item.label && item.value);
+    if (!chips.length) {
+      return null;
+    }
+    return h('div', { className: 'pwpl-summary' },
+      chips.map((item, index) => h('div', { key: item.label + index, className: 'pwpl-summary__chip' }, [
+        h('span', { className: 'pwpl-summary__label' }, item.label),
+        h('span', { className: 'pwpl-summary__value' }, item.value),
+      ]))
+    );
   }
   function SectionHeader({ title, description, dataTour }){
     const attrs = { className: 'pwpl-v1-section-header' };
@@ -2561,7 +2582,7 @@
 
     // Build widths/columns two cards
     const widthsLeft = h('div', null, [
-      h('h3', { className: 'pwpl-card__title' }, 'Table Size'),
+      h('div', { className: 'pwpl-group-heading' }, 'Table Size'),
       RangeValueRow({
         label: 'Table width',
         name: 'pwpl_table[layout][widths][global]',
@@ -2588,7 +2609,7 @@
       }),
     ]);
     const widthsRight = h('div', null, [
-      h('h3', { className: 'pwpl-card__title' }, 'Columns'),
+      h('div', { className: 'pwpl-group-heading' }, 'Columns'),
       RangeValueRow({
         label: 'Preferred columns',
         name: 'pwpl_table[layout][columns][global]',
@@ -2611,6 +2632,7 @@
       }),
     ]);
     const widthsTwoCards = renderTwoCards(widthsLeft, widthsRight);
+    const [showBreakpoints, setShowBreakpoints] = useState(false);
     // Breakpoints card (now inline below widths)
     const breakpointsBody = h('div', { className: 'pwpl-breakpoints' }, deviceOrder.map((key) => {
       const readable = DEVICE_LABELS[key] || key.toUpperCase();
@@ -2649,11 +2671,24 @@
         }),
       ]);
     }));
-    const tableSection = h('div', null, [ widthsTwoCards, h('div', { className: 'pwpl-breakpoints-section' }, breakpointsBody) ]);
+    const tableSection = h('div', null, [
+      widthsTwoCards,
+      h('div', { className: 'pwpl-advanced-toggle-row' },
+        h('button', {
+          type: 'button',
+          className: 'pwpl-advanced-toggle',
+          onClick: () => setShowBreakpoints((prev) => !prev),
+        }, showBreakpoints ? 'Hide advanced size controls' : 'Show advanced size controls')
+      ),
+      h('div', {
+        className: classNames('pwpl-breakpoints-section', showBreakpoints ? 'is-open' : 'is-collapsed'),
+        'aria-hidden': showBreakpoints ? undefined : 'true'
+      }, breakpointsBody),
+    ]);
 
     const planCardSection = (() => {
       const containerFields = [
-        h('h3', { className: 'pwpl-card__title' }, 'Card Container'),
+        h('div', { className: 'pwpl-group-heading' }, 'Card Container'),
         RangeValueRow({
           label: 'Card Width',
           name: 'pwpl_table[layout][card_widths][global]',
@@ -2704,7 +2739,7 @@
         HiddenInput({ name: 'pwpl_table[card][colors][border]', value: borderColor }),
       ];
       const layoutFields = [
-        h('h3', { className: 'pwpl-card__title' }, 'Card Layout & Margins'),
+        h('div', { className: 'pwpl-group-heading' }, 'Card Layout & Margins'),
         FourSidesControl({
           label: 'Padding (px)',
           values: pads,
@@ -2734,7 +2769,7 @@
           onChange: setMargins,
         }),
         h('div', { className: 'pwpl-card__section' }, [
-          h('span', { className: 'pwpl-card__section-title' }, 'Card Style'),
+          h('div', { className: 'pwpl-group-heading' }, 'Card Style'),
           h('div', { className: 'pwpl-row' }, [
             h('div', { className: 'pwpl-row__left' }, [
               h('label', { className: 'pwpl-row__label', htmlFor: makeDomId('pwpl_table[card][layout][split]') }, 'Split layout'),
@@ -2754,11 +2789,11 @@
       );
     })();
 
-    const ctaSizeSection = renderCard(h('div', null, [
-      h('h3', { className: 'pwpl-card__title' }, 'CTA Size & Layout'),
-      h('div', null, [
+    const ctaLeft = [
+      h('div', { className: 'pwpl-select-row' }, [
         h('label', { className:'components-base-control__label' }, 'Width'),
         h('select', {
+          className: 'pwpl-v1-select',
           value: ctaWidthSel,
           onChange:(e)=> {
             const next = e.target.value;
@@ -2809,6 +2844,8 @@
         min: 0,
         max: 64,
       }),
+    ];
+    const ctaRight = [
       RangeValueRow({
         label: 'Border width',
         name: 'pwpl_table[ui][cta][border_width]',
@@ -2861,19 +2898,35 @@
         max: 10,
         step: 1,
       }),
+    ];
+    const ctaSizeSection = renderCard(h('div', { className: 'pwpl-two pwpl-two--cta' }, [
+      h('div', { className: 'pwpl-col' },
+        h('div', { className: 'pwpl-card' }, [
+          h('div', { className: 'pwpl-group-heading' }, 'CTA Size & Layout'),
+          ...ctaLeft
+        ])
+      ),
+      h('div', { className: 'pwpl-col' },
+        h('div', { className: 'pwpl-card' }, [
+          h('div', { className: 'pwpl-group-heading' }, 'CTA Limits'),
+          ...ctaRight
+        ])
+      ),
     ]));
 
     const specsStyleSection = renderCard(h('div', { className:'pwpl-form-grid' }, [
       h('div', null, [
-        h('h3', { className: 'pwpl-card__title' }, 'Specs Style'),
-        h('label', { className:'components-base-control__label' }, 'Specs style'),
-        h('select', { value:specStyle, onChange:(e)=> setSpecStyle(e.target.value) }, [
-          h('option', { value:'default' }, 'Default'),
-          h('option', { value:'flat' }, 'Flat'),
-          h('option', { value:'segmented' }, 'Segmented'),
-          h('option', { value:'chips' }, 'Chips'),
+        h('div', { className: 'pwpl-group-heading' }, 'Specs Style'),
+        h('div', { className: 'pwpl-select-row' }, [
+          h('label', { className:'components-base-control__label' }, 'Specs style'),
+          h('select', { value:specStyle, onChange:(e)=> setSpecStyle(e.target.value), className:'pwpl-v1-select' }, [
+            h('option', { value:'default' }, 'Default'),
+            h('option', { value:'flat' }, 'Flat'),
+            h('option', { value:'segmented' }, 'Segmented'),
+            h('option', { value:'chips' }, 'Chips'),
+          ]),
+          HiddenInput({ name:'pwpl_table[ui][specs_style]', value: specStyle }),
         ]),
-        HiddenInput({ name:'pwpl_table[ui][specs_style]', value: specStyle }),
       ])
     ]));
 
@@ -2904,6 +2957,14 @@
       summary: sectionSummaries[section.id],
       tooltip: sectionTooltips[section.id],
     }, section.content));
+
+    const layoutSummary = [
+      { label: 'Width', value: globalWidthLabel },
+      { label: 'Columns', value: formatCount(globalColumns || columns.xl) },
+      { label: 'Gap', value: formatNumber(columnGap) },
+      { label: 'Card radius', value: formatNumber(radius) },
+      { label: 'CTA height', value: formatNumber(ctaHeight) },
+    ].filter((chip) => chip && chip.value && chip.value !== '—');
 
     return h('section', { className: 'pwpl-v1-block' }, [
       SectionHeader({ title: layoutLabel, description: 'All layout, spacing, CTA sizing, and specs style controls.', dataTour:'table-layout-section' }),
@@ -2956,7 +3017,7 @@
       openFirstMatch(sections);
     };
 
-    const renderCard = (child, title) => h('div', { className:'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), child] : child);
+    const renderCard = (child, title) => h('div', { className:'pwpl-card' }, title ? [h('div', { className: 'pwpl-group-heading' }, title), child] : child);
 
     const interactionsSection = h('div', { className:'pwpl-v1-grid' }, [
       h('div', { style:{ display:'grid', gridTemplateColumns:'repeat(2, minmax(120px, 1fr))', gap:'10px' } },
@@ -3142,8 +3203,23 @@
     const primaryLabel = saving ? (isPublished ? 'Updating…' : 'Publishing…') : (isPublished ? 'Update' : 'Publish');
 
     return h('div', { className:'pwpl-v1-topbar', 'data-pwpl-tour':'table-shortcode-area' }, [
-      h('button', { type:'button', className:'button', onClick: doCopy }, copied ? 'Shortcode Copied' : 'Copy Shortcode'),
-      h('button', { type:'button', className:'button button-primary', onClick: publishOrUpdate, disabled: saving }, primaryLabel),
+      h('div', { className:'pwpl-v1-topbar__info' }, [
+        h('div', { className:'pwpl-v1-topbar__title-row' }, [
+          h('h2', { className:'pwpl-v1-topbar__title' }, 'Table Editor'),
+          h('span', { className:'pwpl-v1-topbar__pill' }, 'V2 layout'),
+        ]),
+        h('p', { className:'pwpl-v1-topbar__subtitle' }, 'Layout & theme controls for this table.'),
+      ]),
+      h('div', { className:'pwpl-v1-topbar__actions' }, [
+        h('div', { className:'pwpl-v1-shortcode-pill', title: shortcode }, [
+          h('span', { className:'pwpl-v1-shortcode-pill__label' }, 'Shortcode'),
+          h('span', { className:'pwpl-v1-shortcode-pill__value' }, shortcode),
+        ]),
+        h('div', { className:'pwpl-v1-topbar__buttons' }, [
+          h('button', { type:'button', className:'button', onClick: doCopy }, copied ? 'Shortcode Copied' : 'Copy Shortcode'),
+          h('button', { type:'button', className:'button button-primary', onClick: publishOrUpdate, disabled: saving }, primaryLabel),
+        ]),
+      ]),
     ]);
   }
 
@@ -3211,17 +3287,21 @@
     if ( ! componentsReady ) {
       return h('div', { className:'pwpl-v1-loading', 'aria-live':'polite' }, 'Loading editor…');
     }
-    return h('div', { className: 'pwpl-v1' }, [
-      h(TopBar),
-      h(Sidebar, { active, onChange: setActive }),
-      h('main', { className: 'pwpl-v1-main', 'data-pwpl-tour':'table-editor-main' }, [
-        active === 'layout' ? h(LayoutSpacingBlock) : null,
-        active === 'typography' ? h(TypographyBlock) : null,
-        active === 'colors' ? h(ColorsSurfacesBlock) : null,
-        active === 'animation' ? h(AnimationBlock) : null,
-        active === 'badges' ? h(BadgesBlock) : null,
-        active === 'advanced' ? h(AdvancedBlock) : null,
-        active === 'filters' ? h(FiltersBlock) : null,
+    return h('div', { className: 'pwpl-v1-shell' }, [
+      h('div', { className: 'pwpl-v1-shell__surface' }, [
+        h(TopBar),
+        h('div', { className: 'pwpl-v1' }, [
+          h(Sidebar, { active, onChange: setActive }),
+          h('main', { className: 'pwpl-v1-main', 'data-pwpl-tour':'table-editor-main' }, [
+            active === 'layout' ? h(LayoutSpacingBlock) : null,
+            active === 'typography' ? h(TypographyBlock) : null,
+            active === 'colors' ? h(ColorsSurfacesBlock) : null,
+            active === 'animation' ? h(AnimationBlock) : null,
+            active === 'badges' ? h(BadgesBlock) : null,
+            active === 'advanced' ? h(AdvancedBlock) : null,
+            active === 'filters' ? h(FiltersBlock) : null,
+          ])
+        ])
       ])
     ]);
   }
@@ -3370,7 +3450,7 @@
       openFirstMatch(sections);
     };
 
-    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), content] : content);
+    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('div', { className: 'pwpl-group-heading' }, title), content] : content);
 
     const enabledSection = h('div', { className:'pwpl-v1-grid' }, [
       dims.map((d)=> h('label', { key:'en-'+d, className:'components-base-control__label' }, [
@@ -3575,17 +3655,17 @@
       return fallback;
     };
 
-    const renderCard = (child) => h('div', { className: 'pwpl-card' }, child);
-    const renderTwoCards = (leftChild, rightChild) => {
+    const renderCard = (child, heading) => h('div', { className: 'pwpl-card' }, heading ? [h('div', { className: 'pwpl-group-heading' }, heading), child] : child);
+    const renderTwoCards = (leftChild, rightChild, leftHeading, rightHeading) => {
       const columns = [];
       if (leftChild) {
         columns.push(
-          h('div', { className: 'pwpl-col' }, renderCard(leftChild))
+          h('div', { className: 'pwpl-col' }, renderCard(leftChild, leftHeading))
         );
       }
       if (rightChild) {
         columns.push(
-          h('div', { className: 'pwpl-col' }, renderCard(rightChild))
+          h('div', { className: 'pwpl-col' }, renderCard(rightChild, rightHeading))
         );
       }
       if (! columns.length) {
@@ -3654,7 +3734,7 @@
           },
           values: makeValues(subtitleText, subtitleTypos),
           onPreviewPatch: previewMap('subtitle'),
-        })),
+        }), 'Subtitle Text'),
       },
       {
         id: 'price-text',
@@ -3673,6 +3753,7 @@
             onPreviewPatch: previewMap('price'),
           }),
           priceExtras
+        , 'Price Text', null
         ),
       },
       {
@@ -3689,7 +3770,7 @@
           },
           values: makeValues(billingText, billingTypos),
           onPreviewPatch: previewMap('billing'),
-        })),
+        }), 'Billing Text'),
       },
       {
         id: 'specs-text',
@@ -3708,7 +3789,7 @@
             size: 'card.text.specs.size',
             weight: 'card.text.specs.weight',
           }),
-        })),
+        }), 'Specs Text'),
       },
       {
         id: 'cta-typography',
@@ -3739,7 +3820,7 @@
             tracking: 'ui.cta.font.tracking',
             uppercase: 'ui.cta.font.transform',
           },
-        })),
+        }), 'CTA Typography'),
       },
     ].map((section) => Object.assign({}, section, { keywords: [section.title] }));
 
@@ -3750,6 +3831,24 @@
       if ( event.key !== 'Enter' ) { return; }
       openFirstMatch( sections );
     };
+    const typoSummaryText = (typo = {}) => {
+      const size = toNumberOrToken(typo.size) || '';
+      const weight = toNumberOrToken(typo.weight) || '';
+      if (!size && !weight) {
+        return '';
+      }
+      const parts = [];
+      if (size) { parts.push(`${size}px`); }
+      if (weight) { parts.push(weight); }
+      return parts.join(' · ');
+    };
+    const typoSummary = [
+      { label: 'Title', value: typoSummaryText(titleTypos) },
+      { label: 'Subtitle', value: typoSummaryText(subtitleTypos) },
+      { label: 'Price', value: typoSummaryText(priceTypos) },
+      { label: 'Billing', value: typoSummaryText(billingTypos) },
+      { label: 'Specs', value: typoSummaryText(specsTypos) },
+    ].filter((chip) => chip.value);
 
     return h('section', { className: 'pwpl-v1-block' }, [
       SectionHeader({ title: i18n(data.i18n.sidebar.typography), description: 'All typography: Top area, per-element overrides, Price/Billing, and Specs.' }),
@@ -3850,6 +3949,17 @@
       }
       openFirstMatch(sections);
     };
+    const summarizeColor = (label, value) => {
+      const normalized = normalizeColorValue(value, true);
+      return normalized ? { label, value: normalized } : null;
+    };
+    const colorSummary = [
+      summarizeColor('Top BG', topBg || (topGrad && topGrad.start)),
+      summarizeColor('Specs BG', specsBg || (specsGrad && specsGrad.start)),
+      summarizeColor('CTA BG', ctaNormalBg || ctaHoverBg),
+      summarizeColor('CTA Text', ctaNormalColor || ctaHoverColor),
+      summarizeColor('Keyline', kColor),
+    ].filter(Boolean);
 
     const showTopAngle = topType === 'linear';
     const topSection = BackgroundTabsSection({
@@ -4099,27 +4209,27 @@
 
     const topSpecsCards = twoCard(
       h(React.Fragment, null, [
-        h('h3', { className: 'pwpl-card__title' }, 'Top Background'),
+        h('div', { className: 'pwpl-group-heading' }, 'Top Background'),
         topSection,
       ]),
       h(React.Fragment, null, [
-        h('h3', { className: 'pwpl-card__title' }, 'Specs Background'),
+        h('div', { className: 'pwpl-group-heading' }, 'Specs Background'),
         specsSection,
       ])
     );
 
     const keylineCard = wrapCard(h(React.Fragment, null, [
-      h('h3', { className: 'pwpl-card__title' }, 'Keyline'),
+      h('div', { className: 'pwpl-group-heading' }, 'Keyline'),
       keylineSection,
     ]));
 
     const presetCard = wrapCard(h(React.Fragment, null, [
-      h('h3', { className: 'pwpl-card__title' }, 'Theme Palettes'),
+      h('div', { className: 'pwpl-group-heading' }, 'Theme Palettes'),
       themePalettesSection,
     ]));
 
     const ctaCard = wrapCard(h(React.Fragment, null, [
-      h('h3', { className: 'pwpl-card__title' }, 'CTA Colors'),
+      h('div', { className: 'pwpl-group-heading' }, 'CTA Colors'),
       ctaColorsSection,
     ]));
 
@@ -4218,7 +4328,7 @@
       dim.set([...(dim.state||[]), { slug:'', label:'', color:'', text_color:'', icon:'', tone:'', start:'', end:'' }]);
     };
 
-    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), content] : content);
+    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('div', { className: 'pwpl-group-heading' }, title), content] : content);
 
     const Priority = ()=>{
       const dims = ['period','location','platform'];
@@ -4279,7 +4389,7 @@
       openFirstMatch(sections);
     };
 
-    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('h3', { className: 'pwpl-card__title' }, title), content] : content);
+    const renderCard = (content, title) => h('div', { className: 'pwpl-card' }, title ? [h('div', { className: 'pwpl-group-heading' }, title), content] : content);
 
     const trustSection = h('div', { className:'pwpl-v1-grid' }, [
       h('label', { className:'components-base-control__label' }, [
