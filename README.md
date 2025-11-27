@@ -32,6 +32,8 @@ Planify WP Pricing Lite lets you:
 
 The FireVPS theme included in this branch ships an opinionated, high‑conversion layout tuned for hosting plans, but the engine is generic enough for other products.
 
+> In progress: a New Table Wizard is being built on top of the existing meta model. Step 1 (template registry + wizard helper) is in this branch; the UI/REST steps will follow.
+
 ---
 
 ## Requirements

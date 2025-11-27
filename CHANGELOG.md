@@ -6,6 +6,16 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 
 ---
 
+## 1.8.8 – Table Wizard foundations
+
+### Added
+- Backend scaffolding for the upcoming New Table Wizard: template registry with starter presets and a wizard helper to build preview configs and create tables/plans using existing meta keys (no UI yet).
+
+### Changed
+- No behavioral changes to the editor or frontend rendering; this is preparatory work only.
+
+---
+
 ## 1.8.7 – Dashboard card polish
 
 ### Added
