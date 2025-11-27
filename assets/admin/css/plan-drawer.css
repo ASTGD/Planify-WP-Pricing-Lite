@@ -21,7 +21,7 @@
 .pwpl-drawer--inline .pwpl-sheet-columns--three>.pwpl-sheet-col{max-height:calc(100vh - 420px)}
 .pwpl-sheet-columns--three .pwpl-drawer-section{position:relative}
 .pwpl-sheet-col{display:grid;gap:16px}
-.pwpl-drawer-section{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 14px 16px;box-shadow:0 3px 12px rgba(15,23,42,0.05);display:grid;gap:12px;position:relative}
+.pwpl-drawer-section{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 18px 18px 20px;box-shadow:0 10px 24px rgba(15,23,42,0.06);display:grid;gap:14px;position:relative;box-sizing:border-box}
 .pwpl-drawer-section::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:12px 0 0 12px;background:linear-gradient(180deg,#1d4ed8,#1d4ed8cc)}
 .pwpl-drawer-section--full{grid-column:1/-1}
 .pwpl-drawer-section--nested{box-shadow:none;border-color:#e5e7eb}
@@ -29,6 +29,11 @@
 .pwpl-drawer-section__subhead{margin:0;font-size:13px;color:#475569;font-weight:500;line-height:1.5}
 .pwpl-drawer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
 .pwpl-drawer-grid--basics{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.pwpl-drawer-grid input,
+.pwpl-drawer-grid .pwpl-range,
+.pwpl-drawer-grid .pwpl-row,
+.pwpl-drawer-grid .pwpl-row__left,
+.pwpl-drawer-grid .pwpl-row__control{max-width:100%;box-sizing:border-box}
 .pwpl-field{display:grid;gap:6px}
 .pwpl-field--inline{display:inline-flex;align-items:center;gap:8px}
 .pwpl-field__label{font-weight:600;color:#0f172a;font-size:13px}

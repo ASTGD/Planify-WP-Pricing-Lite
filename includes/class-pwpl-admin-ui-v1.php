@@ -12,7 +12,7 @@ class PWPL_Admin_UI_V1 {
     public function add_meta_boxes_v1() {
         add_meta_box(
             'pwpl_table_editor_v1',
-            __( 'Table Editor — V1 (Preview)', 'planify-wp-pricing-lite' ),
+            __( 'Table Editor — V2 (Preview)', 'planify-wp-pricing-lite' ),
             [ $this, 'render_editor_v1' ],
             'pwpl_table',
             'normal',

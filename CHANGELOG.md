@@ -6,6 +6,23 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 
 ---
 
+## 1.8.8 – Table Editor V2 layout
+
+### Changed
+- Table Editor UI refreshed to match the dashboard/Plan Drawer visual system (carded header with shortcode/copy, pill sidebar, and stacked section cards); layout/spacing only, behavior unchanged.
+- Accordion interiors restyled with softer single-card panels and modern typography so Layout, Typography, and Colors sections read like a clean design console without altering fields or save logic.
+- Unified admin V2 card styling (Table Editor, Plan Drawer, dashboards) around white cards with light borders/shadows on a pale shell, keeping data and behavior intact.
+- Card titles now use a stronger, darker premium type hierarchy with refined meta labels for consistency across Table Editor panels.
+- Tuned card title typography to a cleaner 16px/700 style for better readability and alignment with the premium card look.
+- Card titles updated to the requested uppercase, muted tone with a subtle accent underline for clearer section delineation.
+- Card title underline now uses the Planify blue to keep accents consistent with the rest of the UI.
+- Unified left-aligned rails and tightened slider padding across admin V2 cards/drawers to prevent overflow while keeping labels, titles, and controls aligned.
+- Replaced inner card titles with a single group heading style (uppercase + blue underline) across Table Editor panels for consistent hierarchy.
+- Accordion headers now use a premium eyebrow + title treatment (uppercase eyebrow, Title Case main title) to cleanly separate header vs. in-panel headings.
+- Active accordion titles now shift to a soft Planify blue for clearer focus state.
+
+---
+
 ## 1.8.7 – Dashboard card polish
 
 ### Added

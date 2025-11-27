@@ -16,11 +16,12 @@
 }
 
 .pwpl-dimension {
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px;
   margin-bottom: 12px;
-  background: #f9fafb;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
 
 .pwpl-dimension-options {
@@ -70,19 +71,23 @@
 }
 
 .pwpl-layout-size {
-  border: 1px solid #dbe4f0;
-  border-radius: 8px;
-  padding: 16px;
-  background: #f9fbff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 18px 18px 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
 }
 
 .pwpl-layout-v2 {
-  border: 1px solid #dbe4f0;
-  border-radius: 8px;
-  background: #f9fbff;
-  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 18px 18px 18px 20px;
   display: grid;
   gap: 16px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
 }
 
 .pwpl-range-control {
@@ -160,10 +165,12 @@
 }
 
 .pwpl-device-widths {
-  border: 1px solid #dbe4f0;
-  border-radius: 8px;
-  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 14px 14px 18px;
   background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  box-sizing: border-box;
 }
 
 .pwpl-device-widths legend {
@@ -176,9 +183,11 @@
   flex-direction: column;
   gap: 8px;
   padding: 8px 12px;
-  border: 1px solid #e5ecf6;
-  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   background: #ffffff;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.05);
+  box-sizing: border-box;
 }
 
 .pwpl-card-layout {
@@ -204,16 +213,17 @@
 }
 
 .pwpl-card-device {
-  border: 1px solid #e5ecf6;
-  border-radius: 6px;
-  background: #f9fbff;
-  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 14px;
   display: grid;
   gap: 12px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
 
 .pwpl-card-device--global {
-  background: #eef5ff;
+  background: #ffffff;
 }
 
 .pwpl-card-grid {
@@ -269,12 +279,13 @@
 
 .pwpl-platform-order {
   margin-top: 12px;
-  border: 1px solid #dbe4f0;
-  border-radius: 6px;
-  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px;
   background: #ffffff;
   display: grid;
   gap: 10px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
 
 .pwpl-platform-order__header {
@@ -302,10 +313,11 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 6px 10px;
-  border: 1px solid #e5ecf6;
-  border-radius: 4px;
-  background: #f8fbff;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.05);
 }
 
 .pwpl-order-actions {
