@@ -16,6 +16,7 @@
 
     var state = {
         selectedTemplateId: null,
+        selectedLayoutId: null,
     };
 
     var layoutEl = document.createElement( 'div' );
@@ -37,8 +38,16 @@
     layoutEl.appendChild( previewEl );
     root.appendChild( layoutEl );
 
+    var layoutSectionTitle = document.createElement( 'div' );
+    layoutSectionTitle.className = 'pwpl-wizard-section-title';
+    layoutSectionTitle.textContent = ( config.i18n && config.i18n.layout ) || 'Layout';
+    var layoutList = document.createElement( 'div' );
+    layoutList.className = 'pwpl-layout-list';
+
     function renderTemplates() {
         sidebarEl.innerHTML = '';
+        var templatesWrap = document.createElement( 'div' );
+        templatesWrap.className = 'pwpl-templates';
         templates.forEach( function( tpl ) {
             var btn = document.createElement( 'button' );
             btn.type = 'button';
@@ -61,7 +70,43 @@
                 selectTemplate( tpl.id );
             } );
 
-            sidebarEl.appendChild( btn );
+            templatesWrap.appendChild( btn );
+        } );
+        sidebarEl.appendChild( templatesWrap );
+        sidebarEl.appendChild( layoutSectionTitle );
+        sidebarEl.appendChild( layoutList );
+    }
+
+    function getTemplateById( id ) {
+        for ( var i = 0; i < templates.length; i++ ) {
+            if ( templates[ i ].id === id ) {
+                return templates[ i ];
+            }
+        }
+        return null;
+    }
+
+    function renderLayouts() {
+        layoutList.innerHTML = '';
+        var tpl = getTemplateById( state.selectedTemplateId );
+        var layouts = tpl && tpl.layouts ? tpl.layouts : {};
+        var layoutIds = Object.keys( layouts );
+        if ( ! layoutIds.length ) {
+            return;
+        }
+        layoutIds.forEach( function( lid ) {
+            var tile = document.createElement( 'button' );
+            tile.type = 'button';
+            tile.className = 'pwpl-layout-tile';
+            tile.dataset.layoutId = lid;
+            tile.textContent = layouts[ lid ].label || lid;
+            if ( state.selectedLayoutId === lid ) {
+                tile.classList.add( 'is-selected' );
+            }
+            tile.addEventListener( 'click', function() {
+                selectLayout( lid );
+            } );
+            layoutList.appendChild( tile );
         } );
     }
 
@@ -70,13 +115,33 @@
             return;
         }
         state.selectedTemplateId = templateId;
+        var tpl = getTemplateById( templateId );
+        var layouts = tpl && tpl.layouts ? tpl.layouts : {};
+        var layoutIds = Object.keys( layouts );
+        var defaultLayoutId = null;
+        if ( layouts.default ) {
+            defaultLayoutId = 'default';
+        } else if ( layoutIds.length ) {
+            defaultLayoutId = layoutIds[0];
+        }
+        state.selectedLayoutId = defaultLayoutId;
+
         Array.prototype.forEach.call( sidebarEl.querySelectorAll( '.pwpl-template-card' ), function( card ) {
             card.classList.toggle( 'is-selected', card.dataset.templateId === templateId );
         } );
-        loadPreview( templateId );
+        renderLayouts();
+        loadPreview( templateId, state.selectedLayoutId );
     }
 
-    function loadPreview( templateId ) {
+    function selectLayout( layoutId ) {
+        state.selectedLayoutId = layoutId || null;
+        Array.prototype.forEach.call( layoutList.querySelectorAll( '.pwpl-layout-tile' ), function( tile ) {
+            tile.classList.toggle( 'is-selected', tile.dataset.layoutId === layoutId );
+        } );
+        loadPreview( state.selectedTemplateId, state.selectedLayoutId );
+    }
+
+    function loadPreview( templateId, layoutId ) {
         if ( ! templateId ) {
             return;
         }
@@ -89,14 +154,17 @@
                 path: config.rest.previewUrl.replace( restUrlRoot(), '' ),
                 method: 'POST',
                 headers: { 'X-WP-Nonce': config.rest.nonce },
-                data: { template_id: templateId },
+                data: {
+                    template_id: templateId,
+                    layout_id: layoutId || '',
+                },
             } ).catch( function( err ) {
                 // eslint-disable-next-line no-console
                 console.error( 'Preview fetch failed', err );
             } );
         }
 
-        var frameUrl = buildPreviewFrameUrl( templateId );
+        var frameUrl = buildPreviewFrameUrl( templateId, layoutId );
         iframeEl.src = frameUrl;
         iframeEl.onload = function() {
             previewEl.classList.remove( 'is-loading' );
@@ -110,11 +178,14 @@
         return '/wp-json/';
     }
 
-    function buildPreviewFrameUrl( templateId ) {
+    function buildPreviewFrameUrl( templateId, layoutId ) {
         var base = config.previewFrame && config.previewFrame.url ? config.previewFrame.url : '';
         try {
             var url = new URL( base, window.location.origin );
             url.searchParams.set( 'template_id', templateId );
+            if ( layoutId ) {
+                url.searchParams.set( 'layout_id', layoutId );
+            }
             return url.toString();
         } catch (e) {
             return base + ( base.indexOf( '?' ) === -1 ? '?' : '&' ) + 'template_id=' + encodeURIComponent( templateId );
