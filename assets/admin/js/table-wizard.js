@@ -25,6 +25,8 @@
 
     var sidebarEl = document.createElement( 'div' );
     sidebarEl.className = 'pwpl-table-wizard__sidebar';
+    var templatesWrap = document.createElement( 'div' );
+    templatesWrap.className = 'pwpl-templates';
 
     var previewEl = document.createElement( 'div' );
     previewEl.className = 'pwpl-table-wizard__preview';
@@ -88,27 +90,62 @@
     var cardStyleList = document.createElement( 'div' );
     cardStyleList.className = 'pwpl-card-style-list';
 
+    var TEMPLATE_VISUALS = {
+        'saas-3-col': { type: 'cols', cols: 3, featured: true },
+        'comparison-table': { type: 'compare', cols: 4 },
+        'service-plans': { type: 'cols', cols: 3, featured: false },
+    };
+    var RECOMMENDED_TEMPLATES = [ 'saas-3-col' ];
+
+    var LAYOUT_VISUALS = {
+        'default': { cols: 3, featured: false },
+        'featured-middle': { cols: 3, featured: true },
+        'comparison': { cols: 4, featured: false, compare: true },
+    };
+
+    var CARD_STYLE_VISUALS = {
+        'default': { headerBand: false, shadow: 'soft' },
+        'featured-middle': { headerBand: true, shadow: 'strong' },
+    };
+
     function renderTemplates() {
         sidebarEl.innerHTML = '';
-        var templatesWrap = document.createElement( 'div' );
-        templatesWrap.className = 'pwpl-templates';
+        templatesWrap.innerHTML = '';
         templates.forEach( function( tpl ) {
             var btn = document.createElement( 'button' );
             btn.type = 'button';
             btn.className = 'pwpl-template-card';
             btn.dataset.templateId = tpl.id;
 
+            var thumb = document.createElement( 'div' );
+            thumb.className = 'pwpl-template-card__thumb';
+            thumb.setAttribute( 'aria-hidden', 'true' );
+            thumb.appendChild( buildTemplateThumb( tpl.id ) );
+            btn.appendChild( thumb );
+
+            var body = document.createElement( 'div' );
+            body.className = 'pwpl-template-card__body';
+
             var title = document.createElement( 'div' );
             title.className = 'pwpl-template-card__title';
             title.textContent = tpl.label || tpl.id;
-            btn.appendChild( title );
+            body.appendChild( title );
 
             if ( tpl.description ) {
                 var desc = document.createElement( 'p' );
                 desc.className = 'pwpl-template-card__description';
                 desc.textContent = tpl.description;
-                btn.appendChild( desc );
+                body.appendChild( desc );
             }
+
+            if ( RECOMMENDED_TEMPLATES.indexOf( tpl.id ) !== -1 ) {
+                var badge = document.createElement( 'span' );
+                badge.className = 'pwpl-template-card__badge pwpl-template-card__badge--recommended';
+                badge.textContent = ( config.i18n && config.i18n.recommended ) || 'Recommended';
+                body.appendChild( badge );
+            }
+
+            btn.appendChild( body );
 
             btn.addEventListener( 'click', function() {
                 selectTemplate( tpl.id );
@@ -132,6 +169,40 @@
         return null;
     }
 
+    function buildTemplateThumb( templateId ) {
+        var visual = TEMPLATE_VISUALS[ templateId ] || { type: 'cols', cols: 3, featured: false };
+        var wrap = document.createElement( 'div' );
+        wrap.className = 'pwpl-thumb pwpl-thumb--' + visual.type;
+
+        if ( visual.type === 'compare' ) {
+            var grid = document.createElement( 'div' );
+            grid.className = 'pwpl-thumb-compare';
+            for ( var i = 0; i < ( visual.cols || 4 ); i++ ) {
+                var col = document.createElement( 'div' );
+                col.className = 'pwpl-thumb-col';
+                if ( i === 0 ) {
+                    col.classList.add( 'is-featured' );
+                }
+                grid.appendChild( col );
+            }
+            wrap.appendChild( grid );
+        } else {
+            var cols = visual.cols || 3;
+            var row = document.createElement( 'div' );
+            row.className = 'pwpl-thumb-row pwpl-thumb-cols--' + cols;
+            for ( var j = 0; j < cols; j++ ) {
+                var c = document.createElement( 'div' );
+                c.className = 'pwpl-thumb-col';
+                if ( visual.featured && j === Math.floor( cols / 2 ) ) {
+                    c.classList.add( 'is-featured' );
+                }
+                row.appendChild( c );
+            }
+            wrap.appendChild( row );
+        }
+        return wrap;
+    }
+
     function renderLayouts() {
         layoutList.innerHTML = '';
         var tpl = getTemplateById( state.selectedTemplateId );
@@ -145,7 +216,13 @@
             tile.type = 'button';
             tile.className = 'pwpl-layout-tile';
             tile.dataset.layoutId = lid;
-            tile.textContent = layouts[ lid ].label || lid;
+            var pill = buildLayoutPill( lid );
+            tile.appendChild( pill );
+            var lbl = document.createElement( 'span' );
+            lbl.className = 'pwpl-layout-label';
+            lbl.textContent = layouts[ lid ].label || lid;
+            tile.appendChild( lbl );
+
             if ( state.selectedLayoutId === lid ) {
                 tile.classList.add( 'is-selected' );
             }
@@ -273,6 +350,38 @@
         }
     }
 
+    function buildLayoutPill( layoutId ) {
+        var visual = LAYOUT_VISUALS[ layoutId ] || { cols: 3, featured: false };
+        var pill = document.createElement( 'span' );
+        pill.className = 'pwpl-layout-pill';
+        for ( var i = 0; i < ( visual.cols || 3 ); i++ ) {
+            var bar = document.createElement( 'span' );
+            bar.className = 'pwpl-layout-pill-col';
+            if ( visual.featured && i === Math.floor( ( visual.cols || 3 ) / 2 ) ) {
+                bar.classList.add( 'is-featured' );
+            }
+            if ( visual.compare ) {
+                bar.classList.add( 'is-compare' );
+            }
+            pill.appendChild( bar );
+        }
+        return pill;
+    }
+
+    function buildCardStylePill( styleId ) {
+        var visual = CARD_STYLE_VISUALS[ styleId ] || { headerBand: false, shadow: 'soft' };
+        var pill = document.createElement( 'span' );
+        pill.className = 'pwpl-card-style-pill';
+        var card = document.createElement( 'span' );
+        card.className = 'pwpl-card-style-pill__card';
+        if ( visual.headerBand ) {
+            card.classList.add( 'has-band' );
+        }
+        card.dataset.shadow = visual.shadow || 'soft';
+        pill.appendChild( card );
+        return pill;
+    }
+
     function renderCardStyles() {
         cardStyleList.innerHTML = '';
         var tpl = getTemplateById( state.selectedTemplateId );
@@ -286,7 +395,12 @@
             tile.type = 'button';
             tile.className = 'pwpl-card-style-tile';
             tile.dataset.cardStyleId = sid;
-            tile.textContent = styles[ sid ].label || sid;
+            var pill = buildCardStylePill( sid );
+            tile.appendChild( pill );
+            var lbl = document.createElement( 'span' );
+            lbl.className = 'pwpl-card-style-label';
+            lbl.textContent = styles[ sid ].label || sid;
+            tile.appendChild( lbl );
             if ( state.selectedCardStyleId === sid ) {
                 tile.classList.add( 'is-selected' );
             }
