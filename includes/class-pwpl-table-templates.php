@@ -11,26 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 class PWPL_Table_Templates {
 
     /**
-     * Return all starter templates.
-     *
-     * @return array
-     */
-    public static function get_templates(): array {
-        return array_values( self::templates() );
-    }
-
-    /**
-     * Retrieve a single template by ID.
-     *
-     * @param string $id
-     * @return array|null
-     */
-    public static function get_template( string $id ): ?array {
-        $templates = self::templates();
-        return $templates[ $id ] ?? null;
-    }
-
-    /**
      * Define starter templates.
      *
      * Each template is expressed entirely with existing meta keys (see PWPL_Meta).
@@ -41,11 +21,13 @@ class PWPL_Table_Templates {
         $cta_defaults  = self::default_cta_config();
         $card_defaults = self::default_card_config();
 
-        return [
+        $templates = [
             'saas-3-col' => [
                 'id'          => 'saas-3-col',
                 'label'       => __( 'SaaS – 3 Column', 'planify-wp-pricing-lite' ),
                 'description' => __( 'Three-plan SaaS grid with monthly/yearly billing.', 'planify-wp-pricing-lite' ),
+                'category'    => 'saas',
+                'premium'     => false,
                 'theme'       => 'firevps',
                 'layouts'     => [
                     'default' => [
@@ -89,10 +71,645 @@ class PWPL_Table_Templates {
                     'plans'      => self::demo_plans_saas(),
                 ],
             ],
+            'service-columns-lite' => [
+                'id'          => 'service-columns-lite',
+                'label'       => __( 'Service Columns', 'planify-wp-pricing-lite' ),
+                'description' => __( 'Three service cards with concise specs for agencies and freelancers.', 'planify-wp-pricing-lite' ),
+                'category'    => 'services',
+                'premium'     => false,
+                'theme'       => 'firevps',
+                'layouts'     => [
+                    'default' => [
+                        'label' => __( 'Tight columns', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 18,
+                        ],
+                    ],
+                ],
+                'card_styles' => [
+                    'default' => [
+                        'label' => __( 'Minimal cards', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'pad_t' => 18,
+                                        'pad_b' => 18,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                ],
+                'defaults'    => [
+                    'table_meta' => array_replace_recursive(
+                        self::base_table_meta( 'firevps', [ 'period' ] ),
+                        [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 18,
+                            PWPL_Meta::CTA_CONFIG     => array_replace_recursive(
+                                self::default_cta_config(),
+                                [
+                                    'normal' => [ 'bg' => '#0ea5e9', 'color' => '#ffffff' ],
+                                    'hover'  => [ 'bg' => '#0284c7', 'color' => '#ffffff' ],
+                                ]
+                            ),
+                        ]
+                    ),
+                    'plans'      => [
+                        [
+                            'post_title'   => __( 'Starter Service', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'For quick one-off projects.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => false,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Websites', 'planify-wp-pricing-lite' ), 'value' => '1' ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '20GB' ],
+                                    [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Email', 'planify-wp-pricing-lite' ) ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '149.00',
+                                        'sale_price' => '129.00',
+                                        'cta_label'  => __( 'Book now', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                                PWPL_Meta::PLAN_BADGES_OVERRIDE => [],
+                                PWPL_Meta::PLAN_BADGE_SHADOW    => 8,
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Managed', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'Ongoing care for small teams.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => true,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Websites', 'planify-wp-pricing-lite' ), 'value' => '5' ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '80GB' ],
+                                    [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Chat + Email', 'planify-wp-pricing-lite' ) ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '249.00',
+                                        'sale_price' => '199.00',
+                                        'cta_label'  => __( 'Get managed', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                                PWPL_Meta::PLAN_BADGES_OVERRIDE => [
+                                    [ 'label' => __( 'Popular', 'planify-wp-pricing-lite' ), 'slug' => 'popular', 'color' => '#f59e0b' ],
+                                ],
+                                PWPL_Meta::PLAN_BADGE_SHADOW    => 10,
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Premium Care', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'For teams needing priority response.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => false,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Websites', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ) ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '200GB' ],
+                                    [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Priority', 'planify-wp-pricing-lite' ) ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '499.00',
+                                        'sale_price' => '449.00',
+                                        'cta_label'  => __( 'Talk to us', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                                PWPL_Meta::PLAN_BADGES_OVERRIDE => [],
+                                PWPL_Meta::PLAN_BADGE_SHADOW    => 8,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'comparison-matrix' => [
+                'id'          => 'comparison-matrix',
+                'label'       => __( 'Feature Comparison Table', 'planify-wp-pricing-lite' ),
+                'description' => __( 'Side-by-side feature comparison across four plans.', 'planify-wp-pricing-lite' ),
+                'category'    => 'comparison',
+                'premium'     => false,
+                'theme'       => 'firevps',
+                'layouts'     => [
+                    'default' => [
+                        'label' => __( 'Comparison grid', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 4 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 16,
+                        ],
+                    ],
+                ],
+                'card_styles' => [
+                    'default' => [
+                        'label' => __( 'Comparison cards', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'pad_t' => 16,
+                                        'pad_b' => 16,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                ],
+                'defaults'    => [
+                    'table_meta' => array_replace_recursive(
+                        self::base_table_meta( 'firevps', [ 'period' ] ),
+                        [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 4 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 16,
+                            PWPL_Meta::SPECS_STYLE    => 'comparison',
+                        ]
+                    ),
+                    'plans'      => [
+                        [
+                            'post_title'   => __( 'Basic', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'Core essentials.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => false,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => '3' ],
+                                    [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Email', 'planify-wp-pricing-lite' ) ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '10GB' ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '12.00',
+                                        'sale_price' => '',
+                                        'cta_label'  => __( 'Choose Basic', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Standard', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'Adds collaboration.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => true,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => '10' ],
+                                    [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Chat', 'planify-wp-pricing-lite' ) ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '50GB' ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '24.00',
+                                        'sale_price' => '19.00',
+                                        'cta_label'  => __( 'Choose Standard', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                                PWPL_Meta::PLAN_BADGES_OVERRIDE => [
+                                    [ 'label' => __( '15% OFF', 'planify-wp-pricing-lite' ), 'slug' => 'sale', 'color' => '#22c55e' ],
+                                ],
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Pro', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'More power & uptime.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => false,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => '25' ],
+                                    [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Priority', 'planify-wp-pricing-lite' ) ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '150GB' ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '39.00',
+                                        'sale_price' => '32.00',
+                                        'cta_label'  => __( 'Choose Pro', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Enterprise', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'Custom SLAs.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => false,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ) ],
+                                    [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Dedicated', 'planify-wp-pricing-lite' ) ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => __( 'Custom', 'planify-wp-pricing-lite' ) ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '99.00',
+                                        'sale_price' => '',
+                                        'cta_label'  => __( 'Talk to sales', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'image-hero' => [
+                'id'          => 'image-hero',
+                'label'       => __( 'Image Hero Pricing', 'planify-wp-pricing-lite' ),
+                'description' => __( 'Cards with image placeholders—great for productized services.', 'planify-wp-pricing-lite' ),
+                'category'    => 'image',
+                'premium'     => false,
+                'theme'       => 'classic',
+                'layouts'     => [
+                    'default' => [
+                        'label' => __( 'Image grid', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 20,
+                        ],
+                    ],
+                ],
+                'card_styles' => [
+                    'default' => [
+                        'label' => __( 'Image cards', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'pad_t' => 16,
+                                        'pad_b' => 16,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                ],
+                'defaults'    => [
+                    'table_meta' => array_replace_recursive(
+                        self::base_table_meta( 'classic', [ 'period' ] ),
+                        [
+                            PWPL_Meta::CTA_CONFIG => array_replace_recursive(
+                                self::default_cta_config(),
+                                [
+                                    'normal' => [ 'bg' => '#f97316', 'color' => '#ffffff' ],
+                                    'hover'  => [ 'bg' => '#ea580c', 'color' => '#ffffff' ],
+                                ]
+                            ),
+                        ]
+                    ),
+                    'plans'      => [
+                        [
+                            'post_title'   => __( 'Basic Shoot', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'Great for small sets.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => false,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Sessions', 'planify-wp-pricing-lite' ), 'value' => '1' ],
+                                    [ 'label' => __( 'Edited photos', 'planify-wp-pricing-lite' ), 'value' => '10' ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '79.00',
+                                        'sale_price' => '59.00',
+                                        'cta_label'  => __( 'Book session', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Studio', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'Controlled environment.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => true,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Sessions', 'planify-wp-pricing-lite' ), 'value' => '2' ],
+                                    [ 'label' => __( 'Edited photos', 'planify-wp-pricing-lite' ), 'value' => '25' ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '149.00',
+                                        'sale_price' => '129.00',
+                                        'cta_label'  => __( 'Book studio', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                                PWPL_Meta::PLAN_BADGES_OVERRIDE => [
+                                    [ 'label' => __( 'Best value', 'planify-wp-pricing-lite' ), 'slug' => 'best', 'color' => '#f97316' ],
+                                ],
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Creative', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'More time & edits.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => false,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Sessions', 'planify-wp-pricing-lite' ), 'value' => '3' ],
+                                    [ 'label' => __( 'Edited photos', 'planify-wp-pricing-lite' ), 'value' => '40' ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '249.00',
+                                        'sale_price' => '219.00',
+                                        'cta_label'  => __( 'Book creative', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'minimal-focus' => [
+                'id'          => 'minimal-focus',
+                'label'       => __( 'Minimal Starter/Pro', 'planify-wp-pricing-lite' ),
+                'description' => __( 'Two or three light, minimal cards with simple specs.', 'planify-wp-pricing-lite' ),
+                'category'    => 'minimal',
+                'premium'     => false,
+                'theme'       => 'classic',
+                'layouts'     => [
+                    'default' => [
+                        'label' => __( 'Light grid', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 22,
+                        ],
+                    ],
+                ],
+                'card_styles' => [
+                    'default' => [
+                        'label' => __( 'Outline cards', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'border_w' => 1,
+                                        'pad_t'    => 16,
+                                        'pad_b'    => 16,
+                                    ],
+                                    'style'  => [
+                                        'bg' => '#ffffff',
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                ],
+                'defaults'    => [
+                    'table_meta' => array_replace_recursive(
+                        self::base_table_meta( 'classic', [ 'period' ] ),
+                        [
+                            PWPL_Meta::CTA_CONFIG => array_replace_recursive(
+                                self::default_cta_config(),
+                                [
+                                    'normal' => [ 'bg' => '#111827', 'color' => '#ffffff' ],
+                                    'hover'  => [ 'bg' => '#0f172a', 'color' => '#ffffff' ],
+                                ]
+                            ),
+                        ]
+                    ),
+                    'plans'      => [
+                        [
+                            'post_title'   => __( 'Starter', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'Simple essentials.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => false,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Projects', 'planify-wp-pricing-lite' ), 'value' => '2' ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '10GB' ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '7.00',
+                                        'sale_price' => '',
+                                        'cta_label'  => __( 'Start', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Pro', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'For growing work.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => true,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Projects', 'planify-wp-pricing-lite' ), 'value' => '10' ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '50GB' ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '19.00',
+                                        'sale_price' => '15.00',
+                                        'cta_label'  => __( 'Go Pro', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Business', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'For established teams.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED => false,
+                                PWPL_Meta::PLAN_SPECS    => [
+                                    [ 'label' => __( 'Projects', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ) ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '200GB' ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '39.00',
+                                        'sale_price' => '32.00',
+                                        'cta_label'  => __( 'Choose Business', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'saas-grid-v2' => [
+                'id'          => 'saas-grid-v2',
+                'label'       => __( 'Startup Pricing Grid', 'planify-wp-pricing-lite' ),
+                'description' => __( 'Three-plan SaaS grid with a featured middle plan and discount badge.', 'planify-wp-pricing-lite' ),
+                'category'    => 'saas',
+                'premium'     => false,
+                'theme'       => 'firevps',
+                'layouts'     => [
+                    'default' => [
+                        'label' => __( 'Standard grid', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 24,
+                        ],
+                    ],
+                ],
+                'card_styles' => [
+                    'default' => [
+                        'label' => __( 'Clean cards', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'pad_t' => 22,
+                                        'pad_b' => 22,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                ],
+                'defaults'    => [
+                    'table_meta' => array_replace_recursive(
+                        self::base_table_meta( 'firevps' ),
+                        [
+                            PWPL_Meta::CTA_CONFIG  => array_replace_recursive(
+                                self::default_cta_config(),
+                                [
+                                    'normal' => [ 'bg' => '#2563eb', 'color' => '#ffffff' ],
+                                    'hover'  => [ 'bg' => '#1e4fbf', 'color' => '#ffffff' ],
+                                ]
+                            ),
+                            PWPL_Meta::CARD_CONFIG => $card_defaults,
+                            PWPL_Meta::SPECS_STYLE => 'default',
+                        ]
+                    ),
+                    'plans'      => [
+                        [
+                            'post_title'   => __( 'Starter', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'Ideal for small projects.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED        => false,
+                                PWPL_Meta::PLAN_SPECS           => [
+                                    [ 'label' => __( 'Websites', 'planify-wp-pricing-lite' ), 'value' => '1' ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '20GB' ],
+                                    [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Email', 'planify-wp-pricing-lite' ) ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS        => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '9.99',
+                                        'sale_price' => '7.99',
+                                        'cta_label'  => __( 'Start now', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                    [
+                                        'period'     => 'yearly',
+                                        'price'      => '99.00',
+                                        'sale_price' => '79.00',
+                                        'cta_label'  => __( 'Start yearly', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                                PWPL_Meta::PLAN_BADGES_OVERRIDE => [],
+                                PWPL_Meta::PLAN_BADGE_SHADOW    => 8,
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Growth', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'Best for growing teams.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED        => true,
+                                PWPL_Meta::PLAN_SPECS           => [
+                                    [ 'label' => __( 'Websites', 'planify-wp-pricing-lite' ), 'value' => '5' ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '80GB' ],
+                                    [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Chat', 'planify-wp-pricing-lite' ) ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS        => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '19.99',
+                                        'sale_price' => '16.99',
+                                        'cta_label'  => __( 'Choose Growth', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                    [
+                                        'period'     => 'yearly',
+                                        'price'      => '199.00',
+                                        'sale_price' => '159.00',
+                                        'cta_label'  => __( 'Choose yearly', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                                PWPL_Meta::PLAN_BADGES_OVERRIDE => [
+                                    [ 'label' => __( '40% OFF', 'planify-wp-pricing-lite' ), 'slug' => 'best', 'color' => '#22c55e' ],
+                                ],
+                                PWPL_Meta::PLAN_BADGE_SHADOW    => 10,
+                            ],
+                        ],
+                        [
+                            'post_title'   => __( 'Scale', 'planify-wp-pricing-lite' ),
+                            'post_excerpt' => __( 'For established teams.', 'planify-wp-pricing-lite' ),
+                            'meta'         => [
+                                PWPL_Meta::PLAN_FEATURED        => false,
+                                PWPL_Meta::PLAN_SPECS           => [
+                                    [ 'label' => __( 'Websites', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ) ],
+                                    [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '200GB' ],
+                                    [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Priority', 'planify-wp-pricing-lite' ) ],
+                                ],
+                                PWPL_Meta::PLAN_VARIANTS        => [
+                                    [
+                                        'period'     => 'monthly',
+                                        'price'      => '39.00',
+                                        'sale_price' => '34.00',
+                                        'cta_label'  => __( 'Talk to sales', 'planify-wp-pricing-lite' ),
+                                        'cta_url'    => '#',
+                                        'target'     => '_self',
+                                    ],
+                                ],
+                                PWPL_Meta::PLAN_BADGES_OVERRIDE => [],
+                                PWPL_Meta::PLAN_BADGE_SHADOW    => 8,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
             'comparison-table' => [
                 'id'          => 'comparison-table',
                 'label'       => __( 'Comparison table', 'planify-wp-pricing-lite' ),
                 'description' => __( 'Feature comparison layout across four plans.', 'planify-wp-pricing-lite' ),
+                'category'    => 'comparison',
+                'premium'     => false,
                 'theme'       => 'firevps',
                 'layouts'     => [
                     'default' => [
@@ -134,6 +751,8 @@ class PWPL_Table_Templates {
                 'id'          => 'service-plans',
                 'label'       => __( 'Service plans', 'planify-wp-pricing-lite' ),
                 'description' => __( 'Simple service packages with upfront pricing.', 'planify-wp-pricing-lite' ),
+                'category'    => 'services',
+                'premium'     => false,
                 'theme'       => 'firevps',
                 'layouts'     => [
                     'default' => [
@@ -173,6 +792,82 @@ class PWPL_Table_Templates {
                 ],
             ],
         ];
+
+        /**
+         * Filter the wizard templates registry.
+         *
+         * Each template should include:
+         * id (string), label (string), description (string), theme (string),
+         * layouts (array), card_styles (array), defaults (array with table_meta/plans),
+         * category (string), and premium (bool).
+         *
+         * @since 1.8.9
+         *
+         * @param array $templates Array of templates keyed by template ID.
+         */
+        $templates = apply_filters( 'pwpl_table_wizard_templates', $templates );
+
+        return $templates;
+    }
+
+    /**
+     * Normalize templates after external filters.
+     *
+     * @param mixed $templates
+     * @return array
+     */
+    private static function normalize_templates( $templates ): array {
+        if ( ! is_array( $templates ) ) {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ( $templates as $id => $template ) {
+            if ( ! is_array( $template ) ) {
+                continue;
+            }
+
+            $template_id = '';
+            if ( is_string( $id ) && '' !== $id ) {
+                $template_id = $id;
+            } elseif ( isset( $template['id'] ) && is_scalar( $template['id'] ) && '' !== $template['id'] ) {
+                $template_id = (string) $template['id'];
+            }
+
+            if ( '' === $template_id ) {
+                continue;
+            }
+
+            $template['id']       = $template_id;
+            $template['category'] = ( isset( $template['category'] ) && is_string( $template['category'] ) && '' !== $template['category'] )
+                ? $template['category']
+                : 'uncategorized';
+            $template['premium']  = isset( $template['premium'] ) ? (bool) $template['premium'] : false;
+
+            $normalized[ $template_id ] = $template;
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Return all starter templates.
+     *
+     * @return array
+     */
+    public static function get_templates(): array {
+        return array_values( self::normalize_templates( self::templates() ) );
+    }
+
+    /**
+     * Retrieve a single template by ID.
+     *
+     * @param string $id
+     * @return array|null
+     */
+    public static function get_template( string $id ): ?array {
+        $templates = self::normalize_templates( self::templates() );
+        return $templates[ $id ] ?? null;
     }
 
     /**

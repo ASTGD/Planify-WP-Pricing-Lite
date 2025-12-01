@@ -14,44 +14,333 @@
         return;
     }
 
+    var MAX_PLAN_COUNT = 8;
+    var MIN_PLAN_COUNT = 1;
+
+    var CATEGORY_LABELS = {
+        hosting: 'Hosting',
+        saas: 'SaaS',
+        services: 'Services',
+        comparison: 'Comparison',
+        classic: 'Classic',
+        carousel: 'Carousel',
+        uncategorized: 'General',
+    };
+
+    var LAYOUT_TYPE_LABELS = {
+        grid: 'Grid',
+        carousel: 'Carousel',
+        comparison: 'Comparison',
+        classic: 'Classic',
+    };
+
+    var TEMPLATE_VISUALS = {
+        'saas-3-col': { type: 'grid', cols: 3, featured: true },
+        'comparison-table': { type: 'compare', cols: 4 },
+        'service-plans': { type: 'columns', cols: 3, featured: false },
+        'saas-grid-v2': { type: 'grid', cols: 3, featured: true },
+        'service-columns-lite': { type: 'columns', cols: 3, featured: false },
+        'comparison-matrix': { type: 'compare', cols: 4 },
+        'image-hero': { type: 'image', cols: 3, featured: true },
+        'minimal-focus': { type: 'minimal', cols: 3, featured: false },
+    };
+
+    var LAYOUT_VISUALS = {
+        'default': { cols: 3, featured: false },
+        'featured-middle': { cols: 3, featured: true },
+        'comparison': { cols: 4, featured: false, compare: true },
+    };
+
+    var CARD_STYLE_VISUALS = {
+        'default': { headerBand: false, shadow: 'soft' },
+        'featured-middle': { headerBand: true, shadow: 'strong' },
+    };
+
+    var META_KEYS = {
+        FEATURED: '_pwpl_featured',
+        SPECS: '_pwpl_specs',
+        VARIANTS: '_pwpl_variants',
+        BADGES: '_pwpl_badges_override',
+    };
+
     var state = {
+        step: 1,
         selectedTemplateId: null,
         selectedLayoutId: null,
         selectedCardStyleId: null,
+        layoutType: 'grid',
+        plans: [],
+        activePlanIndex: 0,
+        editingPlanIndex: null,
+        editingFeatureIndex: null,
         dimensions: {
             platform: true,
             period: true,
             location: false,
         },
     };
+
     var nameInput;
     var themeSelect;
+    var openMenuIndex = null;
+    var openFeatureMenuIndex = null;
+    var draggingFeatureIndex = null;
+    function moveFeature( plan, from, to ) {
+        if ( from === to || from < 0 || to < 0 || ! plan.meta[ META_KEYS.SPECS ] ) {
+            return;
+        }
+        if ( from >= plan.meta[ META_KEYS.SPECS ].length || to >= plan.meta[ META_KEYS.SPECS ].length ) {
+            return;
+        }
+        var item = plan.meta[ META_KEYS.SPECS ].splice( from, 1 )[0];
+        plan.meta[ META_KEYS.SPECS ].splice( to, 0, item );
+        draggingFeatureIndex = null;
+        openFeatureMenuIndex = null;
+        state.editingFeatureIndex = null;
+        syncPlanChange();
+        renderPlanEditor();
+    }
 
+    // Step indicator
+    var stepsBar = document.createElement( 'div' );
+    stepsBar.className = 'pwpl-table-wizard__steps';
+
+    var stepTemplate = document.createElement( 'button' );
+    stepTemplate.type = 'button';
+    stepTemplate.className = 'pwpl-step-indicator';
+    stepTemplate.dataset.step = '1';
+    stepTemplate.textContent = ( config.i18n && config.i18n.stepTemplate ) || 'Step 1 · Template';
+
+    var stepLayout = document.createElement( 'button' );
+    stepLayout.type = 'button';
+    stepLayout.className = 'pwpl-step-indicator';
+    stepLayout.dataset.step = '2';
+    stepLayout.textContent = ( config.i18n && config.i18n.stepLayout ) || 'Step 2 · Layout';
+
+    var stepCardStyle = document.createElement( 'button' );
+    stepCardStyle.type = 'button';
+    stepCardStyle.className = 'pwpl-step-indicator';
+    stepCardStyle.dataset.step = '3';
+    stepCardStyle.textContent = ( config.i18n && config.i18n.stepCardStyle ) || 'Step 3 · Create';
+
+    stepsBar.appendChild( stepTemplate );
+    stepsBar.appendChild( stepLayout );
+    stepsBar.appendChild( stepCardStyle );
+
+    // Layout containers
     var layoutEl = document.createElement( 'div' );
     layoutEl.className = 'pwpl-table-wizard-layout';
 
     var sidebarEl = document.createElement( 'div' );
     sidebarEl.className = 'pwpl-table-wizard__sidebar';
-    var templatesWrap = document.createElement( 'div' );
-    templatesWrap.className = 'pwpl-templates';
 
     var previewEl = document.createElement( 'div' );
     previewEl.className = 'pwpl-table-wizard__preview';
+
+    var previewErrorEl = document.createElement( 'div' );
+    previewErrorEl.className = 'pwpl-table-wizard__preview-error';
+    previewErrorEl.setAttribute( 'role', 'status' );
+    previewErrorEl.setAttribute( 'aria-live', 'polite' );
 
     var iframeEl = document.createElement( 'iframe' );
     iframeEl.className = 'pwpl-table-wizard__iframe';
     iframeEl.id = 'pwpl-table-wizard-preview';
     iframeEl.setAttribute( 'title', 'Table preview' );
 
+    previewEl.appendChild( previewErrorEl );
     previewEl.appendChild( iframeEl );
-    // Assemble
-    root.appendChild( stepsBar );
+
     layoutEl.appendChild( sidebarEl );
     layoutEl.appendChild( previewEl );
+
+    root.appendChild( stepsBar );
     root.appendChild( layoutEl );
 
-    var detailsBar = document.createElement( 'div' );
-    detailsBar.className = 'pwpl-table-wizard__details';
+    // Step containers
+    var stepContainer = document.createElement( 'div' );
+    stepContainer.className = 'pwpl-table-wizard__steps-container';
+
+    var step1Wrap = document.createElement( 'div' );
+    step1Wrap.className = 'pwpl-step-panel pwpl-step-panel--templates';
+
+    var step2Wrap = document.createElement( 'div' );
+    step2Wrap.className = 'pwpl-step-panel pwpl-step-panel--layout';
+
+    var step3Wrap = document.createElement( 'div' );
+    step3Wrap.className = 'pwpl-step-panel pwpl-step-panel--summary';
+
+    function buildTemplateThumb( templateId ) {
+        var visual = TEMPLATE_VISUALS[ templateId ] || { type: 'grid', cols: 3, featured: false };
+        var wrap = document.createElement( 'div' );
+        wrap.className = 'pwpl-thumb pwpl-thumb--' + visual.type;
+
+        if ( visual.type === 'compare' ) {
+            var compare = document.createElement( 'div' );
+            compare.className = 'pwpl-thumb-compare';
+            for ( var i = 0; i < ( visual.cols || 4 ); i++ ) {
+                var col = document.createElement( 'div' );
+                col.className = 'pwpl-thumb-compare__col';
+                if ( i === 0 ) {
+                    col.classList.add( 'is-left' );
+                }
+                compare.appendChild( col );
+            }
+            wrap.appendChild( compare );
+            return wrap;
+        }
+
+        var cols = visual.cols || 3;
+        if ( visual.type === 'image' || visual.type === 'grid' || visual.type === 'columns' || visual.type === 'minimal' ) {
+            var row = document.createElement( 'div' );
+            row.className = 'pwpl-thumb-row pwpl-thumb-cols--' + cols;
+            for ( var j = 0; j < cols; j++ ) {
+                var card = document.createElement( 'div' );
+                card.className = 'pwpl-thumb-card';
+                if ( visual.featured && j === Math.floor( cols / 2 ) ) {
+                    card.classList.add( 'is-featured' );
+                }
+
+                if ( visual.type === 'image' ) {
+                    var img = document.createElement( 'div' );
+                    img.className = 'pwpl-thumb-card__image';
+                    card.appendChild( img );
+                }
+                var lines = document.createElement( 'div' );
+                lines.className = 'pwpl-thumb-card__lines';
+                lines.innerHTML = '<span></span><span></span><span></span>';
+                card.appendChild( lines );
+
+                row.appendChild( card );
+            }
+            wrap.appendChild( row );
+        }
+        return wrap;
+    }
+
+    function buildCardStylePill( styleId ) {
+        var visual = CARD_STYLE_VISUALS[ styleId ] || { headerBand: false, shadow: 'soft' };
+        var pill = document.createElement( 'span' );
+        pill.className = 'pwpl-card-style-pill';
+
+        var card = document.createElement( 'span' );
+        card.className = 'pwpl-card-style-pill__card';
+        if ( visual.headerBand ) {
+            card.classList.add( 'has-band' );
+        }
+        card.dataset.shadow = visual.shadow || 'soft';
+
+        pill.appendChild( card );
+        return pill;
+    }
+
+    // Step 1 content
+    var templatesWrap = document.createElement( 'div' );
+    templatesWrap.className = 'pwpl-templates';
+
+    var step1Actions = document.createElement( 'div' );
+    step1Actions.className = 'pwpl-step-actions';
+    var step1Next = document.createElement( 'button' );
+    step1Next.type = 'button';
+    step1Next.className = 'button button-primary pwpl-step-next';
+    step1Next.textContent = ( config.i18n && config.i18n.continueTemplate ) || 'Continue with this template';
+    step1Next.disabled = true;
+    step1Actions.appendChild( step1Next );
+
+    step1Wrap.appendChild( templatesWrap );
+    step1Wrap.appendChild( step1Actions );
+
+    // Step 2 content
+    var layoutSectionTitle = document.createElement( 'div' );
+    layoutSectionTitle.className = 'pwpl-wizard-section-title';
+    layoutSectionTitle.textContent = ( config.i18n && config.i18n.layout ) || 'Layout';
+
+    var layoutTypeList = document.createElement( 'div' );
+    layoutTypeList.className = 'pwpl-layout-type-list';
+
+    var dimsSectionTitle = document.createElement( 'div' );
+    dimsSectionTitle.className = 'pwpl-wizard-section-title';
+    dimsSectionTitle.textContent = ( config.i18n && config.i18n.dimensionsLabel ) || 'Table tabs';
+
+    var dimGroup = document.createElement( 'div' );
+    dimGroup.className = 'pwpl-details__dims';
+    [ 'platform', 'period', 'location' ].forEach( function( dimKey ) {
+        var btn = document.createElement( 'button' );
+        btn.type = 'button';
+        btn.className = 'pwpl-dim-toggle';
+        btn.dataset.dim = dimKey;
+        btn.textContent = dimKey.charAt( 0 ).toUpperCase() + dimKey.slice( 1 );
+        btn.addEventListener( 'click', function() {
+            var isOn = ! btn.classList.contains( 'is-on' );
+            btn.classList.toggle( 'is-on', isOn );
+            btn.setAttribute( 'aria-pressed', isOn ? 'true' : 'false' );
+            state.dimensions[ dimKey ] = isOn;
+            loadPreview();
+            renderSummary();
+        } );
+        dimGroup.appendChild( btn );
+    } );
+
+    var cardStyleSectionTitle = document.createElement( 'div' );
+    cardStyleSectionTitle.className = 'pwpl-wizard-section-title';
+    cardStyleSectionTitle.textContent = ( config.i18n && config.i18n.cardStyle ) || 'Card style';
+    var cardStyleList = document.createElement( 'div' );
+    cardStyleList.className = 'pwpl-card-style-list';
+
+    var planColumnsSectionTitle = document.createElement( 'div' );
+    planColumnsSectionTitle.className = 'pwpl-wizard-section-title';
+    planColumnsSectionTitle.textContent = ( config.i18n && config.i18n.columns ) || 'Plan columns';
+
+    var planListWrap = document.createElement( 'div' );
+    planListWrap.className = 'pwpl-plan-list-wrap';
+
+    var planColumnsList = document.createElement( 'div' );
+    planColumnsList.className = 'pwpl-plan-columns-list';
+
+    var addColumnBtn = document.createElement( 'button' );
+    addColumnBtn.type = 'button';
+    addColumnBtn.className = 'button pwpl-add-column';
+    addColumnBtn.textContent = ( config.i18n && config.i18n.addColumn ) || 'Add column';
+
+    planListWrap.appendChild( planColumnsList );
+    planListWrap.appendChild( addColumnBtn );
+
+    var planEditWrap = document.createElement( 'div' );
+    planEditWrap.className = 'pwpl-plan-edit-wrap';
+
+    var step2Actions = document.createElement( 'div' );
+    step2Actions.className = 'pwpl-step-actions';
+    var step2Back = document.createElement( 'button' );
+    step2Back.type = 'button';
+    step2Back.className = 'button pwpl-step-back';
+    step2Back.textContent = ( config.i18n && config.i18n.back ) || 'Back';
+    var step2Next = document.createElement( 'button' );
+    step2Next.type = 'button';
+    step2Next.className = 'button button-primary pwpl-step-next';
+    step2Next.textContent = ( config.i18n && config.i18n.continueLayout ) || 'Continue';
+    step2Actions.appendChild( step2Back );
+    step2Actions.appendChild( step2Next );
+
+    step2Wrap.appendChild( layoutSectionTitle );
+    step2Wrap.appendChild( layoutTypeList );
+    step2Wrap.appendChild( dimsSectionTitle );
+    step2Wrap.appendChild( dimGroup );
+    step2Wrap.appendChild( cardStyleSectionTitle );
+    step2Wrap.appendChild( cardStyleList );
+    step2Wrap.appendChild( planColumnsSectionTitle );
+    step2Wrap.appendChild( planListWrap );
+    step2Wrap.appendChild( planEditWrap );
+    step2Wrap.appendChild( step2Actions );
+
+    // Step 3 content
+    var summaryTitle = document.createElement( 'div' );
+    summaryTitle.className = 'pwpl-wizard-section-title';
+    summaryTitle.textContent = ( config.i18n && config.i18n.summaryTitle ) || 'Summary';
+
+    var summaryList = document.createElement( 'div' );
+    summaryList.className = 'pwpl-summary';
+
+    var summaryForm = document.createElement( 'div' );
+    summaryForm.className = 'pwpl-summary-form';
 
     var nameLabel = document.createElement( 'label' );
     nameLabel.className = 'pwpl-details__label';
@@ -83,95 +372,206 @@
     } );
     themeLabel.appendChild( themeSelect );
 
-    var dimGroup = document.createElement( 'div' );
-    dimGroup.className = 'pwpl-details__dims';
-    [ 'platform', 'period', 'location' ].forEach( function( dimKey ) {
-        var btn = document.createElement( 'button' );
-        btn.type = 'button';
-        btn.className = 'pwpl-dim-toggle';
-        btn.dataset.dim = dimKey;
-        btn.textContent = dimKey.charAt( 0 ).toUpperCase() + dimKey.slice( 1 );
-        btn.addEventListener( 'click', function() {
-            var isOn = ! btn.classList.contains( 'is-on' );
-            btn.classList.toggle( 'is-on', isOn );
-            btn.setAttribute( 'aria-pressed', isOn ? 'true' : 'false' );
-            state.dimensions[ dimKey ] = isOn;
-        } );
-        dimGroup.appendChild( btn );
-    } );
+    summaryForm.appendChild( nameLabel );
+    summaryForm.appendChild( themeLabel );
 
-    detailsBar.appendChild( nameLabel );
-    detailsBar.appendChild( themeLabel );
-    detailsBar.appendChild( dimGroup );
-    root.appendChild( detailsBar );
+    var summaryActions = document.createElement( 'div' );
+    summaryActions.className = 'pwpl-step-actions';
 
-    var footer = document.createElement( 'div' );
-    footer.className = 'pwpl-table-wizard__footer';
-    var createBtn = document.createElement( 'button' );
-    createBtn.type = 'button';
-    createBtn.className = 'button button-primary pwpl-table-wizard__submit';
-    createBtn.textContent = ( config.i18n && config.i18n.createLabel ) || 'Create table';
-    createBtn.disabled = ! templates.length;
-    footer.appendChild( createBtn );
-    root.appendChild( footer );
+    var step3Back = document.createElement( 'button' );
+    step3Back.type = 'button';
+    step3Back.className = 'button pwpl-step-back';
+    step3Back.textContent = ( config.i18n && config.i18n.back ) || 'Back';
 
-    var stepsBar = document.createElement( 'div' );
-    stepsBar.className = 'pwpl-table-wizard__steps';
+    var createAndOpenBtn = document.createElement( 'button' );
+    createAndOpenBtn.type = 'button';
+    createAndOpenBtn.className = 'button button-primary pwpl-table-wizard__submit';
+    createAndOpenBtn.textContent = ( config.i18n && config.i18n.createLabel ) || 'Create table and open editor';
 
-    var stepTemplate = document.createElement( 'button' );
-    stepTemplate.type = 'button';
-    stepTemplate.className = 'pwpl-step-indicator';
-    stepTemplate.dataset.step = '1';
-    stepTemplate.textContent = ( config.i18n && config.i18n.stepTemplate ) || 'Step 1 · Template';
+    var createAndCopyBtn = document.createElement( 'button' );
+    createAndCopyBtn.type = 'button';
+    createAndCopyBtn.className = 'button pwpl-table-wizard__submit-secondary';
+    createAndCopyBtn.textContent = ( config.i18n && config.i18n.createCopyLabel ) || 'Create and copy shortcode';
 
-    var stepLayout = document.createElement( 'button' );
-    stepLayout.type = 'button';
-    stepLayout.className = 'pwpl-step-indicator';
-    stepLayout.dataset.step = '2';
-    stepLayout.textContent = ( config.i18n && config.i18n.stepLayout ) || 'Step 2 · Layout';
+    summaryActions.appendChild( step3Back );
+    summaryActions.appendChild( createAndOpenBtn );
+    summaryActions.appendChild( createAndCopyBtn );
 
-    var stepCardStyle = document.createElement( 'button' );
-    stepCardStyle.type = 'button';
-    stepCardStyle.className = 'pwpl-step-indicator';
-    stepCardStyle.dataset.step = '3';
-    stepCardStyle.textContent = ( config.i18n && config.i18n.stepCardStyle ) || 'Step 3 · Card style';
+    step3Wrap.appendChild( summaryTitle );
+    step3Wrap.appendChild( summaryList );
+    step3Wrap.appendChild( summaryForm );
+    step3Wrap.appendChild( summaryActions );
 
-    stepsBar.appendChild( stepTemplate );
-    stepsBar.appendChild( stepLayout );
-    stepsBar.appendChild( stepCardStyle );
+    stepContainer.appendChild( step1Wrap );
+    stepContainer.appendChild( step2Wrap );
+    stepContainer.appendChild( step3Wrap );
+    sidebarEl.appendChild( stepContainer );
 
-    var layoutSectionTitle = document.createElement( 'div' );
-    layoutSectionTitle.className = 'pwpl-wizard-section-title';
-    layoutSectionTitle.textContent = ( config.i18n && config.i18n.layout ) || 'Layout';
-    var layoutList = document.createElement( 'div' );
-    layoutList.className = 'pwpl-layout-list';
+    // Utility helpers
+    function deepClone( obj ) {
+        return JSON.parse( JSON.stringify( obj || null ) );
+    }
 
-    var cardStyleSectionTitle = document.createElement( 'div' );
-    cardStyleSectionTitle.className = 'pwpl-wizard-section-title';
-    cardStyleSectionTitle.textContent = ( config.i18n && config.i18n.cardStyle ) || 'Card style';
-    var cardStyleList = document.createElement( 'div' );
-    cardStyleList.className = 'pwpl-card-style-list';
+    function getTemplateById( id ) {
+        for ( var i = 0; i < templates.length; i++ ) {
+            if ( templates[ i ].id === id ) {
+                return templates[ i ];
+            }
+        }
+        return null;
+    }
 
-    var TEMPLATE_VISUALS = {
-        'saas-3-col': { type: 'cols', cols: 3, featured: true },
-        'comparison-table': { type: 'compare', cols: 4 },
-        'service-plans': { type: 'cols', cols: 3, featured: false },
-    };
-    var RECOMMENDED_TEMPLATES = [ 'saas-3-col' ];
+    function getDefaultLayoutId( tpl ) {
+        if ( tpl && tpl.layouts ) {
+            if ( tpl.layouts.default ) {
+                return 'default';
+            }
+            var ids = Object.keys( tpl.layouts );
+            if ( ids.length ) {
+                return ids[0];
+            }
+        }
+        return null;
+    }
 
-    var LAYOUT_VISUALS = {
-        'default': { cols: 3, featured: false },
-        'featured-middle': { cols: 3, featured: true },
-        'comparison': { cols: 4, featured: false, compare: true },
-    };
+    function getDefaultCardStyleId( tpl ) {
+        if ( tpl && tpl.card_styles ) {
+            if ( tpl.card_styles.default ) {
+                return 'default';
+            }
+            var ids = Object.keys( tpl.card_styles );
+            if ( ids.length ) {
+                return ids[0];
+            }
+        }
+        return null;
+    }
 
-    var CARD_STYLE_VISUALS = {
-        'default': { headerBand: false, shadow: 'soft' },
-        'featured-middle': { headerBand: true, shadow: 'strong' },
-    };
+    function initialPlansForTemplate( tpl ) {
+        var plans = tpl && tpl.defaults && Array.isArray( tpl.defaults.plans ) ? deepClone( tpl.defaults.plans ) : [];
+        if ( ! plans.length ) {
+            plans = [ defaultPlan() ];
+        }
+        return plans.map( ensurePlanStructure );
+    }
 
+    function defaultPlan( index ) {
+        var idx = index || 1;
+        return {
+            post_title: 'Plan ' + idx,
+            post_excerpt: '',
+            meta: {
+                [ META_KEYS.FEATURED ]: false,
+                [ META_KEYS.SPECS ]: [],
+                [ META_KEYS.VARIANTS ]: [
+                    {
+                        period: 'monthly',
+                        price: '',
+                        sale_price: '',
+                        cta_label: '',
+                        cta_url: '',
+                        target: '_self',
+                    },
+                ],
+                [ META_KEYS.BADGES ]: [],
+                _pwpl_badge_shadow: 8,
+            },
+        };
+    }
+
+    function ensurePlanStructure( plan, index ) {
+        var p = plan || {};
+        p.post_title = p.post_title || ( 'Plan ' + ( ( index || 0 ) + 1 ) );
+        p.post_excerpt = p.post_excerpt || '';
+        p.meta = p.meta && typeof p.meta === 'object' ? p.meta : {};
+        if ( ! Array.isArray( p.meta[ META_KEYS.VARIANTS ] ) ) {
+            p.meta[ META_KEYS.VARIANTS ] = [ defaultVariant() ];
+        }
+        if ( ! Array.isArray( p.meta[ META_KEYS.SPECS ] ) ) {
+            p.meta[ META_KEYS.SPECS ] = [];
+        }
+        if ( typeof p.meta[ META_KEYS.FEATURED ] === 'undefined' ) {
+            p.meta[ META_KEYS.FEATURED ] = false;
+        }
+        if ( ! Array.isArray( p.meta[ META_KEYS.BADGES ] ) ) {
+            p.meta[ META_KEYS.BADGES ] = [];
+        }
+        p.hidden = !! p.hidden;
+        return p;
+    }
+
+    function defaultVariant() {
+        return {
+            period: 'monthly',
+            price: '',
+            sale_price: '',
+            cta_label: '',
+            cta_url: '',
+            target: '_self',
+        };
+    }
+
+    function getVisiblePlans() {
+        return ( state.plans || [] ).filter( function( p ) { return ! p.hidden; } );
+    }
+
+    function getCategoryLabel( slug ) {
+        if ( ! slug ) {
+            return '';
+        }
+        var key = String( slug ).toLowerCase();
+        if ( CATEGORY_LABELS[ key ] ) {
+            return CATEGORY_LABELS[ key ];
+        }
+        return slug.charAt( 0 ).toUpperCase() + slug.slice( 1 );
+    }
+
+    function getLayoutTypeLabel( type ) {
+        return LAYOUT_TYPE_LABELS[ type ] || type;
+    }
+
+    function clearPreviewError() {
+        if ( ! previewErrorEl ) {
+            return;
+        }
+        previewErrorEl.textContent = '';
+        previewErrorEl.classList.remove( 'is-visible' );
+    }
+
+    function showPreviewError( message ) {
+        if ( ! previewErrorEl ) {
+            return;
+        }
+        var msg = message || ( config.i18n && config.i18n.previewError ) || 'Unable to load preview. Please try again.';
+        previewErrorEl.textContent = msg;
+        previewErrorEl.classList.add( 'is-visible' );
+    }
+
+    function mapLayoutTypeToLayoutId( tpl, layoutType ) {
+        if ( ! tpl || ! tpl.layouts ) {
+            return null;
+        }
+        var layoutIds = Object.keys( tpl.layouts );
+        if ( layoutType === 'comparison' ) {
+            for ( var i = 0; i < layoutIds.length; i++ ) {
+                if ( layoutIds[ i ] === 'comparison' ) {
+                    return layoutIds[ i ];
+                }
+                if ( tpl.layouts[ layoutIds[ i ] ].label && tpl.layouts[ layoutIds[ i ] ].label.toLowerCase().indexOf( 'comparison' ) !== -1 ) {
+                    return layoutIds[ i ];
+                }
+            }
+        }
+        if ( layoutType === 'grid' || layoutType === 'classic' || layoutType === 'carousel' ) {
+            if ( tpl.layouts.default ) {
+                return 'default';
+            }
+        }
+        return getDefaultLayoutId( tpl );
+    }
+
+    // Rendering
     function renderTemplates() {
-        sidebarEl.innerHTML = '';
         templatesWrap.innerHTML = '';
         templates.forEach( function( tpl ) {
             var btn = document.createElement( 'button' );
@@ -200,11 +600,25 @@
                 body.appendChild( desc );
             }
 
-            if ( RECOMMENDED_TEMPLATES.indexOf( tpl.id ) !== -1 ) {
-                var badge = document.createElement( 'span' );
-                badge.className = 'pwpl-template-card__badge pwpl-template-card__badge--recommended';
-                badge.textContent = ( config.i18n && config.i18n.recommended ) || 'Recommended';
-                body.appendChild( badge );
+            var metaRow = document.createElement( 'div' );
+            metaRow.className = 'pwpl-template-card__meta';
+
+            if ( tpl.category ) {
+                var categoryChip = document.createElement( 'span' );
+                categoryChip.className = 'pwpl-chip pwpl-chip--category';
+                categoryChip.textContent = getCategoryLabel( tpl.category );
+                metaRow.appendChild( categoryChip );
+            }
+
+            if ( tpl.premium ) {
+                var premiumChip = document.createElement( 'span' );
+                premiumChip.className = 'pwpl-chip pwpl-chip--premium';
+                premiumChip.textContent = ( config.i18n && config.i18n.proLabel ) || 'Pro';
+                metaRow.appendChild( premiumChip );
+            }
+
+            if ( metaRow.childNodes.length ) {
+                body.appendChild( metaRow );
             }
 
             btn.appendChild( body );
@@ -215,138 +629,599 @@
 
             templatesWrap.appendChild( btn );
         } );
-        sidebarEl.appendChild( templatesWrap );
-        sidebarEl.appendChild( layoutSectionTitle );
-        sidebarEl.appendChild( layoutList );
-        sidebarEl.appendChild( cardStyleSectionTitle );
-        sidebarEl.appendChild( cardStyleList );
     }
 
-    function getTemplateById( id ) {
-        for ( var i = 0; i < templates.length; i++ ) {
-            if ( templates[ i ].id === id ) {
-                return templates[ i ];
+    function renderLayoutTypes() {
+        layoutTypeList.innerHTML = '';
+        Object.keys( LAYOUT_TYPE_LABELS ).forEach( function( typeKey ) {
+            var btn = document.createElement( 'button' );
+            btn.type = 'button';
+            btn.className = 'pwpl-layout-type';
+            btn.dataset.layoutType = typeKey;
+            btn.textContent = getLayoutTypeLabel( typeKey );
+            if ( state.layoutType === typeKey ) {
+                btn.classList.add( 'is-selected' );
             }
-        }
-        return null;
-    }
-
-    function buildTemplateThumb( templateId ) {
-        var visual = TEMPLATE_VISUALS[ templateId ] || { type: 'cols', cols: 3, featured: false };
-        var wrap = document.createElement( 'div' );
-        wrap.className = 'pwpl-thumb pwpl-thumb--' + visual.type;
-
-        if ( visual.type === 'compare' ) {
-            var grid = document.createElement( 'div' );
-            grid.className = 'pwpl-thumb-compare';
-            for ( var i = 0; i < ( visual.cols || 4 ); i++ ) {
-                var col = document.createElement( 'div' );
-                col.className = 'pwpl-thumb-col';
-                if ( i === 0 ) {
-                    col.classList.add( 'is-featured' );
-                }
-                grid.appendChild( col );
-            }
-            wrap.appendChild( grid );
-        } else {
-            var cols = visual.cols || 3;
-            var row = document.createElement( 'div' );
-            row.className = 'pwpl-thumb-row pwpl-thumb-cols--' + cols;
-            for ( var j = 0; j < cols; j++ ) {
-                var c = document.createElement( 'div' );
-                c.className = 'pwpl-thumb-col';
-                if ( visual.featured && j === Math.floor( cols / 2 ) ) {
-                    c.classList.add( 'is-featured' );
-                }
-                row.appendChild( c );
-            }
-            wrap.appendChild( row );
-        }
-        return wrap;
-    }
-
-    function renderLayouts() {
-        layoutList.innerHTML = '';
-        var tpl = getTemplateById( state.selectedTemplateId );
-        var layouts = tpl && tpl.layouts ? tpl.layouts : {};
-        var layoutIds = Object.keys( layouts );
-        if ( ! layoutIds.length ) {
-            return;
-        }
-        layoutIds.forEach( function( lid ) {
-            var tile = document.createElement( 'button' );
-            tile.type = 'button';
-            tile.className = 'pwpl-layout-tile';
-            tile.dataset.layoutId = lid;
-            var pill = buildLayoutPill( lid );
-            tile.appendChild( pill );
-            var lbl = document.createElement( 'span' );
-            lbl.className = 'pwpl-layout-label';
-            lbl.textContent = layouts[ lid ].label || lid;
-            tile.appendChild( lbl );
-
-            if ( state.selectedLayoutId === lid ) {
-                tile.classList.add( 'is-selected' );
-            }
-            tile.addEventListener( 'click', function() {
-                selectLayout( lid );
+            btn.addEventListener( 'click', function() {
+                state.layoutType = typeKey;
+                var tpl = getTemplateById( state.selectedTemplateId );
+                state.selectedLayoutId = mapLayoutTypeToLayoutId( tpl, typeKey );
+                renderLayoutTypes();
+                renderCardStyles();
+                loadPreview();
+                renderSummary();
             } );
-            layoutList.appendChild( tile );
+            layoutTypeList.appendChild( btn );
         } );
     }
 
+    function renderCardStyles() {
+        cardStyleList.innerHTML = '';
+        var tpl = getTemplateById( state.selectedTemplateId );
+        if ( ! tpl ) {
+            return;
+        }
+
+        var styles = tpl.card_styles || {};
+        var styleIds = Object.keys( styles );
+        if ( styleIds.length ) {
+            styleIds.forEach( function( sid ) {
+                var tile = document.createElement( 'button' );
+                tile.type = 'button';
+                tile.className = 'pwpl-card-style-tile';
+                tile.dataset.cardStyleId = sid;
+                var pill = buildCardStylePill( sid );
+                tile.appendChild( pill );
+                var lbl = document.createElement( 'span' );
+                lbl.className = 'pwpl-card-style-label';
+                lbl.textContent = styles[ sid ].label || sid;
+                tile.appendChild( lbl );
+                if ( state.selectedCardStyleId === sid ) {
+                    tile.classList.add( 'is-selected' );
+                }
+                tile.addEventListener( 'click', function() {
+                    selectCardStyle( sid );
+                } );
+                cardStyleList.appendChild( tile );
+            } );
+        }
+    }
+
+    function renderPlanList() {
+        planColumnsList.innerHTML = '';
+        ( state.plans || [] ).forEach( function( plan, index ) {
+            var row = document.createElement( 'div' );
+            row.className = 'pwpl-plan-row';
+            if ( plan.hidden ) {
+                row.classList.add( 'is-hidden' );
+            }
+            if ( state.activePlanIndex === index && state.editingPlanIndex === null ) {
+                row.classList.add( 'is-active' );
+            }
+
+            var textWrap = document.createElement( 'div' );
+            textWrap.className = 'pwpl-plan-row__text';
+
+            var title = document.createElement( 'div' );
+            title.className = 'pwpl-plan-row__title';
+            title.textContent = plan.post_title || ( 'Plan ' + ( index + 1 ) );
+            textWrap.appendChild( title );
+
+            if ( plan.post_excerpt ) {
+                var subtitle = document.createElement( 'div' );
+                subtitle.className = 'pwpl-plan-row__subtitle';
+                subtitle.textContent = plan.post_excerpt;
+                textWrap.appendChild( subtitle );
+            }
+
+            row.appendChild( textWrap );
+
+            var menuWrap = document.createElement( 'div' );
+            menuWrap.className = 'pwpl-plan-row__menu-wrap';
+
+            var menuToggle = document.createElement( 'button' );
+            menuToggle.type = 'button';
+            menuToggle.className = 'pwpl-plan-row__menu-toggle';
+            menuToggle.textContent = '⋯';
+            menuToggle.addEventListener( 'click', function( evt ) {
+                evt.stopPropagation();
+                openMenuIndex = openMenuIndex === index ? null : index;
+                renderPlanList();
+            } );
+            menuWrap.appendChild( menuToggle );
+
+            if ( openMenuIndex === index ) {
+                var menu = document.createElement( 'div' );
+                menu.className = 'pwpl-plan-row__menu';
+
+                var editBtn = document.createElement( 'button' );
+                editBtn.type = 'button';
+                editBtn.textContent = ( config.i18n && config.i18n.edit ) || 'Edit';
+                editBtn.addEventListener( 'click', function( evt ) {
+                    evt.stopPropagation();
+                    openPlanEditor( index );
+                } );
+                menu.appendChild( editBtn );
+
+                var dupBtn = document.createElement( 'button' );
+                dupBtn.type = 'button';
+                dupBtn.textContent = ( config.i18n && config.i18n.duplicate ) || 'Duplicate';
+                dupBtn.addEventListener( 'click', function( evt ) {
+                    evt.stopPropagation();
+                    duplicatePlan( index );
+                } );
+                menu.appendChild( dupBtn );
+
+                var hideBtn = document.createElement( 'button' );
+                hideBtn.type = 'button';
+                hideBtn.textContent = plan.hidden ? ( ( config.i18n && config.i18n.unhide ) || 'Unhide' ) : ( ( config.i18n && config.i18n.hide ) || 'Hide' );
+                hideBtn.addEventListener( 'click', function( evt ) {
+                    evt.stopPropagation();
+                    toggleHidePlan( index );
+                } );
+                menu.appendChild( hideBtn );
+
+                var delBtn = document.createElement( 'button' );
+                delBtn.type = 'button';
+                delBtn.textContent = ( config.i18n && config.i18n.deleteLabel ) || 'Delete';
+                delBtn.className = 'is-danger';
+                delBtn.addEventListener( 'click', function( evt ) {
+                    evt.stopPropagation();
+                    deletePlan( index );
+                } );
+                menu.appendChild( delBtn );
+
+                menuWrap.appendChild( menu );
+            }
+
+            row.appendChild( menuWrap );
+
+            row.addEventListener( 'click', function() {
+                state.activePlanIndex = index;
+                state.editingPlanIndex = null;
+                renderPlanList();
+                renderPlanEditor();
+            } );
+
+            planColumnsList.appendChild( row );
+        } );
+
+        addColumnBtn.disabled = ( state.plans || [] ).length >= MAX_PLAN_COUNT;
+    }
+
+    function renderPlanEditor() {
+        planEditWrap.innerHTML = '';
+        if ( state.editingPlanIndex === null ) {
+            planEditWrap.classList.remove( 'is-visible' );
+            planListWrap.classList.add( 'is-visible' );
+            return;
+        }
+        planListWrap.classList.remove( 'is-visible' );
+        planEditWrap.classList.add( 'is-visible' );
+
+        var plan = state.plans[ state.editingPlanIndex ];
+        if ( ! plan ) {
+            return;
+        }
+
+        if ( state.editingFeatureIndex !== null ) {
+            renderFeatureEditor( plan );
+            return;
+        }
+
+        var header = document.createElement( 'div' );
+        header.className = 'pwpl-plan-edit__header';
+
+        var backBtn = document.createElement( 'button' );
+        backBtn.type = 'button';
+        backBtn.className = 'pwpl-plan-edit__back';
+        backBtn.textContent = ( config.i18n && config.i18n.back ) || 'Back';
+        backBtn.addEventListener( 'click', function() {
+            state.editingPlanIndex = null;
+            renderPlanEditor();
+        } );
+        var title = document.createElement( 'div' );
+        title.className = 'pwpl-plan-edit__title';
+        title.textContent = ( config.i18n && config.i18n.editColumn ) || 'Edit Column';
+
+        header.appendChild( backBtn );
+        header.appendChild( title );
+        planEditWrap.appendChild( header );
+
+        // Basics
+        var basics = document.createElement( 'div' );
+        basics.className = 'pwpl-plan-edit__section';
+        var basicsTitle = document.createElement( 'div' );
+        basicsTitle.className = 'pwpl-plan-edit__section-title';
+        basicsTitle.textContent = ( config.i18n && config.i18n.basics ) || 'Basics';
+        basics.appendChild( basicsTitle );
+
+        basics.appendChild( labeledInput( ( config.i18n && config.i18n.planTitle ) || 'Title', plan.post_title, function( val ) {
+            plan.post_title = val;
+            syncPlanChange();
+        } ) );
+        basics.appendChild( labeledInput( ( config.i18n && config.i18n.planSubtitle ) || 'Caption', plan.post_excerpt, function( val ) {
+            plan.post_excerpt = val;
+            syncPlanChange();
+        } ) );
+        basics.appendChild( labeledInput( ( config.i18n && config.i18n.highlightLabel ) || 'Highlight label', getHighlightLabel( plan ), function( val ) {
+            setHighlightLabel( plan, val );
+            syncPlanChange();
+        } ) );
+
+        var featToggle = labeledToggle( ( config.i18n && config.i18n.featured ) || 'Featured', !! plan.meta[ META_KEYS.FEATURED ] );
+        featToggle.querySelector( 'input' ).addEventListener( 'change', function( evt ) {
+            plan.meta[ META_KEYS.FEATURED ] = evt.target.checked;
+            syncPlanChange();
+        } );
+        basics.appendChild( featToggle );
+
+        planEditWrap.appendChild( basics );
+
+        // Features
+        var features = document.createElement( 'div' );
+        features.className = 'pwpl-plan-edit__section';
+        var featuresTitle = document.createElement( 'div' );
+        featuresTitle.className = 'pwpl-plan-edit__section-title';
+        featuresTitle.textContent = ( config.i18n && config.i18n.features ) || 'Features';
+        features.appendChild( featuresTitle );
+
+        var specs = Array.isArray( plan.meta[ META_KEYS.SPECS ] ) ? plan.meta[ META_KEYS.SPECS ] : [];
+        specs.forEach( function( spec, idx ) {
+            var row = document.createElement( 'div' );
+            row.className = 'pwpl-feature-row';
+
+            row.draggable = true;
+            row.dataset.featureIndex = idx;
+            row.addEventListener( 'dragstart', function( evt ) {
+                draggingFeatureIndex = idx;
+                evt.dataTransfer.effectAllowed = 'move';
+            } );
+            row.addEventListener( 'dragend', function() {
+                draggingFeatureIndex = null;
+                row.classList.remove( 'is-drag-over' );
+            } );
+            row.addEventListener( 'dragover', function( evt ) {
+                evt.preventDefault();
+                evt.dataTransfer.dropEffect = 'move';
+                row.classList.add( 'is-drag-over' );
+            } );
+            row.addEventListener( 'dragleave', function() {
+                row.classList.remove( 'is-drag-over' );
+            } );
+            row.addEventListener( 'drop', function( evt ) {
+                evt.preventDefault();
+                row.classList.remove( 'is-drag-over' );
+                if ( draggingFeatureIndex === null ) {
+                    return;
+                }
+                moveFeature( plan, draggingFeatureIndex, idx );
+                draggingFeatureIndex = null;
+            } );
+
+            var textWrap = document.createElement( 'div' );
+            textWrap.className = 'pwpl-feature-row__text';
+
+            var dragHandle = document.createElement( 'span' );
+            dragHandle.className = 'pwpl-feature-row__drag';
+            dragHandle.textContent = '≡';
+            textWrap.appendChild( dragHandle );
+
+            var labelEl = document.createElement( 'div' );
+            labelEl.className = 'pwpl-feature-row__label';
+            labelEl.textContent = spec.label || ( ( config.i18n && config.i18n.featurePlaceholder ) || 'Feature' );
+            textWrap.appendChild( labelEl );
+            var valueEl = document.createElement( 'div' );
+            valueEl.className = 'pwpl-feature-row__value';
+            valueEl.textContent = spec.value || '';
+            textWrap.appendChild( valueEl );
+            row.appendChild( textWrap );
+
+            var actions = document.createElement( 'div' );
+            actions.className = 'pwpl-feature-row__actions';
+
+            var menuToggle = document.createElement( 'button' );
+            menuToggle.type = 'button';
+            menuToggle.className = 'pwpl-feature-row__menu-toggle';
+            menuToggle.textContent = '⋯';
+            menuToggle.addEventListener( 'click', function( evt ) {
+                evt.stopPropagation();
+                openFeatureMenuIndex = openFeatureMenuIndex === idx ? null : idx;
+                renderPlanEditor();
+            } );
+            actions.appendChild( menuToggle );
+
+            if ( openFeatureMenuIndex === idx ) {
+                var menu = document.createElement( 'div' );
+                menu.className = 'pwpl-feature-row__menu';
+
+                var editBtn = document.createElement( 'button' );
+                editBtn.type = 'button';
+                editBtn.textContent = ( config.i18n && config.i18n.edit ) || 'Edit';
+                editBtn.addEventListener( 'click', function( evt ) {
+                    evt.stopPropagation();
+                    state.editingFeatureIndex = idx;
+                    openFeatureMenuIndex = null;
+                    renderPlanEditor();
+                } );
+                menu.appendChild( editBtn );
+
+                var dupBtn = document.createElement( 'button' );
+                dupBtn.type = 'button';
+                dupBtn.textContent = ( config.i18n && config.i18n.duplicate ) || 'Duplicate';
+                dupBtn.addEventListener( 'click', function( evt ) {
+                    evt.stopPropagation();
+                    plan.meta[ META_KEYS.SPECS ].splice( idx + 1, 0, { label: spec.label || '', value: spec.value || '' } );
+                    syncPlanChange();
+                    openFeatureMenuIndex = null;
+                    state.editingFeatureIndex = null;
+                    renderPlanEditor();
+                } );
+                menu.appendChild( dupBtn );
+
+                var moveUpBtn = document.createElement( 'button' );
+                moveUpBtn.type = 'button';
+                moveUpBtn.textContent = ( config.i18n && config.i18n.moveUp ) || 'Move up';
+                moveUpBtn.addEventListener( 'click', function( evt ) {
+                    evt.stopPropagation();
+                    moveFeature( plan, idx, idx - 1 );
+                    openFeatureMenuIndex = null;
+                } );
+                menu.appendChild( moveUpBtn );
+
+                var moveDownBtn = document.createElement( 'button' );
+                moveDownBtn.type = 'button';
+                moveDownBtn.textContent = ( config.i18n && config.i18n.moveDown ) || 'Move down';
+                moveDownBtn.addEventListener( 'click', function( evt ) {
+                    evt.stopPropagation();
+                    moveFeature( plan, idx, idx + 1 );
+                    openFeatureMenuIndex = null;
+                } );
+                menu.appendChild( moveDownBtn );
+
+                var delBtn = document.createElement( 'button' );
+                delBtn.type = 'button';
+                delBtn.textContent = ( config.i18n && config.i18n.deleteLabel ) || 'Delete';
+                delBtn.className = 'is-danger';
+                delBtn.addEventListener( 'click', function( evt ) {
+                    evt.stopPropagation();
+                    plan.meta[ META_KEYS.SPECS ].splice( idx, 1 );
+                    syncPlanChange();
+                    openFeatureMenuIndex = null;
+                    renderPlanEditor();
+                } );
+                menu.appendChild( delBtn );
+
+                actions.appendChild( menu );
+            }
+
+            row.appendChild( actions );
+            features.appendChild( row );
+        } );
+
+        var addFeature = document.createElement( 'button' );
+        addFeature.type = 'button';
+        addFeature.className = 'button pwpl-add-feature';
+        addFeature.textContent = ( config.i18n && config.i18n.addFeature ) || 'Add Feature';
+        addFeature.addEventListener( 'click', function() {
+            var newIndex = plan.meta[ META_KEYS.SPECS ].length;
+            plan.meta[ META_KEYS.SPECS ].push( { label: '', value: '' } );
+            syncPlanChange();
+            openFeatureMenuIndex = null;
+            state.editingFeatureIndex = newIndex;
+            renderPlanEditor();
+        } );
+        features.appendChild( addFeature );
+
+        planEditWrap.appendChild( features );
+
+        // Price
+        var price = document.createElement( 'div' );
+        price.className = 'pwpl-plan-edit__section';
+        var priceTitle = document.createElement( 'div' );
+        priceTitle.className = 'pwpl-plan-edit__section-title';
+        priceTitle.textContent = ( config.i18n && config.i18n.price ) || 'Price';
+        price.appendChild( priceTitle );
+
+        var variant = firstVariant( plan );
+
+        price.appendChild( labeledInput( ( config.i18n && config.i18n.priceLabel ) || 'Price', variant.price || '', function( val ) {
+            variant.price = val;
+            syncPlanChange();
+        }, 'number' ) );
+        price.appendChild( labeledInput( ( config.i18n && config.i18n.salePriceLabel ) || 'Old Price / Sale Price', variant.sale_price || '', function( val ) {
+            variant.sale_price = val;
+            syncPlanChange();
+        }, 'number' ) );
+
+        planEditWrap.appendChild( price );
+
+        // Button
+        var buttonSection = document.createElement( 'div' );
+        buttonSection.className = 'pwpl-plan-edit__section';
+        var buttonTitle = document.createElement( 'div' );
+        buttonTitle.className = 'pwpl-plan-edit__section-title';
+        buttonTitle.textContent = ( config.i18n && config.i18n.button ) || 'Button';
+        buttonSection.appendChild( buttonTitle );
+
+        buttonSection.appendChild( labeledInput( ( config.i18n && config.i18n.buttonText ) || 'Text', variant.cta_label || '', function( val ) {
+            variant.cta_label = val;
+            syncPlanChange();
+        } ) );
+        buttonSection.appendChild( labeledInput( ( config.i18n && config.i18n.buttonUrl ) || 'Link', variant.cta_url || '', function( val ) {
+            variant.cta_url = val;
+            syncPlanChange();
+        }, 'url' ) );
+
+        planEditWrap.appendChild( buttonSection );
+    }
+
+    function labeledInput( label, value, onChange, type ) {
+        var wrap = document.createElement( 'label' );
+        wrap.className = 'pwpl-labeled-input';
+        var lbl = document.createElement( 'div' );
+        lbl.className = 'pwpl-labeled-input__label';
+        lbl.textContent = label;
+        var input = document.createElement( 'input' );
+        input.type = type || 'text';
+        input.className = 'pwpl-labeled-input__input';
+        input.value = value || '';
+        input.addEventListener( 'input', function( evt ) {
+            onChange( evt.target.value );
+        } );
+        wrap.appendChild( lbl );
+        wrap.appendChild( input );
+        return wrap;
+    }
+
+    function labeledToggle( label, checked ) {
+        var wrap = document.createElement( 'label' );
+        wrap.className = 'pwpl-labeled-toggle';
+        var text = document.createElement( 'span' );
+        text.textContent = label;
+        var input = document.createElement( 'input' );
+        input.type = 'checkbox';
+        input.checked = checked;
+        wrap.appendChild( text );
+        wrap.appendChild( input );
+        return wrap;
+    }
+
+    function getHighlightLabel( plan ) {
+        var badges = plan.meta[ META_KEYS.BADGES ] || [];
+        if ( Array.isArray( badges ) && badges[0] && badges[0].label ) {
+            return badges[0].label;
+        }
+        return '';
+    }
+
+    function setHighlightLabel( plan, label ) {
+        var badges = plan.meta[ META_KEYS.BADGES ] || [];
+        if ( ! Array.isArray( badges ) ) {
+            badges = [];
+        }
+        if ( ! badges[0] ) {
+            badges[0] = {};
+        }
+        badges[0].label = label;
+        badges[0].slug = badges[0].slug || 'highlight';
+        badges[0].color = badges[0].color || '#2563eb';
+        plan.meta[ META_KEYS.BADGES ] = badges;
+    }
+
+    function firstVariant( plan ) {
+        if ( ! plan.meta[ META_KEYS.VARIANTS ] || ! Array.isArray( plan.meta[ META_KEYS.VARIANTS ] ) || ! plan.meta[ META_KEYS.VARIANTS ].length ) {
+            plan.meta[ META_KEYS.VARIANTS ] = [ defaultVariant() ];
+        }
+        return plan.meta[ META_KEYS.VARIANTS ][0];
+    }
+
+    function syncPlanChange() {
+        renderPlanList();
+        renderSummary();
+        loadPreview();
+    }
+
+    function renderFeatureEditor( plan ) {
+        planEditWrap.innerHTML = '';
+        var featureIdx = state.editingFeatureIndex;
+        var spec = plan.meta[ META_KEYS.SPECS ][ featureIdx ] || { label: '', value: '' };
+
+        var header = document.createElement( 'div' );
+        header.className = 'pwpl-plan-edit__header';
+
+        var backBtn = document.createElement( 'button' );
+        backBtn.type = 'button';
+        backBtn.className = 'pwpl-plan-edit__back';
+        backBtn.textContent = ( config.i18n && config.i18n.back ) || 'Back';
+        backBtn.addEventListener( 'click', function() {
+            state.editingFeatureIndex = null;
+            renderPlanEditor();
+        } );
+        var title = document.createElement( 'div' );
+        title.className = 'pwpl-plan-edit__title';
+        title.textContent = ( config.i18n && config.i18n.editFeature ) || 'Edit Feature';
+
+        header.appendChild( backBtn );
+        header.appendChild( title );
+        planEditWrap.appendChild( header );
+
+        var section = document.createElement( 'div' );
+        section.className = 'pwpl-plan-edit__section';
+
+        var textLabel = document.createElement( 'div' );
+        textLabel.className = 'pwpl-plan-edit__section-title';
+        textLabel.textContent = ( config.i18n && config.i18n.featureLabel ) || 'Text';
+        section.appendChild( textLabel );
+
+        section.appendChild( labeledInput( '', spec.label || '', function( val ) {
+            plan.meta[ META_KEYS.SPECS ][ featureIdx ].label = val;
+            syncPlanChange();
+        } ) );
+
+        var valueLabel = document.createElement( 'div' );
+        valueLabel.className = 'pwpl-plan-edit__section-title';
+        valueLabel.textContent = ( config.i18n && config.i18n.featureValue ) || 'Value';
+        section.appendChild( valueLabel );
+
+        section.appendChild( labeledInput( '', spec.value || '', function( val ) {
+            plan.meta[ META_KEYS.SPECS ][ featureIdx ].value = val;
+            syncPlanChange();
+        } ) );
+
+        planEditWrap.appendChild( section );
+
+        var actions = document.createElement( 'div' );
+        actions.className = 'pwpl-step-actions';
+        var saveBtn = document.createElement( 'button' );
+        saveBtn.type = 'button';
+        saveBtn.className = 'button button-primary';
+        saveBtn.textContent = ( config.i18n && config.i18n.saveFeature ) || 'Save feature';
+        saveBtn.addEventListener( 'click', function() {
+            state.editingFeatureIndex = null;
+            renderPlanEditor();
+        } );
+        actions.appendChild( saveBtn );
+        planEditWrap.appendChild( actions );
+    }
+
+    // Selection handlers
     function selectTemplate( templateId ) {
         if ( ! templateId ) {
             return;
         }
-        state.selectedTemplateId = templateId;
         var tpl = getTemplateById( templateId );
-        var layouts = tpl && tpl.layouts ? tpl.layouts : {};
-        var layoutIds = Object.keys( layouts );
-        var defaultLayoutId = null;
-        if ( layouts.default ) {
-            defaultLayoutId = 'default';
-        } else if ( layoutIds.length ) {
-            defaultLayoutId = layoutIds[0];
+        if ( ! tpl ) {
+            return;
         }
-        state.selectedLayoutId = defaultLayoutId;
-
-        var cardStyles = tpl && tpl.card_styles ? tpl.card_styles : {};
-        var styleIds = Object.keys( cardStyles );
-        var defaultCardStyleId = null;
-        if ( cardStyles.default ) {
-            defaultCardStyleId = 'default';
-        } else if ( styleIds.length ) {
-            defaultCardStyleId = styleIds[0];
-        }
-        state.selectedCardStyleId = defaultCardStyleId;
-        if ( nameInput ) {
-            nameInput.value = tpl && tpl.label ? tpl.label : templateId;
-        }
-        // Reset dimensions defaults per template if desired
+        state.selectedTemplateId = templateId;
+        state.selectedLayoutId = getDefaultLayoutId( tpl );
+        state.selectedCardStyleId = getDefaultCardStyleId( tpl );
+        state.layoutType = 'grid';
+        state.plans = initialPlansForTemplate( tpl );
+        state.activePlanIndex = 0;
+        state.editingPlanIndex = null;
         state.dimensions = {
             platform: true,
             period: true,
             location: false,
         };
-        updateDimToggles();
+        if ( nameInput ) {
+            nameInput.value = tpl.label || templateId;
+        }
 
-        Array.prototype.forEach.call( sidebarEl.querySelectorAll( '.pwpl-template-card' ), function( card ) {
+        Array.prototype.forEach.call( templatesWrap.querySelectorAll( '.pwpl-template-card' ), function( card ) {
             card.classList.toggle( 'is-selected', card.dataset.templateId === templateId );
         } );
-        renderLayouts();
-        renderCardStyles();
-        loadPreview( templateId, state.selectedLayoutId, state.selectedCardStyleId );
-        updateSteps();
-    }
 
-    function selectLayout( layoutId ) {
-        state.selectedLayoutId = layoutId || null;
-        Array.prototype.forEach.call( layoutList.querySelectorAll( '.pwpl-layout-tile' ), function( tile ) {
-            tile.classList.toggle( 'is-selected', tile.dataset.layoutId === layoutId );
-        } );
-        loadPreview( state.selectedTemplateId, state.selectedLayoutId, state.selectedCardStyleId );
-        updateSteps();
+        step1Next.disabled = false;
+        renderLayoutTypes();
+        renderCardStyles();
+        renderPlanList();
+        renderPlanEditor();
+        updateDimToggles();
+        renderSummary();
+        loadPreview();
     }
 
     function selectCardStyle( styleId ) {
@@ -354,40 +1229,147 @@
         Array.prototype.forEach.call( cardStyleList.querySelectorAll( '.pwpl-card-style-tile' ), function( tile ) {
             tile.classList.toggle( 'is-selected', tile.dataset.cardStyleId === styleId );
         } );
-        loadPreview( state.selectedTemplateId, state.selectedLayoutId, state.selectedCardStyleId );
-        updateSteps();
+        loadPreview();
     }
 
-    function loadPreview( templateId, layoutId, cardStyleId ) {
-        if ( ! templateId ) {
+    function addPlan( options ) {
+        var nextIndex = ( state.plans || [] ).length + 1;
+        if ( nextIndex > MAX_PLAN_COUNT ) {
+            return;
+        }
+        var source = state.plans.length ? state.plans[ state.plans.length - 1 ] : defaultPlan( nextIndex );
+        var clone = deepClone( source );
+        clone.post_title = clone.post_title ? clone.post_title + ' ' + nextIndex : 'Plan ' + nextIndex;
+        clone.hidden = false;
+        clone = ensurePlanStructure( clone, nextIndex - 1 );
+        state.plans.push( clone );
+        state.activePlanIndex = state.plans.length - 1;
+        state.editingPlanIndex = options && options.openEditor ? state.activePlanIndex : null;
+        openMenuIndex = null;
+        syncPlanChange();
+        if ( options && options.openEditor ) {
+            renderPlanEditor();
+        }
+    }
+
+    function duplicatePlan( index ) {
+        if ( state.plans.length >= MAX_PLAN_COUNT ) {
+            return;
+        }
+        var base = state.plans[ index ];
+        if ( ! base ) {
+            return;
+        }
+        var clone = ensurePlanStructure( deepClone( base ), state.plans.length );
+        clone.post_title = clone.post_title ? clone.post_title + ' copy' : 'Plan ' + ( state.plans.length + 1 );
+        state.plans.splice( index + 1, 0, clone );
+        state.activePlanIndex = index + 1;
+        state.editingPlanIndex = null;
+        openMenuIndex = null;
+        syncPlanChange();
+    }
+
+    function toggleHidePlan( index ) {
+        var plan = state.plans[ index ];
+        if ( ! plan ) {
+            return;
+        }
+        plan.hidden = ! plan.hidden;
+        openMenuIndex = null;
+        syncPlanChange();
+    }
+
+    function deletePlan( index ) {
+        if ( state.plans.length <= MIN_PLAN_COUNT ) {
+            return;
+        }
+        state.plans.splice( index, 1 );
+        if ( state.activePlanIndex >= state.plans.length ) {
+            state.activePlanIndex = state.plans.length - 1;
+        }
+        state.editingPlanIndex = null;
+        openMenuIndex = null;
+        syncPlanChange();
+    }
+
+    function openPlanEditor( index ) {
+        state.activePlanIndex = index;
+        state.editingPlanIndex = index;
+        renderPlanList();
+        renderPlanEditor();
+    }
+
+    // Preview + REST
+    function buildPlansPayload() {
+        var visible = getVisiblePlans();
+        if ( ! visible.length && state.plans.length ) {
+            visible = [ state.plans[0] ];
+        }
+        return visible.map( function( plan ) {
+            var p = {
+                post_title: plan.post_title || '',
+                post_excerpt: plan.post_excerpt || '',
+                meta: {},
+            };
+            p.meta[ META_KEYS.FEATURED ] = !! plan.meta[ META_KEYS.FEATURED ];
+            p.meta[ META_KEYS.SPECS ] = Array.isArray( plan.meta[ META_KEYS.SPECS ] ) ? plan.meta[ META_KEYS.SPECS ].map( function( spec ) {
+                return { label: spec.label || '', value: spec.value || '' };
+            } ) : [];
+            var variants = Array.isArray( plan.meta[ META_KEYS.VARIANTS ] ) ? deepClone( plan.meta[ META_KEYS.VARIANTS ] ) : [];
+            if ( ! variants.length ) {
+                variants = [ defaultVariant() ];
+            }
+            variants[0] = Object.assign( {}, defaultVariant(), variants[0] );
+            p.meta[ META_KEYS.VARIANTS ] = variants;
+            if ( Array.isArray( plan.meta[ META_KEYS.BADGES ] ) ) {
+                p.meta[ META_KEYS.BADGES ] = plan.meta[ META_KEYS.BADGES ].map( function( badge ) {
+                    return {
+                        label: badge.label || '',
+                        slug: badge.slug || '',
+                        color: badge.color || '',
+                    };
+                } );
+            }
+            return p;
+        } );
+    }
+
+    function loadPreview() {
+        if ( ! state.selectedTemplateId ) {
             return;
         }
 
+        clearPreviewError();
         previewEl.classList.add( 'is-loading' );
         sidebarEl.classList.add( 'is-loading' );
 
         var apiFetch = window.wp && wp.apiFetch ? wp.apiFetch : null;
+        var plansPayload = buildPlansPayload();
         if ( apiFetch && config.rest && config.rest.previewUrl ) {
             apiFetch( {
                 path: config.rest.previewUrl.replace( restUrlRoot(), '' ),
                 method: 'POST',
                 headers: { 'X-WP-Nonce': config.rest.nonce },
                 data: {
-                    template_id: templateId,
-                    layout_id: layoutId || '',
-                    card_style_id: cardStyleId || '',
+                    template_id: state.selectedTemplateId,
+                    layout_id: state.selectedLayoutId || '',
+                    card_style_id: state.selectedCardStyleId || '',
+                    plan_count: plansPayload.length || '',
+                    plans_override: plansPayload,
                 },
             } ).catch( function( err ) {
                 // eslint-disable-next-line no-console
                 console.error( 'Preview fetch failed', err );
+                showPreviewError( ( config.i18n && config.i18n.previewError ) || 'Unable to load preview. Please try again.' );
             } );
         }
 
-        var frameUrl = buildPreviewFrameUrl( templateId, layoutId, cardStyleId );
+        var frameUrl = buildPreviewFrameUrl( state.selectedTemplateId, state.selectedLayoutId, state.selectedCardStyleId, plansPayload );
         iframeEl.src = frameUrl;
         iframeEl.onload = function() {
             previewEl.classList.remove( 'is-loading' );
             sidebarEl.classList.remove( 'is-loading' );
+            clearPreviewError();
         };
     }
 
@@ -398,8 +1380,14 @@
         return '/wp-json/';
     }
 
-    function buildPreviewFrameUrl( templateId, layoutId, cardStyleId ) {
+    function buildPreviewFrameUrl( templateId, layoutId, cardStyleId, plansPayload ) {
         var base = config.previewFrame && config.previewFrame.url ? config.previewFrame.url : '';
+        var plansJson = '';
+        try {
+            plansJson = JSON.stringify( plansPayload );
+        } catch (e) {
+            plansJson = '';
+        }
         try {
             var url = new URL( base, window.location.origin );
             url.searchParams.set( 'template_id', templateId );
@@ -408,6 +1396,9 @@
             }
             if ( cardStyleId ) {
                 url.searchParams.set( 'card_style_id', cardStyleId );
+            }
+            if ( plansJson ) {
+                url.searchParams.set( 'plans_override', plansJson );
             }
             return url.toString();
         } catch (e) {
@@ -418,88 +1409,31 @@
             if ( cardStyleId ) {
                 qs += '&card_style_id=' + encodeURIComponent( cardStyleId );
             }
+            if ( plansJson ) {
+                qs += '&plans_override=' + encodeURIComponent( plansJson );
+            }
             return base + ( base.indexOf( '?' ) === -1 ? '?' : '&' ) + qs;
         }
     }
 
-    function buildLayoutPill( layoutId ) {
-        var visual = LAYOUT_VISUALS[ layoutId ] || { cols: 3, featured: false };
-        var pill = document.createElement( 'span' );
-        pill.className = 'pwpl-layout-pill';
-        for ( var i = 0; i < ( visual.cols || 3 ); i++ ) {
-            var bar = document.createElement( 'span' );
-            bar.className = 'pwpl-layout-pill-col';
-            if ( visual.featured && i === Math.floor( ( visual.cols || 3 ) / 2 ) ) {
-                bar.classList.add( 'is-featured' );
-            }
-            if ( visual.compare ) {
-                bar.classList.add( 'is-compare' );
-            }
-            pill.appendChild( bar );
-        }
-        return pill;
-    }
-
-    function buildCardStylePill( styleId ) {
-        var visual = CARD_STYLE_VISUALS[ styleId ] || { headerBand: false, shadow: 'soft' };
-        var pill = document.createElement( 'span' );
-        pill.className = 'pwpl-card-style-pill';
-        var card = document.createElement( 'span' );
-        card.className = 'pwpl-card-style-pill__card';
-        if ( visual.headerBand ) {
-            card.classList.add( 'has-band' );
-        }
-        card.dataset.shadow = visual.shadow || 'soft';
-        pill.appendChild( card );
-        return pill;
-    }
-
-    function renderCardStyles() {
-        cardStyleList.innerHTML = '';
-        var tpl = getTemplateById( state.selectedTemplateId );
-        var styles = tpl && tpl.card_styles ? tpl.card_styles : {};
-        var styleIds = Object.keys( styles );
-        if ( ! styleIds.length ) {
-            return;
-        }
-        styleIds.forEach( function( sid ) {
-            var tile = document.createElement( 'button' );
-            tile.type = 'button';
-            tile.className = 'pwpl-card-style-tile';
-            tile.dataset.cardStyleId = sid;
-            var pill = buildCardStylePill( sid );
-            tile.appendChild( pill );
-            var lbl = document.createElement( 'span' );
-            lbl.className = 'pwpl-card-style-label';
-            lbl.textContent = styles[ sid ].label || sid;
-            tile.appendChild( lbl );
-            if ( state.selectedCardStyleId === sid ) {
-                tile.classList.add( 'is-selected' );
-            }
-            tile.addEventListener( 'click', function() {
-                selectCardStyle( sid );
-            } );
-            cardStyleList.appendChild( tile );
-        } );
-    }
-
-    renderTemplates();
-    if ( templates[0] ) {
-        selectTemplate( templates[0].id );
+    // Step management
+    function goToStep( step ) {
+        state.step = step;
+        updateSteps();
     }
 
     function updateSteps() {
-        var hasLayout = !! state.selectedLayoutId;
-        var hasCardStyle = !! state.selectedCardStyleId;
-        stepTemplate.classList.add( 'is-active' );
-        stepLayout.classList.toggle( 'is-active', hasLayout );
-        stepCardStyle.classList.toggle( 'is-active', hasCardStyle );
+        stepTemplate.classList.toggle( 'is-active', state.step >= 1 );
+        stepLayout.classList.toggle( 'is-active', state.step >= 2 );
+        stepCardStyle.classList.toggle( 'is-active', state.step >= 3 );
+
+        step1Wrap.style.display = state.step === 1 ? 'block' : 'none';
+        step2Wrap.style.display = state.step === 2 ? 'block' : 'none';
+        step3Wrap.style.display = state.step === 3 ? 'block' : 'none';
     }
 
-    updateSteps();
-
     function updateDimToggles() {
-        var toggles = sidebarEl.parentNode ? sidebarEl.parentNode.querySelectorAll( '.pwpl-dim-toggle' ) : [];
+        var toggles = dimGroup ? dimGroup.querySelectorAll( '.pwpl-dim-toggle' ) : [];
         Array.prototype.forEach.call( toggles, function( btn ) {
             var dim = btn.dataset.dim;
             var isOn = !! state.dimensions[ dim ];
@@ -508,19 +1442,91 @@
         } );
     }
 
-    createBtn.addEventListener( 'click', function() {
+    // Summary
+    function renderSummary() {
+        var tpl = getTemplateById( state.selectedTemplateId );
+        summaryList.innerHTML = '';
+        var columnsCount = getVisiblePlans().length || 1;
+        var items = [
+            { label: ( config.i18n && config.i18n.summaryTemplate ) || 'Template', value: tpl ? tpl.label : '' },
+            { label: ( config.i18n && config.i18n.summaryLayout ) || 'Layout', value: getLayoutTypeLabel( state.layoutType ) },
+            { label: ( config.i18n && config.i18n.summaryColumns ) || 'Plan columns', value: columnsCount.toString() },
+            { label: ( config.i18n && config.i18n.summaryDimensions ) || 'Dimensions', value: summaryDimensionsText() },
+        ];
+        items.forEach( function( item ) {
+            var row = document.createElement( 'div' );
+            row.className = 'pwpl-summary__row';
+            var lbl = document.createElement( 'span' );
+            lbl.className = 'pwpl-summary__label';
+            lbl.textContent = item.label;
+            var val = document.createElement( 'span' );
+            val.className = 'pwpl-summary__value';
+            val.textContent = item.value;
+            row.appendChild( lbl );
+            row.appendChild( val );
+            summaryList.appendChild( row );
+        } );
+    }
+
+    function summaryDimensionsText() {
+        var enabled = [];
+        Object.keys( state.dimensions ).forEach( function( dimKey ) {
+            if ( state.dimensions[ dimKey ] ) {
+                enabled.push( dimKey.charAt( 0 ).toUpperCase() + dimKey.slice( 1 ) );
+            }
+        } );
+        return enabled.length ? enabled.join( ', ' ) : ( config.i18n && config.i18n.noneLabel ) || 'None';
+    }
+
+    // Events
+    step1Next.addEventListener( 'click', function() {
         if ( ! state.selectedTemplateId ) {
             return;
         }
-        createBtn.disabled = true;
-        createBtn.classList.add( 'is-busy' );
+        goToStep( 2 );
+    } );
 
-        var apiFetch = window.wp && wp.apiFetch ? wp.apiFetch : null;
-        if ( ! apiFetch || ! config.rest || ! config.rest.createUrl ) {
-            createBtn.disabled = false;
-            createBtn.classList.remove( 'is-busy' );
+    step2Back.addEventListener( 'click', function() {
+        goToStep( 1 );
+    } );
+
+    step2Next.addEventListener( 'click', function() {
+        renderSummary();
+        goToStep( 3 );
+    } );
+
+    step3Back.addEventListener( 'click', function() {
+        goToStep( 2 );
+    } );
+
+    addColumnBtn.addEventListener( 'click', function() {
+        addPlan( { openEditor: true } );
+    } );
+
+    document.addEventListener( 'click', function( evt ) {
+        if ( ! evt.target.closest( '.pwpl-plan-row__menu-wrap' ) ) {
+            if ( openMenuIndex !== null ) {
+                openMenuIndex = null;
+                renderPlanList();
+            }
+        }
+    } );
+
+    function createTable( options ) {
+        if ( ! state.selectedTemplateId ) {
             return;
         }
+        var apiFetch = window.wp && wp.apiFetch ? wp.apiFetch : null;
+        if ( ! apiFetch || ! config.rest || ! config.rest.createUrl ) {
+            return;
+        }
+
+        createAndOpenBtn.disabled = true;
+        createAndCopyBtn.disabled = true;
+        createAndOpenBtn.classList.add( 'is-busy' );
+        createAndCopyBtn.classList.add( 'is-busy' );
+
+        var plansPayload = buildPlansPayload();
 
         apiFetch( {
             path: config.rest.createUrl.replace( restUrlRoot(), '' ),
@@ -533,22 +1539,131 @@
                 title:         nameInput ? nameInput.value : '',
                 theme:         themeSelect ? themeSelect.value : '',
                 dimensions:    state.dimensions,
+                plan_count:    plansPayload.length || '',
+                plans_override: plansPayload,
             },
         } ).then( function( response ) {
-            if ( response && response.edit_url ) {
-                window.location = response.edit_url;
-            } else {
-                createBtn.disabled = false;
-                createBtn.classList.remove( 'is-busy' );
+            createAndOpenBtn.disabled = false;
+            createAndCopyBtn.disabled = false;
+            createAndOpenBtn.classList.remove( 'is-busy' );
+            createAndCopyBtn.classList.remove( 'is-busy' );
+            if ( ! response ) {
                 // eslint-disable-next-line no-console
                 console.error( 'Unexpected create-table response', response );
+                return;
+            }
+            if ( options && options.copyOnly && response.table_id ) {
+                var shortcode = '[pwpl_table id="' + response.table_id + '"]';
+                showShortcodeModal( shortcode );
+                return;
+            }
+            if ( response.edit_url ) {
+                window.location = response.edit_url;
             }
         } ).catch( function( err ) {
-            createBtn.disabled = false;
-            createBtn.classList.remove( 'is-busy' );
+            createAndOpenBtn.disabled = false;
+            createAndCopyBtn.disabled = false;
+            createAndOpenBtn.classList.remove( 'is-busy' );
+            createAndCopyBtn.classList.remove( 'is-busy' );
             // eslint-disable-next-line no-console
             console.error( 'Create-table failed', err );
             alert( ( config.i18n && config.i18n.createError ) || 'Unable to create table. Please try again.' );
         } );
+    }
+
+    createAndOpenBtn.addEventListener( 'click', function() {
+        createTable( { copyOnly: false } );
     } );
+
+    createAndCopyBtn.addEventListener( 'click', function() {
+        createTable( { copyOnly: true } );
+    } );
+
+    // Initialize
+    renderTemplates();
+    if ( templates[0] ) {
+        selectTemplate( templates[0].id );
+    }
+
+    function showShortcodeModal( shortcode ) {
+        var existing = document.querySelector( '.pwpl-modal' );
+        if ( existing ) {
+            existing.remove();
+        }
+        var modal = document.createElement( 'div' );
+        modal.className = 'pwpl-modal';
+
+        var backdrop = document.createElement( 'div' );
+        backdrop.className = 'pwpl-modal__backdrop';
+        backdrop.addEventListener( 'click', closeModal );
+        modal.appendChild( backdrop );
+
+        var dialog = document.createElement( 'div' );
+        dialog.className = 'pwpl-modal__dialog';
+
+        var title = document.createElement( 'h3' );
+        title.className = 'pwpl-modal__title';
+        title.textContent = ( config.i18n && config.i18n.shortcodeTitle ) || 'Table created';
+        dialog.appendChild( title );
+
+        var desc = document.createElement( 'p' );
+        desc.className = 'pwpl-modal__desc';
+        desc.textContent = ( config.i18n && config.i18n.shortcodeDesc ) || 'Copy this shortcode to embed your table:';
+        dialog.appendChild( desc );
+
+        var fieldWrap = document.createElement( 'div' );
+        fieldWrap.className = 'pwpl-modal__field';
+        var input = document.createElement( 'input' );
+        input.type = 'text';
+        input.readOnly = true;
+        input.value = shortcode;
+        input.className = 'pwpl-modal__input';
+        input.addEventListener( 'focus', function() { input.select(); } );
+        fieldWrap.appendChild( input );
+
+        var copyBtn = document.createElement( 'button' );
+        copyBtn.type = 'button';
+        copyBtn.className = 'button button-primary pwpl-modal__copy';
+        copyBtn.textContent = ( config.i18n && config.i18n.shortcodeCopy ) || 'Copy shortcode';
+        copyBtn.addEventListener( 'click', function() {
+            if ( navigator.clipboard && navigator.clipboard.writeText ) {
+                navigator.clipboard.writeText( shortcode );
+                copyBtn.textContent = ( config.i18n && config.i18n.shortcodeCopied ) || 'Copied!';
+                setTimeout( function() {
+                    copyBtn.textContent = ( config.i18n && config.i18n.shortcodeCopy ) || 'Copy shortcode';
+                }, 1800 );
+            } else {
+                input.select();
+                document.execCommand( 'copy' );
+            }
+        } );
+        fieldWrap.appendChild( copyBtn );
+        dialog.appendChild( fieldWrap );
+
+        var actions = document.createElement( 'div' );
+        actions.className = 'pwpl-modal__actions';
+        var closeBtn = document.createElement( 'button' );
+        closeBtn.type = 'button';
+        closeBtn.className = 'button';
+        closeBtn.textContent = ( config.i18n && config.i18n.closeModal ) || 'Close';
+        closeBtn.addEventListener( 'click', closeModal );
+        actions.appendChild( closeBtn );
+        dialog.appendChild( actions );
+
+        modal.appendChild( dialog );
+        document.body.appendChild( modal );
+
+        function closeModal() {
+            if ( modal && modal.parentNode ) {
+                modal.parentNode.removeChild( modal );
+            }
+        }
+    }
+    renderLayoutTypes();
+    renderCardStyles();
+    renderPlanList();
+    renderPlanEditor();
+    renderSummary();
+    updateSteps();
+    updateDimToggles();
 }() );

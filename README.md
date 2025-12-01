@@ -32,7 +32,7 @@ Planify WP Pricing Lite lets you:
 
 The FireVPS theme included in this branch ships an opinionated, high‑conversion layout tuned for hosting plans, but the engine is generic enough for other products.
 
-> In progress: a New Table Wizard is being built on top of the existing meta model. Step 1 (template registry + wizard helper) is in this branch; the UI/REST steps will follow.
+The plugin now also includes a **New Table Wizard (v1)** that sits on top of the same meta model and uses ready-made templates as a starting point.
 
 ---
 
@@ -68,10 +68,10 @@ These values power the filters and variant pickers across all tables.
 
 1. Click **Planify** in the WP Admin menu to open the Pricing Tables dashboard. On first run you’ll see a welcome view with a “Create your first pricing table” call to action.
 2. You can start with the **New Table Wizard** (Planify → New table (wizard)):
-   - Step 1: pick a template (e.g. SaaS 3-column, comparison, service plans).
-   - Step 2: choose a layout (width/columns).
-   - Step 3: choose a column/plan card style.
-   - The wizard creates a table with demo plans and opens the Table Editor V2 for fine-tuning.
+   - Step 1: pick a template from a small library of presets (e.g. SaaS grids, service columns, comparison matrix, image-hero, minimal cards) using visual thumbnails.
+   - Step 2: choose layout & card style, tweak tabs/dimensions, and adjust plan columns via an inline editor (per-column title/subtitle, specs, price/sale price, CTA, featured/highlight).
+   - Step 3: review a summary, create the table, then either open it in the editor or create & copy the shortcode via a modern confirmation modal.
+   - The wizard creates a real table with demo plans using existing meta keys, then opens the Table Editor V2 for fine-tuning.
 2. Use **Add Pricing Table** from the dashboard header (or a table card’s quick action once tables exist) to create a new table. When tables exist, the dashboard shows stats, plan counts, updated dates, and quick actions for each table.
 3. Give your table a title (e.g. “VPS Hosting”).
 4. Use the **Table Editor – V1 (Preview)** meta box to:

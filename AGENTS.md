@@ -18,6 +18,9 @@ Its scope is the whole plugin.
   - Core JS: `assets/js/frontend.js` (filtering, variant selection, CTA/badge updates).
   - Core layout & tokens: `assets/css/frontend.css`, `assets/css/themes.css`.
   - FireVPS theme (hero experience): `themes/firevps/template.php`, `themes/firevps/theme.css`, `themes/firevps/theme.js`.
+- **New Table Wizard**
+  - Preset starter templates live in `PWPL_Table_Templates` (`includes/class-pwpl-table-templates.php`) and are consumed by `PWPL_Table_Wizard` + `PWPL_Rest_Wizard` and the wizard shell JS/CSS.
+  - Lite ships with multiple distinct templates (e.g. SaaS grids, service columns, comparison matrix, image-hero, minimal) using existing meta keys only; thumbnails are rendered via HTML/CSS in `assets/admin/js/table-wizard.js` / `assets/admin/css/table-wizard.css`.
 - **Admin navigation**
   - The top-level “Planify” menu is the canonical entry point; it opens the Pricing Tables dashboard cards view instead of the native list table. Submenus under it should stay lean: “Pricing Tables” (dashboard) and “Settings”.
   - Raw CPT menus (“Plans”, “All Tables” list) are hidden from the sidebar; editors reach those screens via dashboard quick actions/links. The dashboard includes a first-run guided empty state (hero + steps + help) when no tables exist; preserve/extend this pattern for new features.
@@ -132,7 +135,7 @@ Codex should **not** wait for the user to report broken padding/margins/overflow
 - Whenever you implement or materially adjust a **feature**, **layout**, or **visual style** (admin or frontend), you must:
   - Update `README.md` (and `readme.txt` when applicable) to describe the new behavior/UI at a high level.
   - Update `CHANGELOG.md` with a new entry under the next version heading summarizing what changed (Added/Changed/Fixed).
-  - Update this `AGENTS.md` only when the architectural expectations or “how to work in this repo” rules themselves change.
+  - Update this `AGENTS.md` only when the architectural expectations or “how to work in this repo” rules themselves change (for example, when adding a new editor surface like the New Table Wizard or expanding how templates/themes are discovered).
 - Treat these updates as part of the feature work; do them proactively without waiting for an explicit user request.
 
 ## Summary

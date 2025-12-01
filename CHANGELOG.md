@@ -11,9 +11,20 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 ### Added
 - New Table Wizard under the Planify menu: pick a template, layout, and card style with live preview, then create a table with demo plans and jump into Table Editor V2.
 - Pricing Tables dashboard links to the wizard from the empty state and as a secondary “New table (wizard)” action when tables exist.
+- Expanded starter pack with distinct templates (SaaS grid v2, service columns, comparison matrix, image hero, minimal) and richer template thumbnails in the wizard.
 
 ### Changed
-- No behavioral changes to existing editor/frontend; this is a guided creation flow on top of current meta.
+- Template registry now extensible via `pwpl_table_wizard_templates`; wizard shows template category chips and respects premium flags for Pro-only templates.
+- Wizard UI now a clear 3-step flow: pick template → configure layout/tabs/card style and add starter columns → create with summary, table name/theme, and options to open editor or copy shortcode. Layout types map to existing variants; no schema changes.
+- Wizard preview/create flows accept an optional plan count (clones demo plans) with inline preview error messaging, safe handling when templates are missing, and an optional local debug mode (constant/filter) that logs wizard selections and timings to the PHP error log.
+- Step 2 now includes a per-column editor: list with 3-dot menu (edit/duplicate/hide/delete), Add column, and an Edit Column panel for title/subtitle, highlight/featured, specs, primary variant price/sale, and CTA text/link; edited columns are sent via `plans_override` without changing schema.
+- No behavioral changes to existing editor/frontend rendering beyond the guided creation flow.
+
+### Fixed
+- Resolved a wizard shell JS regression (DOM order/duplicate declarations) that could prevent the New Table Wizard UI from rendering.
+- Fixed a missing `buildTemplateThumb` helper that caused the New Table Wizard sidebar to fail rendering (ReferenceError) in the 3-step flow.
+- Added a small admin-only shim for Divi's `et_pb_custom` on the wizard screen to prevent third-party scripts from throwing ReferenceError in the console without changing Planify behavior.
+- Wizard plan overrides now correctly send highlight/featured, primary price/sale, CTA values, and preserve all variants from the Step 2 column editor into preview/create so edited plans render accurately.
 
 ---
 

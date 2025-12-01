@@ -223,6 +223,15 @@ This document captures the last working session’s decisions and turns them int
 **Move theme selector back to Table**
 > Remove theme dropdown from Plan editor; keep Featured toggle only; ensure migration for legacy meta.
 
+**Wizard reliability & debug (Phase 2 – Step 6)**
+> Harden the New Table Wizard: surface REST/preview failures inline in the preview pane instead of only in the console, validate that template/layout/card-style IDs still exist in the registry and fail/fall back safely when they don’t, and add a local-only debug mode (constant/filter) that logs wizard selections and timings to the PHP error log (no external tracking).
+
+**Wizard 3-step flow (Template → Layout & Columns → Create)**
+> Rework the New Table Wizard UI into a 3-step flow: Step 1 shows template cards (with category/Pro chips) and a Continue button; Step 2 lets the user pick layout type (Grid/Carousel/Comparison/Classic mapped to existing layouts), toggle dimensions, pick card style, and add plan columns via an Add (+) control that clones demo plans; Step 3 shows a summary (template/layout/columns/dimensions) plus name/theme inputs and actions to create the table (open editor) or create + copy shortcode. Keep the existing data model/REST endpoints, only extend them to accept optional `plan_count` for seeded plan duplication. Update docs/changelog accordingly.
+
+**Wizard Step 2 column editor**
+> Enhance Step 2 plan columns: show a column list with 3-dot menu (Edit/Duplicate/Hide/Delete), Add column at the bottom, and an Edit Column panel for title/subtitle, highlight/featured, specs/features, primary variant price/sale, and CTA text/link. Edits update the preview and create calls via `plans_override` while remaining schema-compatible (existing plan meta only).
+
 ### Local test checklist
 - `git branch --show-current` → confirm branch.
 - `git fetch && git pull` → latest code.

@@ -18,9 +18,11 @@ class PWPL_Table_Wizard {
      * @param string      $template_id
      * @param string|null $layout_id
      * @param string|null $card_style_id
+     * @param int|null    $plan_count
+     * @param array|null  $plans_override
      * @return array|null
      */
-    public static function build_preview_config( string $template_id, ?string $layout_id = null, ?string $card_style_id = null ): ?array {
+    public static function build_preview_config( string $template_id, ?string $layout_id = null, ?string $card_style_id = null, ?int $plan_count = null, ?array $plans_override = null ): ?array {
         $template = PWPL_Table_Templates::get_template( $template_id );
         if ( ! $template ) {
             return null;
@@ -43,8 +45,16 @@ class PWPL_Table_Wizard {
             $meta[ PWPL_Meta::TABLE_THEME ] = $template['theme'];
         }
 
+        $plans_source = $plans_override && is_array( $plans_override ) && ! empty( $plans_override )
+            ? $plans_override
+            : ( $template['defaults']['plans'] ?? [] );
+
+        if ( empty( $plans_override ) && $plan_count && $plan_count > 0 ) {
+            $plans_source = self::adjust_plan_count( $plans_source, $plan_count );
+        }
+
         $plans = self::prepare_plans_for_preview(
-            $template['defaults']['plans'] ?? [],
+            $plans_source,
             $meta[ PWPL_Meta::TABLE_THEME ] ?? ''
         );
 
@@ -76,10 +86,12 @@ class PWPL_Table_Wizard {
      * @param string|null $layout_id
      * @param string|null $card_style_id
      * @param array       $args               Optional args: post_title, post_status.
+     * @param int|null    $plan_count         Optional number of plans to seed.
+     * @param array|null  $plans_override     Optional plan overrides from wizard.
      * @return int|null                       New table ID or null on failure.
      */
-    public static function create_table_from_selection( string $template_id, ?string $layout_id = null, ?string $card_style_id = null, array $args = [] ): ?int {
-        $config = self::build_preview_config( $template_id, $layout_id, $card_style_id );
+    public static function create_table_from_selection( string $template_id, ?string $layout_id = null, ?string $card_style_id = null, array $args = [], ?int $plan_count = null, ?array $plans_override = null ): ?int {
+        $config = self::build_preview_config( $template_id, $layout_id, $card_style_id, $plan_count, $plans_override );
         if ( ! $config ) {
             return null;
         }
@@ -153,6 +165,46 @@ class PWPL_Table_Wizard {
     }
 
     /**
+     * Ensure plan arrays are expanded or trimmed to the requested count by cloning the last plan.
+     *
+     * @param array   $plans
+     * @param int|null $plan_count
+     * @return array
+     */
+    private static function adjust_plan_count( array $plans, ?int $plan_count ): array {
+        if ( null === $plan_count || $plan_count <= 0 ) {
+            return $plans;
+        }
+
+        $max_count = max( 1, (int) $plan_count );
+        $plans     = array_values( $plans );
+
+        if ( empty( $plans ) ) {
+            $plans[] = [
+                'post_title'   => __( 'Plan 1', 'planify-wp-pricing-lite' ),
+                'post_excerpt' => '',
+                'meta'         => [],
+            ];
+        }
+
+        while ( count( $plans ) < $max_count ) {
+            $last      = end( $plans );
+            $position  = count( $plans ) + 1;
+            $clone     = $last;
+            $clone['post_title'] = ! empty( $last['post_title'] )
+                ? $last['post_title'] . ' ' . $position
+                : sprintf( __( 'Plan %d', 'planify-wp-pricing-lite' ), $position );
+            $plans[] = $clone;
+        }
+
+        if ( count( $plans ) > $max_count ) {
+            $plans = array_slice( $plans, 0, $max_count );
+        }
+
+        return $plans;
+    }
+
+    /**
      * Resolve a variant (layout/card style) with a fallback to the first defined entry.
      *
      * @param array       $variants
@@ -213,6 +265,42 @@ class PWPL_Table_Wizard {
             $meta = isset( $plan['meta'] ) && is_array( $plan['meta'] ) ? $plan['meta'] : [];
             if ( $theme && empty( $meta[ PWPL_Meta::PLAN_THEME ] ) ) {
                 $meta[ PWPL_Meta::PLAN_THEME ] = $theme;
+            }
+            if ( empty( $meta[ PWPL_Meta::PLAN_VARIANTS ] ) || ! is_array( $meta[ PWPL_Meta::PLAN_VARIANTS ] ) ) {
+                $meta[ PWPL_Meta::PLAN_VARIANTS ] = [
+                    [
+                        'period'     => 'monthly',
+                        'price'      => '',
+                        'sale_price' => '',
+                        'cta_label'  => '',
+                        'cta_url'    => '',
+                        'target'     => '_self',
+                    ],
+                ];
+            } else {
+                $meta[ PWPL_Meta::PLAN_VARIANTS ] = array_values( $meta[ PWPL_Meta::PLAN_VARIANTS ] );
+                foreach ( $meta[ PWPL_Meta::PLAN_VARIANTS ] as $idx => $variant ) {
+                    if ( ! is_array( $variant ) ) {
+                        $variant = [];
+                    }
+                    $meta[ PWPL_Meta::PLAN_VARIANTS ][ $idx ] = array_merge(
+                        [
+                            'period'     => 'monthly',
+                            'price'      => '',
+                            'sale_price' => '',
+                            'cta_label'  => '',
+                            'cta_url'    => '',
+                            'target'     => '_self',
+                        ],
+                        $variant
+                    );
+                }
+            }
+            if ( ! isset( $meta[ PWPL_Meta::PLAN_SPECS ] ) || ! is_array( $meta[ PWPL_Meta::PLAN_SPECS ] ) ) {
+                $meta[ PWPL_Meta::PLAN_SPECS ] = [];
+            }
+            if ( ! isset( $meta[ PWPL_Meta::PLAN_BADGE_SHADOW ] ) ) {
+                $meta[ PWPL_Meta::PLAN_BADGE_SHADOW ] = 8;
             }
 
             $prepared[] = [
