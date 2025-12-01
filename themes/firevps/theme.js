@@ -1086,17 +1086,54 @@ document.addEventListener('pwpl:updated', function(){
 	});
 });
 
+// Comparison layout rail controls (arrows for horizontal scroll)
+function initComparisonRails(root) {
+	if (!root) return;
+	var containers = root.querySelectorAll('[data-fvps-comparison-scroll]');
+	if (!containers.length) return;
+
+	containers.forEach(function(container){
+		if (container._fvpsComparisonInit) return;
+		container._fvpsComparisonInit = true;
+
+		var viewport = container.querySelector('.fvps-comparison-viewport');
+		var prevBtn = container.querySelector('.fvps-comparison-nav--prev');
+		var nextBtn = container.querySelector('.fvps-comparison-nav--next');
+		if (!viewport || !prevBtn || !nextBtn) return;
+
+		function updateButtons(){
+			var scrollable = viewport.scrollWidth > viewport.clientWidth + 2;
+			var atStart = viewport.scrollLeft <= 2;
+			var atEnd = (viewport.scrollWidth - viewport.clientWidth - viewport.scrollLeft) <= 2;
+			prevBtn.hidden = !scrollable || atStart;
+			nextBtn.hidden = !scrollable || atEnd;
+		}
+
+		function scrollByDir(dir){
+			var step = Math.max(viewport.clientWidth * 0.8, 240);
+			var target = viewport.scrollLeft + (dir === 'next' ? step : -step);
+			viewport.scrollTo({ left: target, behavior: 'smooth' });
+		}
+
+		prevBtn.addEventListener('click', function(){ scrollByDir('prev'); });
+		nextBtn.addEventListener('click', function(){ scrollByDir('next'); });
+		viewport.addEventListener('scroll', updateButtons, { passive: true });
+		window.addEventListener('resize', updateButtons, { passive: true });
+		updateButtons();
+	});
+}
+
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', function () {
 			initNavs();
 			initPlans();
 			var tables = document.querySelectorAll(ROOT_SELECTOR);
-			tables.forEach(function(t){ initCtaOnView(t); initStickyBar(t); });
+			tables.forEach(function(t){ initCtaOnView(t); initStickyBar(t); initComparisonRails(t); });
 		});
 	} else {
 		initNavs();
 		initPlans();
 		var tables = document.querySelectorAll(ROOT_SELECTOR);
-		tables.forEach(function(t){ initCtaOnView(t); initStickyBar(t); });
+		tables.forEach(function(t){ initCtaOnView(t); initStickyBar(t); initComparisonRails(t); });
 	}
 })();

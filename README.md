@@ -68,10 +68,10 @@ These values power the filters and variant pickers across all tables.
 
 1. Click **Planify** in the WP Admin menu to open the Pricing Tables dashboard. On first run you’ll see a welcome view with a “Create your first pricing table” call to action.
 2. You can start with the **New Table Wizard** (Planify → New table (wizard)):
-   - Step 1: pick a template from a small library of presets (e.g. SaaS grids, service columns, comparison matrix, image-hero, minimal cards) using visual thumbnails.
+   - Step 1: pick a template from a small library of presets (SaaS 3 Column, Startup Pricing Grid, Service Columns, Feature Comparison Table, Service Plans) using visual thumbnails. Each template belongs to a layout family (grid, columns, comparison) and a visual preset within that family.
    - Step 2: choose layout & card style, tweak tabs/dimensions, and adjust plan columns via an inline editor (per-column title/subtitle, specs, price/sale price, CTA, featured/highlight).
    - Step 3: review a summary, create the table, then either open it in the editor or create & copy the shortcode via a modern confirmation modal.
-   - The wizard creates a real table with demo plans using existing meta keys, then opens the Table Editor V2 for fine-tuning.
+   - Each template maps to a distinct built-in visual system (palette, card style, CTA placement) without changing the underlying shortcode/meta. The wizard creates a real table with demo plans using existing meta keys, then opens the Table Editor V2 for fine-tuning.
 2. Use **Add Pricing Table** from the dashboard header (or a table card’s quick action once tables exist) to create a new table. When tables exist, the dashboard shows stats, plan counts, updated dates, and quick actions for each table.
 3. Give your table a title (e.g. “VPS Hosting”).
 4. Use the **Table Editor – V1 (Preview)** meta box to:

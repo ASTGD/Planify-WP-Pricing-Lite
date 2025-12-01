@@ -155,10 +155,20 @@ class PWPL_Shortcode {
         $table_theme_package = $this->enqueue_theme_assets( $table_theme );
         $table_manifest      = is_array( $table_theme_package['manifest'] ?? null ) ? $table_theme_package['manifest'] : [];
 
+        $layout_type = $meta_helper->sanitize_layout_type( get_post_meta( $table_id, PWPL_Meta::TABLE_LAYOUT_TYPE, true ) );
+        $preset      = $meta_helper->sanitize_preset( get_post_meta( $table_id, PWPL_Meta::TABLE_PRESET, true ) );
+
         $table_classes = [
             'pwpl-table',
             'pwpl-table--theme-' . $table_theme,
         ];
+
+        if ( $layout_type ) {
+            $table_classes[] = 'pwpl-table--layout-' . $layout_type;
+        }
+        if ( $preset ) {
+            $table_classes[] = 'pwpl-table--preset-' . $preset;
+        }
 
         if ( ! empty( $table_manifest['containerClass'] ) ) {
             $table_classes[] = $table_manifest['containerClass'];
@@ -763,6 +773,10 @@ class PWPL_Shortcode {
                 'id'               => $table_id,
                 'dom_id'           => $dom_id,
                 'theme'            => $table_theme,
+                'layout_type'      => $layout_type ?: 'grid',
+                'preset'           => $preset,
+                'template_id'      => '',
+                'extra_classes'    => implode( ' ', array_filter( array_map( 'sanitize_html_class', array_diff( $table_classes, [ 'pwpl-table', 'pwpl-table--theme-' . $table_theme ] ) ) ) ),
                 'title'            => $table_title_raw,
                 'subtitle'         => $table_subtitle_raw,
                 'manifest'         => $table_manifest,

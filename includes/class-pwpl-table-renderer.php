@@ -26,8 +26,17 @@ class PWPL_Table_Renderer {
         $theme_loader  = new PWPL_Theme_Loader();
         $table_meta    = is_array( $config['table']['meta'] ) ? $config['table']['meta'] : [];
         $table_theme   = $meta_helper->sanitize_theme( $table_meta[ PWPL_Meta::TABLE_THEME ] ?? '' );
+        $layout_type   = isset( $table_meta[ PWPL_Meta::TABLE_LAYOUT_TYPE ] ) ? (string) $table_meta[ PWPL_Meta::TABLE_LAYOUT_TYPE ] : '';
+        $preset        = isset( $table_meta[ PWPL_Meta::TABLE_PRESET ] ) ? (string) $table_meta[ PWPL_Meta::TABLE_PRESET ] : '';
         $dom_id        = 'pwpl-preview-' . sanitize_key( $config['template_id'] ?? uniqid() );
         $table_id      = 0;
+
+        if ( '' === $layout_type ) {
+            $layout_type = ! empty( $config['layout_type'] ) ? sanitize_key( (string) $config['layout_type'] ) : 'grid';
+        }
+        if ( '' === $preset ) {
+            $preset = ! empty( $config['preset'] ) ? sanitize_key( (string) $config['preset'] ) : ( $config['template_id'] ?? '' );
+        }
 
         self::enqueue_frontend_assets();
 
@@ -86,10 +95,22 @@ class PWPL_Table_Renderer {
         );
 
         $tabs_context = self::build_tabs_context( $dimensions_enabled, $allowed, $dimension_labels );
+        $extra_classes = [];
+        if ( $layout_type ) {
+            $extra_classes[] = 'pwpl-table--layout-' . sanitize_html_class( $layout_type );
+        }
+        if ( $preset ) {
+            $extra_classes[] = 'pwpl-table--preset-' . sanitize_html_class( $preset );
+        }
+
         $table_context = [
             'id'               => $table_id,
             'dom_id'           => $dom_id,
             'theme'            => $table_theme,
+            'layout_type'      => $layout_type,
+            'preset'           => $preset,
+            'template_id'      => $config['template_id'] ?? '',
+            'extra_classes'    => implode( ' ', array_filter( $extra_classes ) ),
             'title'            => $config['table']['post_title'] ?? __( 'Preview Table', 'planify-wp-pricing-lite' ),
             'subtitle'         => $config['table']['post_excerpt'] ?? '',
             'manifest'         => $theme_package['manifest'] ?? [],

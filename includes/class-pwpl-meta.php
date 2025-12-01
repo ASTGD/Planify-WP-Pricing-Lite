@@ -18,6 +18,8 @@ class PWPL_Meta {
     const PLAN_BADGES_OVERRIDE    = '_pwpl_badges_override';
     const TABLE_BADGES            = '_pwpl_badges';
     const TABLE_THEME             = '_pwpl_table_theme';
+    const TABLE_LAYOUT_TYPE       = '_pwpl_table_layout_type';
+    const TABLE_PRESET            = '_pwpl_table_preset';
     const TABLE_HEIGHT            = '_pwpl_table_height';
     const LAYOUT_WIDTHS           = '_pwpl_layout_widths';
     const LAYOUT_COLUMNS          = '_pwpl_layout_columns';
@@ -113,6 +115,22 @@ class PWPL_Meta {
             'type'              => 'string',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => [ $this, 'sanitize_theme' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::TABLE_LAYOUT_TYPE, [
+            'single'            => true,
+            'type'              => 'string',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_layout_type' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_table', self::TABLE_PRESET, [
+            'single'            => true,
+            'type'              => 'string',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => [ $this, 'sanitize_preset' ],
             'show_in_rest'      => false,
         ] );
 
@@ -476,6 +494,16 @@ class PWPL_Meta {
         }
         // Prefer FireVPS as a modern default if bundled/overridden; else fallback to classic
         return in_array( 'firevps', $allowed, true ) ? 'firevps' : 'classic';
+    }
+
+    public function sanitize_layout_type( $value ) {
+        $value   = is_string( $value ) ? sanitize_key( $value ) : '';
+        $allowed = [ 'grid' ];
+        return in_array( $value, $allowed, true ) ? $value : 'grid';
+    }
+
+    public function sanitize_preset( $value ) {
+        return is_string( $value ) ? sanitize_key( $value ) : '';
     }
 
     public function sanitize_feature_flag( $value ) {

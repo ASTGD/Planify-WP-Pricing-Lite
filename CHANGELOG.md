@@ -6,6 +6,21 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 
 ---
 
+## Unreleased
+
+### Added
+- Internal: layout/preset table meta (`layout_type`, `preset`) seeded from wizard templates and exposed to renderers for future layout/preset-specific themes. No visual change yet.
+- Added `App Pricing – Soft Cards` wizard template (SaaS/app style) with soft cards, purple CTAs, and a flat feature list; middle card lightly highlighted.
+
+### Changed
+- FireVPS now differentiates several wizard presets (e.g., SaaS Grid V2, Image Hero, Minimal) with preset-scoped styling driven by table meta (`layout_type`/`preset`) while preserving existing layouts/DOM contracts.
+- Five wizard presets (SaaS 3 Column, Startup Pricing Grid, Service Columns, Feature Comparison Table, Service Plans) now render with distinct FireVPS visual systems: unique palettes, card surfaces, specs treatment, and CTA placement, without altering data/schema.
+- FireVPS now routes `layout_type` to dedicated layout partials: `grid` retains the original FireVPS DOM, `columns` renders a rail-free service-columns layout, and `comparison` renders a spec comparison matrix (no schema changes).
+- FireVPS preset cards polished: CTAs align on a shared baseline and card surfaces fill spare height so shorter cards no longer show blank bands when plan content differs.
+- FireVPS comparison layout: flattened plan headers/CTAs so the Comparison table preset now reads like a tabular matrix instead of full card footers.
+
+---
+
 ## 1.8.9 – New Table Wizard (v1)
 
 ### Added

@@ -36,6 +36,7 @@
 
     var TEMPLATE_VISUALS = {
         'saas-3-col': { type: 'grid', cols: 3, featured: true },
+        'app-soft-cards': { type: 'grid', cols: 3, featured: true },
         'comparison-table': { type: 'compare', cols: 4 },
         'service-plans': { type: 'columns', cols: 3, featured: false },
         'saas-grid-v2': { type: 'grid', cols: 3, featured: true },

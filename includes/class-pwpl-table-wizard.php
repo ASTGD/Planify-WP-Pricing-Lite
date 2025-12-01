@@ -45,6 +45,16 @@ class PWPL_Table_Wizard {
             $meta[ PWPL_Meta::TABLE_THEME ] = $template['theme'];
         }
 
+        $layout_type = isset( $template['layout_type'] ) ? sanitize_key( (string) $template['layout_type'] ) : 'grid';
+        $preset      = isset( $template['preset'] ) ? sanitize_key( (string) $template['preset'] ) : $template_id;
+
+        if ( empty( $meta[ PWPL_Meta::TABLE_LAYOUT_TYPE ] ) ) {
+            $meta[ PWPL_Meta::TABLE_LAYOUT_TYPE ] = $layout_type ?: 'grid';
+        }
+        if ( empty( $meta[ PWPL_Meta::TABLE_PRESET ] ) ) {
+            $meta[ PWPL_Meta::TABLE_PRESET ] = $preset ?: $template_id;
+        }
+
         $plans_source = $plans_override && is_array( $plans_override ) && ! empty( $plans_override )
             ? $plans_override
             : ( $template['defaults']['plans'] ?? [] );
@@ -62,6 +72,8 @@ class PWPL_Table_Wizard {
             'template_id'   => $template_id,
             'layout_id'     => $layout_variant['id'],
             'card_style_id' => $card_variant['id'],
+            'layout_type'   => $layout_type ?: 'grid',
+            'preset'        => $preset ?: $template_id,
             'table'         => [
                 'post_title'   => $template['label'] ?? '',
                 'post_excerpt' => $template['description'] ?? '',

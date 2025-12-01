@@ -21,6 +21,8 @@ Its scope is the whole plugin.
 - **New Table Wizard**
   - Preset starter templates live in `PWPL_Table_Templates` (`includes/class-pwpl-table-templates.php`) and are consumed by `PWPL_Table_Wizard` + `PWPL_Rest_Wizard` and the wizard shell JS/CSS.
   - Lite ships with multiple distinct templates (e.g. SaaS grids, service columns, comparison matrix, image-hero, minimal) using existing meta keys only; thumbnails are rendered via HTML/CSS in `assets/admin/js/table-wizard.js` / `assets/admin/css/table-wizard.css`.
+  - Templates now carry `layout_type` and `preset` slugs stored on each created table so themes can switch layouts/presets in future phases without altering schema.
+  - Going forward, `layout_type` represents a **layout family** (e.g. `grid` / `columns` / `comparison`) while `preset` identifies a visual variant within that family (e.g. “SaaS 3 Column”, “Startup Grid”, “Service Columns”, “Feature Comparison Table”, “Service Plans”). FireVPS can route to different layout partials based on `layout_type` but must keep using the same meta keys.
 - **Admin navigation**
   - The top-level “Planify” menu is the canonical entry point; it opens the Pricing Tables dashboard cards view instead of the native list table. Submenus under it should stay lean: “Pricing Tables” (dashboard) and “Settings”.
   - Raw CPT menus (“Plans”, “All Tables” list) are hidden from the sidebar; editors reach those screens via dashboard quick actions/links. The dashboard includes a first-run guided empty state (hero + steps + help) when no tables exist; preserve/extend this pattern for new features.

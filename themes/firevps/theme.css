@@ -1,13 +1,13 @@
 .pwpl-table--theme-firevps {
   --fvps-color-surface: #ffffff;
-  --fvps-color-panel: #fff8e6;
-  --fvps-color-dark: #1b1b1a;
-  --fvps-color-header: #1c1a16;
-  --fvps-color-muted: #6c655c;
-  --fvps-color-accent: #f5a623;
-  --fvps-color-accent-strong: #d9790b;
-  --fvps-color-highlight: #ffcd30;
-  --fvps-color-button: #141414;
+  --fvps-color-panel: #f7f9fb;
+  --fvps-color-dark: #0f172a;
+  --fvps-color-header: #0f172a;
+  --fvps-color-muted: #475569;
+  --fvps-color-accent: #2563eb;
+  --fvps-color-accent-strong: #1d4ed8;
+  --fvps-color-highlight: #e0e7ff;
+  --fvps-color-button: #2563eb;
   --fvps-color-button-text: #ffffff;
   --fvps-shadow-outer: 0 32px 48px rgba(15, 23, 42, 0.14);
   --fvps-shadow-inner: 0 26px 46px rgba(15, 23, 42, 0.14);
@@ -656,7 +656,9 @@
 .pwpl-table--theme-firevps .fvps-card {
   display: flex;
   flex-direction: column;
-  background: var(--fvps-color-surface);
+  align-items: stretch;
+  justify-content: flex-start;
+  background: var(--card-surface-bg, var(--fvps-color-surface));
   --fvps-card-keyline: color-mix(in srgb, var(--card-keyline-color, transparent) var(--card-keyline-opacity, 0%), transparent);
   border-radius: var(--card-radius, var(--fvps-radius-lg));
   border: var(--card-border-width, 0px) solid var(--card-border-color, transparent); /* optional custom border */
@@ -688,6 +690,7 @@
   background: var(--card-header-bg, linear-gradient(180deg, rgba(255, 253, 245, 0.98) 0%, rgba(255, 240, 205, 0.98) 100%));
   color: var(--card-top-text-color, inherit);
   font-family: var(--card-top-font, inherit);
+  flex: 0 0 auto;
   /* Add bottom padding so CTA breathes above the specs block */
   padding-top: var(--card-pad-t, clamp(20px, 2.4vw, 28px));
   padding-right: var(--card-pad-r, clamp(20px, 2.6vw, 32px));
@@ -949,16 +952,18 @@
 }
 
 .pwpl-table--theme-firevps .fvps-card__specs {
+  flex: 1 1 auto;
+  min-height: 0;
   list-style: none;
   margin: 0;
   padding: clamp(18px, 2.2vw, 24px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.6vw, 28px);
   /* Solid fallback always visible; gradient applied only when provided */
-  background-color: var(--card-specs-bg, #cf7a1a);
+  background-color: var(--card-specs-bg, #eef2ff);
   background-image: var(--card-specs-gradient);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  color: var(--card-specs-text, rgba(255, 255, 255, 0.95));
+  color: var(--card-specs-text, #0f172a);
   /* Dynamic divider token derived from current specs text color.
      This keeps dividers visible on light or dark specs backgrounds */
   --card-specs-divider: color-mix(in oklab, var(--card-specs-text, #ffffff) 28%, transparent);
@@ -1137,6 +1142,7 @@
   display: flex;
   justify-content: stretch;
   align-items: center;
+  flex: 0 0 auto;
   border-top: none;
   border-bottom-left-radius: var(--card-radius, var(--fvps-radius-lg));
   border-bottom-right-radius: var(--card-radius, var(--fvps-radius-lg));
@@ -1351,6 +1357,551 @@
   box-shadow: none;
   cursor: not-allowed;
   background: rgba(120, 120, 120, 0.45);
+}
+
+/* Preset variants (FireVPS) */
+/* SaaS 3 Column – clean baseline (soft blue) */
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col {
+  --fvps-color-accent: #2563eb;
+  --fvps-color-accent-strong: #1d4ed8;
+  --fvps-color-header: #0f172a;
+  --card-surface-bg: #fef7e7;
+  --card-specs-bg: #eef2ff;
+  --card-specs-gradient: none;
+  --card-specs-text: #0f172a;
+  --card-specs-icon-color: #2563eb;
+  --card-specs-icon-bg: rgba(37, 99, 235, 0.12);
+  --card-specs-icon-border: rgba(37, 99, 235, 0.24);
+  background: #f5f7fb;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-table-header {
+  background: transparent;
+  padding: 0;
+  margin-bottom: clamp(22px, 3vw, 36px);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .pwpl-plan-grid {
+  gap: clamp(16px, 2vw, 24px);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .pwpl-plan {
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  background: #ffffff;
+  border-radius: 12px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__heading {
+  align-items: flex-start;
+  gap: 6px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-button,
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-button--inline {
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-button:hover,
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-button--inline:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+/* Startup Grid – bold, dark/indigo with featured middle card */
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 {
+  --fvps-color-accent: #6366f1;
+  --fvps-color-accent-strong: #4f46e5;
+  --fvps-color-header: #e2e8f0;
+  --card-surface-bg: #f9fafc;
+  --card-specs-bg: #0f172a;
+  --card-specs-gradient: linear-gradient(180deg, rgba(99,102,241,0.14) 0%, rgba(15,23,42,0.92) 100%);
+  --card-specs-text: #e2e8f0;
+  --card-specs-icon-color: #a5b4fc;
+  --card-specs-icon-bg: rgba(165, 180, 252, 0.12);
+  --card-specs-icon-border: rgba(165, 180, 252, 0.32);
+  background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.08), transparent 40%), #0f172a;
+  color: #e2e8f0;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .fvps-table-header {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.26), rgba(99, 102, 241, 0.18));
+  border-radius: 18px;
+  padding: clamp(18px, 3vw, 28px);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.22);
+  color: #e2e8f0;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .fvps-table-title,
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .fvps-table-subtitle {
+  color: #e2e8f0;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .pwpl-plan-grid {
+  gap: clamp(18px, 2vw, 26px);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .pwpl-plan {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.24);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .pwpl-plan:nth-child(2) {
+  transform: translateY(-12px);
+  border-color: #6366f1;
+  box-shadow: 0 26px 48px rgba(99, 102, 241, 0.3), 0 12px 24px rgba(15, 23, 42, 0.2);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .fvps-button {
+  border-radius: 12px;
+  font-weight: 700;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .pwpl-plan:nth-child(2) .fvps-button {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  border-color: #4f46e5;
+  color: #fff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .pwpl-plan:not(:nth-child(2)) .fvps-button {
+  background: #ffffff;
+  color: #4f46e5;
+  border-color: #4f46e5;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .pwpl-plan:not(:nth-child(2)) .fvps-button:hover {
+  background: #eef2ff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .fvps-plan-deal {
+  display: inline-flex;
+  background: rgba(79, 70, 229, 0.12);
+  color: #1e1b4b;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+/* Service Columns – light, editorial, teal */
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite {
+  --fvps-color-accent: #0f766e;
+  --fvps-color-accent-strong: #0b5f56;
+  --fvps-color-header: #0f172a;
+  --card-surface-bg: #ffffff;
+  --card-specs-bg: #f8fafc;
+  --card-specs-gradient: none;
+  --card-specs-text: #0f172a;
+  --card-specs-icon-color: #0f766e;
+  --card-specs-icon-bg: rgba(15, 118, 110, 0.1);
+  --card-specs-icon-border: rgba(15, 118, 110, 0.2);
+  background: #f3f4f6;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .fvps-table-header {
+  text-align: left;
+  margin-bottom: clamp(18px, 2.5vw, 28px);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .pwpl-plan-grid {
+  gap: clamp(14px, 2vw, 20px);
+  justify-content: flex-start;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .pwpl-plan {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  background: #ffffff;
+  text-align: left;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .fvps-card__heading {
+  align-items: flex-start;
+  gap: 4px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .fvps-plan-lead {
+  color: #475569;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .fvps-card__specs .fvps-icon {
+  opacity: 0.6;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .fvps-card__specs .fvps-spec__value {
+  color: #0f766e;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .fvps-card__cta-inline {
+  align-items: flex-start;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .fvps-button,
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .fvps-button--inline {
+  background: transparent;
+  color: #0f766e;
+  border-color: #0f766e;
+  border-radius: 8px;
+  align-self: flex-start;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .fvps-button:hover,
+.pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .fvps-button--inline:hover {
+  background: rgba(15, 118, 110, 0.08);
+}
+
+/* Feature Comparison – tabular, minimal */
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table {
+  --fvps-color-accent: #1e40af;
+  --fvps-color-accent-strong: #1e3a8a;
+  --card-specs-bg: #ffffff;
+  --card-specs-gradient: none;
+  --card-specs-text: #0f172a;
+  --card-specs-icon-color: #475569;
+  --card-specs-icon-bg: rgba(71, 85, 105, 0.08);
+  --card-specs-icon-border: rgba(71, 85, 105, 0.16);
+  background: #f8fafc;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .pwpl-plan {
+  border: 1px solid #e2e8f0;
+  box-shadow: none;
+  background: #ffffff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__specs {
+  border-top: 1px solid #e2e8f0;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__specs li {
+  border-bottom: 1px solid #e5e7eb;
+  padding-block: 9px;
+  background: #fff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__specs li:nth-child(even) {
+  background: #f8fafc;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__specs .fvps-spec__label {
+  font-weight: 700;
+  color: #0f172a;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__specs .fvps-icon {
+  opacity: 0.55;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-button {
+  background: #ffffff;
+  color: #1e40af;
+  border-color: #1e40af;
+  border-radius: 8px;
+  padding-inline: 14px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-button:hover {
+  background: #e0e7ff;
+}
+
+/* Service Plans – warm, sales page */
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans {
+  --fvps-color-accent: #f97316;
+  --fvps-color-accent-strong: #ea580c;
+  --card-surface-bg: #fff7ed;
+  --card-specs-bg: #fef3e8;
+  --card-specs-gradient: none;
+  --card-specs-text: #7c2d12;
+  --card-specs-icon-color: #f97316;
+  --card-specs-icon-bg: rgba(249, 115, 22, 0.14);
+  --card-specs-icon-border: rgba(249, 115, 22, 0.3);
+  background: #fff7ed;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-table-header {
+  margin-bottom: clamp(20px, 3vw, 32px);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan {
+  background: linear-gradient(180deg, #fef2e0 0%, #fef2e0 14%, #ffffff 14%);
+  border: 1px solid #f97316;
+  box-shadow: 0 16px 32px rgba(249, 115, 22, 0.15);
+  border-radius: 14px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-card__heading {
+  gap: 6px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-plan-deal,
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-plan-badge {
+  background: rgba(249, 115, 22, 0.18);
+  color: #7c2d12;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-button {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  border-color: #ea580c;
+  color: #fff;
+  border-radius: 14px;
+  font-weight: 700;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-button--inline {
+  background: #ffffff;
+  color: #ea580c;
+  border-color: #ea580c;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-button--inline:hover {
+  background: rgba(234, 88, 12, 0.08);
+}
+
+/* App Pricing – Soft Cards */
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards {
+  --fvps-color-accent: #8b5cf6;
+  --fvps-color-accent-strong: #7c3aed;
+  --fvps-color-header: #0f172a;
+  --fvps-card-max-inline: 400px;
+  --fvps-card-min-fallback: 400px;
+  --card-radius: 0;
+  --card-surface-bg: #ffffff;
+  --card-specs-bg: transparent;
+  --card-specs-gradient: none;
+  --card-specs-text: #0f172a;
+  --card-specs-icon-color: #8b5cf6;
+  --card-specs-icon-bg: rgba(139, 92, 246, 0.12);
+  --card-specs-icon-border: rgba(139, 92, 246, 0.4);
+  background: #f5f3ff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .pwpl-plan {
+  border-radius: 0;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+  background: #ffffff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .pwpl-plan:nth-child(2) {
+  background: #f3e8ff;
+  border-color: #c4b5fd;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-card__top,
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-card__specs,
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-card__cta {
+  background: transparent;
+  box-shadow: none;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-card__heading {
+  gap: 8px;
+  align-items: flex-start;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-card__price {
+  font-size: clamp(26px, 4vw, 34px);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-button,
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-button--inline {
+  --cta-radius: 999px;
+  --cta-height: 44px;
+  --cta-pad-x: 18px;
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  color: #ffffff;
+  font-weight: 600;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-button:hover,
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-button--inline:hover {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-card__specs {
+  background: transparent;
+  background-image: none;
+  gap: 10px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-spec {
+  grid-template-columns: 26px 1fr;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #8b5cf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  stroke: transparent;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-icon::before {
+  content: '✓';
+  font-size: 14px;
+  font-weight: 700;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-app-soft-cards .fvps-card__cta {
+  padding-top: 14px;
+}
+
+/* Layout: Columns (service columns) */
+.pwpl-table--theme-firevps.pwpl-table--layout-columns {
+  background: #f7f8fb;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-columns .fvps-table-header {
+  text-align: center;
+  margin-bottom: clamp(16px, 3vw, 28px);
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-columns .fvps-columns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-columns .fvps-columns-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--card-surface-bg, #ffffff);
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
+  padding: 20px;
+  gap: 12px;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-columns .fvps-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-columns .fvps-card__heading {
+  gap: 6px;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-columns .fvps-card__price {
+  font-size: clamp(22px, 3vw, 28px);
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-columns .fvps-card__specs {
+  margin-top: 4px;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-columns .fvps-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-columns .pwpl-plan__cta-button {
+  width: 100%;
+}
+
+/* Layout: Comparison matrix */
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison {
+  background: #f9fafb;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-table-header {
+  text-align: center;
+  margin-bottom: clamp(18px, 3vw, 32px);
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-scroll {
+  overflow-x: auto;
+  position: relative;
+  padding: 0 42px;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-table {
+  display: grid;
+  row-gap: 0;
+  width: 100%;
+  min-width: calc((var(--fvps-comparison-cols, 1) + 1) * 400px);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 18px 28px rgba(15, 23, 42, 0.06);
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.05fr) repeat(var(--fvps-comparison-cols, 1), minmax(400px, 1fr));
+  gap: 0;
+  align-items: stretch;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-row--header {
+  border-bottom: 1px solid #e2e8f0;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-cell {
+  padding: 14px 16px;
+  border-right: 1px solid #e5e7eb;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-cell:last-child {
+  border-right: none;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-cell--stub {
+  background: transparent;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-cell--label {
+  font-weight: 700;
+  color: #0f172a;
+  background: #f8fafc;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-cell--header {
+  background: #f8fafc;
+  text-align: center;
+  padding: 10px 10px 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-cell--value {
+  background: #fff;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-row:nth-child(even) .fvps-comparison-cell--value {
+  background: #f9fbff;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-plan {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  inline-size: 100%;
+  min-inline-size: 100%;
+  max-inline-size: 100%;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-plan__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  width: 100%;
+  text-align: center;
+  word-break: break-word;
+  padding: 4px 6px 6px;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-plan__pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  width: 100%;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-plan__cta {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-card__cta--comparison {
+  background: transparent;
+  padding: 8px 0 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin-top: 4px;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .pwpl-plan__cta-button {
+  width: auto;
+  max-width: 170px;
+  margin-inline: auto;
+  --cta-height: 38px;
+  --cta-radius: 999px;
+  --cta-pad-x: 18px;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-nav[hidden] { display: none; }
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-nav:hover { transform: translateY(-50%) scale(1.04); box-shadow: 0 10px 22px rgba(0,0,0,0.12); }
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-nav--prev { left: 6px; }
+.pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-nav--next { right: 6px; }
+
+@media (max-width: 960px) {
+  .pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .pwpl-plan:nth-child(2) {
+    transform: translateY(-8px);
+  }
+}
+@media (max-width: 782px) {
+  .pwpl-table--theme-firevps.pwpl-table--preset-saas-grid-v2 .pwpl-plan:nth-child(2) {
+    transform: translateY(-4px);
+  }
+  .pwpl-table--theme-firevps.pwpl-table--preset-service-columns-lite .pwpl-plan {
+    text-align: left;
+  }
 }
 
 @media (max-width: 414px) {
