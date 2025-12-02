@@ -119,6 +119,12 @@ $icon_map = [
 	'ip'           => 'ip',
 	'ip-address'   => 'ip',
 	'ip-addresses' => 'ip',
+	// Additional common slugs used by templates.
+	'websites'        => 'websites',
+	'ssd-storage'     => 'ssd-storage',
+	'email'           => 'email',
+	'premium-support' => 'support-agent',
+	'free-ssl'        => 'ssl',
 ];
 
 $spec_priority = [
@@ -196,6 +202,9 @@ if ( $style_combined ) {
 		if ( empty( $items ) ) {
 			continue;
 		}
+        if ( 'period' === $dimension && 'saas-grid-v2' === $preset ) {
+            echo '<div class="fvps-period-badge">' . esc_html__( 'Save 15%', 'planify-wp-pricing-lite' ) . '</div>';
+        }
 		$current_value = $wrapper_attrs[ 'data-active-' . $dimension ] ?? '';
 		?>
         <div class="pwpl-dimension-nav fvps-dimension-nav" data-dimension="<?php echo esc_attr( $dimension ); ?>">
@@ -256,7 +265,7 @@ if ( $style_combined ) {
 		</div>
 
 		<div class="pwpl-plan-grid pwpl-plan-rail fvps-plan-rail" tabindex="0">
-			<?php foreach ( $plans as $plan ) :
+			<?php foreach ( $plans as $plan_index => $plan ) :
 				$plan_id    = (int) ( $plan['id'] ?? 0 );
 				$plan_theme = sanitize_key( $plan['theme'] ?? $theme_slug );
 				$title      = $plan['title'] ?? sprintf( __( 'Plan #%d', 'planify-wp-pricing-lite' ), $plan_id );
@@ -287,10 +296,33 @@ if ( $style_combined ) {
 					if ( '' === $label && '' === $value ) {
 						return null;
 					}
+					$slug = '';
+					if ( ! empty( $spec['slug'] ) && is_string( $spec['slug'] ) ) {
+						$slug = sanitize_key( $spec['slug'] );
+					} else {
+						$slug = sanitize_title( $label );
+					}
+					// Canonicalize common slugs so icons / colors line up.
+					if ( false !== strpos( $slug, 'website' ) ) {
+						$slug = 'websites';
+					} elseif ( false !== strpos( $slug, 'ssd' ) || false !== strpos( $slug, 'storage' ) ) {
+						$slug = 'ssd-storage';
+					} elseif ( false !== strpos( $slug, 'email' ) ) {
+						$slug = 'email';
+					} elseif ( false !== strpos( $slug, 'bandwidth' ) || false !== strpos( $slug, 'traffic' ) ) {
+						$slug = 'bandwidth';
+					} elseif ( false !== strpos( $slug, 'ssl' ) ) {
+						$slug = 'free-ssl';
+					}
+					$icon = '';
+					if ( ! empty( $spec['icon'] ) && is_string( $spec['icon'] ) ) {
+						$icon = sanitize_key( $spec['icon'] );
+					}
 					return [
 						'label' => $label,
 						'value' => $value,
-						'slug'  => sanitize_title( $label ),
+						'slug'  => $slug,
+						'icon'  => $icon,
 					];
 				}, (array) ( $plan['specs'] ?? [] ) ) );
 
@@ -330,6 +362,20 @@ if ( $style_combined ) {
                 if ( $preset ) {
                     $plan_classes[] = 'fvps-card--preset-' . $preset;
                 }
+                if ( $is_featured ) {
+                    $plan_classes[] = 'is-featured';
+                }
+                $hero_class = '';
+                if ( 'saas-grid-v2' === $preset ) {
+                    $hero_class = 'fvps-hero-illustration';
+                    if ( 0 === $plan_index ) {
+                        $hero_class .= ' fvps-hero-illustration--basic';
+                    } elseif ( 1 === $plan_index ) {
+                        $hero_class .= ' fvps-hero-illustration--standard';
+                    } else {
+                        $hero_class .= ' fvps-hero-illustration--premium';
+                    }
+                }
 				?>
 				<article class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $plan_classes ) ) ); ?>"
 					data-plan-id="<?php echo esc_attr( $plan_id ); ?>"
@@ -339,6 +385,11 @@ if ( $style_combined ) {
 					data-locations="<?php echo esc_attr( $locations ? implode( ',', $locations ) : '*' ); ?>"
 					data-variants="<?php echo esc_attr( $variants ?: '[]' ); ?>"
 					data-badge="<?php echo esc_attr( $badge_attr ?: '{}' ); ?>">
+                    <?php
+                    if ( 'saas-grid-v2' === $preset && $is_featured ) {
+                        echo '<span class="fvps-ribbon fvps-ribbon--popular">' . esc_html__( 'Most Popular', 'planify-wp-pricing-lite' ) . '</span>';
+                    }
+                    ?>
 					<div class="fvps-card__top">
 						<div class="fvps-card__badges">
                         <span class="fvps-plan-badge" data-pwpl-badge style="<?php
@@ -360,6 +411,31 @@ if ( $style_combined ) {
 						</div>
 
                         <div class="fvps-card__heading">
+                            <?php if ( $hero_class ) : ?>
+                                <div class="<?php echo esc_attr( $hero_class ); ?>" aria-hidden="true">
+                                    <svg class="fvps-hero-illustration__svg" viewBox="0 0 120 60" role="presentation" focusable="false">
+                                        <?php if ( strpos( $hero_class, 'fvps-hero-illustration--basic' ) !== false ) : ?>
+                                            <!-- Basic: simple scooter -->
+                                            <rect x="20" y="26" width="52" height="16" rx="8" ry="8"></rect>
+                                            <circle cx="32" cy="46" r="7"></circle>
+                                            <circle cx="74" cy="46" r="7"></circle>
+                                            <line x1="48" y1="26" x2="52" y2="16"></line>
+                                        <?php elseif ( strpos( $hero_class, 'fvps-hero-illustration--standard' ) !== false ) : ?>
+                                            <!-- Standard: scooter with seat -->
+                                            <rect x="18" y="24" width="60" height="18" rx="9" ry="9"></rect>
+                                            <rect x="40" y="18" width="20" height="8" rx="4" ry="4"></rect>
+                                            <circle cx="32" cy="46" r="7"></circle>
+                                            <circle cx="78" cy="46" r="7"></circle>
+                                        <?php else : ?>
+                                            <!-- Premium: sportier bike -->
+                                            <path d="M26 46c0-6 4-10 10-10h30l6-10" />
+                                            <circle cx="32" cy="46" r="7"></circle>
+                                            <circle cx="78" cy="46" r="7"></circle>
+                                            <line x1="40" y1="26" x2="54" y2="18"></line>
+                                        <?php endif; ?>
+                                    </svg>
+                                </div>
+                            <?php endif; ?>
                             <div class="fvps-plan-heading-icon" aria-hidden="true">
                                 <svg class="fvps-icon fvps-icon--plan" focusable="false">
                                     <use href="#ram" xlink:href="#ram"></use>
@@ -402,7 +478,28 @@ if ( $style_combined ) {
 						<ul class="pwpl-plan__specs fvps-card__specs">
 							<?php foreach ( $ordered_specs as $spec ) :
 								$slug       = $spec['slug'] ?? '';
-								$icon_id    = $icon_map[ $slug ] ?? 'generic';
+								$icon_id    = '';
+								if ( ! empty( $spec['icon'] ) && is_string( $spec['icon'] ) ) {
+									$icon_id = sanitize_key( (string) $spec['icon'] );
+								}
+								// Fall back to the slug-based map only when no explicit icon has been provided.
+								if ( '' === $icon_id ) {
+									$lookup_slug = $slug;
+									if ( ! isset( $icon_map[ $lookup_slug ] ) ) {
+										if ( false !== strpos( $lookup_slug, 'website' ) ) {
+											$lookup_slug = 'websites';
+										} elseif ( false !== strpos( $lookup_slug, 'ssd' ) || false !== strpos( $lookup_slug, 'storage' ) ) {
+											$lookup_slug = 'ssd-storage';
+										} elseif ( false !== strpos( $lookup_slug, 'email' ) ) {
+											$lookup_slug = 'email';
+										} elseif ( false !== strpos( $lookup_slug, 'bandwidth' ) || false !== strpos( $lookup_slug, 'traffic' ) ) {
+											$lookup_slug = 'bandwidth';
+										} elseif ( false !== strpos( $lookup_slug, 'ssl' ) ) {
+											$lookup_slug = 'free-ssl';
+										}
+									}
+									$icon_id = $icon_map[ $lookup_slug ] ?? 'generic';
+								}
 								$icon_class = $slug ? 'fvps-icon-' . $slug : 'fvps-icon-generic';
 								?>
 								<li class="fvps-spec fvps-spec--<?php echo esc_attr( $slug ?: 'generic' ); ?>">

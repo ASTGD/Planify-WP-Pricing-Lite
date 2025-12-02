@@ -369,9 +369,16 @@ class PWPL_Rest_Wizard {
                     if ( ! is_array( $spec ) ) {
                         continue;
                     }
+                    $label = sanitize_text_field( $spec['label'] ?? '' );
+                    $value = sanitize_text_field( $spec['value'] ?? '' );
+                    $icon  = '';
+                    if ( ! empty( $spec['icon'] ) && is_string( $spec['icon'] ) ) {
+                        $icon = sanitize_key( $spec['icon'] );
+                    }
                     $specs[] = [
-                        'label' => sanitize_text_field( $spec['label'] ?? '' ),
-                        'value' => sanitize_text_field( $spec['value'] ?? '' ),
+                        'label' => $label,
+                        'value' => $value,
+                        'icon'  => $icon,
                     ];
                 }
             }

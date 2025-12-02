@@ -976,7 +976,20 @@ class PWPL_Meta {
             if ( $label === '' && $val === '' ) {
                 continue;
             }
-            $clean[] = [ 'label' => $label, 'value' => $val ];
+            $icon = '';
+            if ( ! empty( $item['icon'] ) && is_string( $item['icon'] ) ) {
+                $icon = sanitize_key( $item['icon'] );
+            }
+            $slug = '';
+            if ( ! empty( $item['slug'] ) && is_string( $item['slug'] ) ) {
+                $slug = sanitize_key( $item['slug'] );
+            }
+            $clean[] = [
+                'label' => $label,
+                'value' => $val,
+                'icon'  => $icon,
+                'slug'  => $slug,
+            ];
         }
         return array_values( $clean );
     }

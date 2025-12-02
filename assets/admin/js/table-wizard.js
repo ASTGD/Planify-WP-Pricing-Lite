@@ -9,6 +9,9 @@
     }
 
     var templates = Array.isArray( config.templates ) ? config.templates : [];
+    templates = templates.filter( function( tpl ) {
+        return ! tpl.wizard_hidden;
+    } );
     if ( ! templates.length ) {
         root.innerHTML = '<p>' + ( config.i18n && config.i18n.selectTemplate ? config.i18n.selectTemplate : 'No templates available.' ) + '</p>';
         return;
@@ -40,7 +43,6 @@
         'comparison-table': { type: 'compare', cols: 4 },
         'service-plans': { type: 'columns', cols: 3, featured: false },
         'saas-grid-v2': { type: 'grid', cols: 3, featured: true },
-        'service-columns-lite': { type: 'columns', cols: 3, featured: false },
         'comparison-matrix': { type: 'compare', cols: 4 },
         'image-hero': { type: 'image', cols: 3, featured: true },
         'minimal-focus': { type: 'minimal', cols: 3, featured: false },

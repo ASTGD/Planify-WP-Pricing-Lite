@@ -76,6 +76,7 @@ Its scope is the whole plugin.
     - Core: `--pwpl-*` in `assets/css/frontend.css` and `assets/css/themes.css`.
     - FireVPS theme: `--fvps-*` in `themes/firevps/theme.css`.
   - Keep selectors scoped (e.g. `.pwpl-table …`, `.pwpl-meta …`, `.pwpl-table--theme-firevps …`) to avoid leaking styles into unrelated admin screens or themes.
+  - When setting icon colors (specs, buttons, headers), always ensure sufficient contrast with the background; do not leave icons in low‑contrast “default white” on light backgrounds.
 
 ## UI/UX & Layout – Special Expectations
 
@@ -84,7 +85,8 @@ When the user asks for **layout or UI changes** (especially in the Table Editor 
 Whenever you adjust layout (admin or frontend):
 
 - **Handle spacing & overflow by default**
-  - Explicitly set reasonable `padding`, `margin`, and/or `gap` on new or modified containers.
+  - Explicitly set reasonable `padding`, `margin`, and/or `gap` on new or modified containers (aim for 16–32px padding on major blocks; avoid very tight or very loose sections).
+  - Keep vertical rhythm consistent inside cards/sections: group related elements with small gaps, and avoid large empty bands above or below the main content.
   - Ensure no horizontal scrollbars or clipped content at common breakpoints:
     - Narrow admin (≈ < 960px),
     - Standard desktop widths,
