@@ -950,6 +950,8 @@ class PWPL_Shortcode {
                     $plan_title_raw = sprintf( __( 'Plan #%d', 'planify-wp-pricing-lite' ), $plan_id );
                 }
 
+                $hero_image_id = (int) get_post_meta( $plan_id, PWPL_Meta::PLAN_HERO_IMAGE, true );
+
                 $plan_entries[] = [
                     'id'              => $plan_id,
                     'theme'           => $plan_theme_slug,
@@ -969,6 +971,7 @@ class PWPL_Shortcode {
                     'badges_override' => $override_badges,
                     'featured'        => $is_featured,
                     'deal_label'      => $deal_label,
+                    'hero_image_id'   => $hero_image_id,
                     'datasets'        => [
                         'platforms' => $plan_platforms,
                         'periods'   => $plan_periods,

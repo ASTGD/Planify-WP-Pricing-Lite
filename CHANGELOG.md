@@ -16,10 +16,11 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 - FireVPS now differentiates several wizard presets (e.g., SaaS Grid V2, Image Hero, Minimal) with preset-scoped styling driven by table meta (`layout_type`/`preset`) while preserving existing layouts/DOM contracts.
 - Five wizard presets (SaaS 3 Column, Startup Pricing Grid, Feature Comparison Table, Service Plans, App Pricing) now render with distinct FireVPS visual systems: unique palettes, card surfaces, specs treatment, and CTA placement, without altering data/schema.
 - Consolidated Service templates: Service Plans is the canonical Services preset (ticked feature list); Service Columns remains for existing tables but is hidden from the wizard.
-- Service Plans preset expanded to four tiers (Free, Starter, Pro, Premium) with richer spec lists, subtle Pro emphasis, and responsive four-column layout.
+- Service Plans preset expanded to four tiers (Free, Starter, Pro, Premium) with richer spec lists, subtle Pro emphasis, slider layout, and crisp white single-surface cards.
 - FireVPS now routes `layout_type` to dedicated layout partials: `grid` retains the original FireVPS DOM, `columns` renders a rail-free service-columns layout, and `comparison` renders a spec comparison matrix (no schema changes).
 - FireVPS preset cards polished: CTAs align on a shared baseline and card surfaces fill spare height so shorter cards no longer show blank bands when plan content differs.
-- FireVPS comparison layout: flattened plan headers/CTAs so the Comparison table preset now reads like a tabular matrix instead of full card footers.
+- Comparison table preset redesigned as a courses-style comparison matrix: teal feature stub column, three plan headers with prices/CTAs, and centered tick/cross cells in the spec grid.
+- SaaS 3 Column preset now supports a per-plan hero image meta (`PLAN_HERO_IMAGE`) rendered above the plan title; existing tables remain unchanged unless a hero image is set.
 - Starter Pricing Grid (`saas-grid-v2`) redesigned as an app-style hero grid: billing toggle + “Save 15%” badge, illustrated cards in a rounded frame, striped feature rows, and a “Most Popular” ribbon on the featured plan.
 
 ---

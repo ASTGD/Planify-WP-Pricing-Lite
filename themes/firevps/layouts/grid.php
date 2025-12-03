@@ -349,11 +349,12 @@ if ( $style_combined ) {
 					}
 				}
 
-				$badge_label = trim( (string) ( $badge_data['label'] ?? '' ) );
-				$badge_color = $badge_data['color'] ?? '';
-				$badge_text  = $badge_data['text_color'] ?? '';
-				$is_featured = ! empty( $plan['featured'] );
-				$deal_label  = $plan['deal_label'] ?? '';
+				$badge_label    = trim( (string) ( $badge_data['label'] ?? '' ) );
+				$badge_color    = $badge_data['color'] ?? '';
+				$badge_text     = $badge_data['text_color'] ?? '';
+				$is_featured    = ! empty( $plan['featured'] );
+				$deal_label     = $plan['deal_label'] ?? '';
+				$hero_image_id  = isset( $plan['hero_image_id'] ) ? (int) $plan['hero_image_id'] : 0;
                 $plan_classes = [
                     'pwpl-plan',
                     'fvps-card',
@@ -411,6 +412,42 @@ if ( $style_combined ) {
 						</div>
 
                         <div class="fvps-card__heading">
+							<?php if ( 'saas-3-col' === $preset ) : ?>
+								<div class="fvps-plan-hero">
+									<?php if ( $hero_image_id ) : ?>
+										<?php
+										echo wp_get_attachment_image(
+											$hero_image_id,
+											'medium',
+											false,
+											[
+												'class'   => 'fvps-plan-hero__img',
+												'loading' => 'lazy',
+											]
+										);
+										?>
+									<?php else : ?>
+										<svg class="fvps-plan-hero__svg" viewBox="0 0 120 60" role="presentation" aria-hidden="true">
+											<?php if ( 0 === $plan_index ) : ?>
+												<!-- Starter: simple outline panel -->
+												<rect x="16" y="24" width="72" height="18" rx="9"></rect>
+												<circle cx="32" cy="46" r="6"></circle>
+												<circle cx="72" cy="46" r="6"></circle>
+											<?php elseif ( 1 === $plan_index ) : ?>
+												<!-- Growth: slightly larger panel -->
+												<rect x="14" y="22" width="80" height="20" rx="10"></rect>
+												<circle cx="30" cy="46" r="6"></circle>
+												<circle cx="78" cy="46" r="6"></circle>
+											<?php else : ?>
+												<!-- Scale: full-width premium panel -->
+												<rect x="10" y="20" width="90" height="22" rx="11"></rect>
+												<circle cx="28" cy="46" r="6"></circle>
+												<circle cx="82" cy="46" r="6"></circle>
+											<?php endif; ?>
+										</svg>
+									<?php endif; ?>
+								</div>
+							<?php endif; ?>
                             <?php if ( $hero_class ) : ?>
                                 <div class="<?php echo esc_attr( $hero_class ); ?>" aria-hidden="true">
                                     <svg class="fvps-hero-illustration__svg" viewBox="0 0 120 60" role="presentation" focusable="false">

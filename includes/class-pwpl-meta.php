@@ -11,6 +11,7 @@ class PWPL_Meta {
     const PLAN_THEME              = '_pwpl_theme';
     const PLAN_SPECS              = '_pwpl_specs';
     const PLAN_VARIANTS           = '_pwpl_variants';
+    const PLAN_HERO_IMAGE         = '_pwpl_plan_hero_image';
     const PLAN_FEATURED           = '_pwpl_featured';
     const PLAN_BADGE_SHADOW       = '_pwpl_badge_shadow';
     const TABLE_SIZE              = '_pwpl_table_size';
@@ -389,6 +390,14 @@ class PWPL_Meta {
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => [ $this, 'sanitize_theme' ],
             'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_plan', self::PLAN_HERO_IMAGE, [
+            'single'            => true,
+            'type'              => 'integer',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => 'absint',
+            'show_in_rest'      => true,
         ] );
 
         register_post_meta( 'pwpl_plan', self::PLAN_SPECS, [

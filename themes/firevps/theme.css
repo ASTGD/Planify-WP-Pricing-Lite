@@ -1369,8 +1369,8 @@
   --fvps-card-max-inline: 460px;
   --card-radius: 18px;
   --card-surface-bg: #fef7e7;
-  --card-header-bg: #020617;
-  --card-top-text-color: #f9fafb;
+  --card-header-bg: transparent;
+  --card-top-text-color: #0f172a;
   --card-specs-bg: #f4f4f5;
   --card-specs-gradient: none;
   --card-specs-text: #0f172a;
@@ -1392,6 +1392,31 @@
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
   background: #ffffff;
   border-radius: var(--card-radius, 18px);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-plan-hero {
+  width: 100%;
+  max-width: none;
+  height: 160px;
+  margin: 0 0 16px;
+  border-radius: var(--card-radius, 18px) var(--card-radius, 18px) 0 0;
+  background: linear-gradient(135deg, #eef3ff, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-plan-hero__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-plan-hero__svg {
+  width: 100%;
+  height: auto;
+  stroke: #2563eb;
+  fill: none;
+  stroke-width: 2;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__heading {
   align-items: flex-start;
@@ -1745,84 +1770,211 @@
   background: rgba(15, 118, 110, 0.08);
 }
 
-/* Feature Comparison – tabular, minimal */
+/* Feature Comparison – courses-style matrix */
 .pwpl-table--theme-firevps.pwpl-table--preset-comparison-table {
-  --fvps-color-accent: #1e40af;
-  --fvps-color-accent-strong: #1e3a8a;
-  --card-specs-bg: #ffffff;
-  --card-specs-gradient: none;
-  --card-specs-text: #0f172a;
-  --card-specs-icon-color: #475569;
-  --card-specs-icon-bg: rgba(71, 85, 105, 0.08);
-  --card-specs-icon-border: rgba(71, 85, 105, 0.16);
-  background: #f8fafc;
+  --fvps-color-accent: #27b2b2;
+  --fvps-color-accent-strong: #1f9b9b;
+  background: #ffffff;
 }
-.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .pwpl-plan {
-  border: 1px solid #e2e8f0;
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-scroll {
+  overflow-x: auto;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-table {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  min-width: 720px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0;
   box-shadow: none;
-  background: #ffffff;
 }
-.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__specs {
-  border-top: 1px solid #e2e8f0;
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-row {
+  display: grid;
+  grid-template-columns: 220px repeat(var(--fvps-comparison-cols, 1), minmax(0, 1fr));
 }
-.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__specs li {
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-row--header {
   border-bottom: 1px solid #e5e7eb;
-  padding-block: 9px;
-  background: #fff;
 }
-.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__specs li:nth-child(even) {
-  background: #f8fafc;
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-cell {
+  padding: 14px 16px;
+  border-right: 1px solid #e5e7eb;
 }
-.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__specs .fvps-spec__label {
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-cell:last-child {
+  border-right: none;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-cell--stub,
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-cell--label {
+  background: #27b2b2;
+  color: #ffffff;
+  font-size: 12px;
   font-weight: 700;
-  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
 }
-.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__specs .fvps-icon {
-  opacity: 0.55;
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-row--header .fvps-comparison-cell--stub {
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
 }
-.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-button {
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-row:not(.fvps-comparison-row--header) {
+  border-top: 1px solid #e5e7eb;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-cell--value {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   background: #ffffff;
-  color: #1e40af;
-  border-color: #1e40af;
-  border-radius: 8px;
-  padding-inline: 14px;
 }
-.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-button:hover {
-  background: #e0e7ff;
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-row:nth-child(even) .fvps-comparison-cell--value {
+  background: #ffffff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-row--header .fvps-comparison-plan {
+  padding: 20px 20px 18px;
+  text-align: center;
+  border-left: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-plan__title {
+  margin-bottom: 6px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-plan-title {
+  font-weight: 700;
+  font-size: 18px;
+  color: #111827;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-plan-price {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-plan-period {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__price {
+  font-size: 24px;
+  font-weight: 800;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .pwpl-plan__billing {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-plan__cta {
+  margin-top: 10px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__cta--comparison {
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-button.fvps-button--comparison-cta,
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__cta--comparison .pwpl-plan__cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  border-radius: 4px;
+  background: #27b2b2;
+  color: #ffffff;
+  border: 1px solid #27b2b2;
+  font-weight: 600;
+  font-size: 13px;
+  width: auto;
+  max-width: 170px;
+  margin-inline: auto;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-button.fvps-button--comparison-cta:hover,
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-card__cta--comparison .pwpl-plan__cta-button:hover {
+  background: #1f9b9b;
+  border-color: #1f9b9b;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-tick {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid #27b2b2;
+  background: rgba(39, 178, 178, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #27b2b2;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-tick::before {
+  content: '✓';
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-tick--off {
+  border-color: #fecaca;
+  background: rgba(248, 113, 113, 0.06);
+  color: #ef4444;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-tick--off::before {
+  content: '✕';
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-text {
+  font-size: 13px;
+  color: #111827;
+}
+
+@media (max-width: 768px) {
+  .pwpl-table--theme-firevps.pwpl-table--preset-comparison-table .fvps-comparison-table {
+    min-width: 640px;
+  }
 }
 
 /* Service Plans – warm, sales page */
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans {
   --fvps-color-accent: #f97316;
   --fvps-color-accent-strong: #ea580c;
-  --card-surface-bg: #fff7ed;
-  --card-specs-bg: #fef3e8;
+  --card-surface-bg: #ffffff;
+  --card-specs-bg: #ffffff;
   --card-specs-gradient: none;
-  --card-specs-text: #7c2d12;
+  --card-specs-text: #1f2937;
   --card-specs-icon-color: #f97316;
-  --card-specs-icon-bg: rgba(249, 115, 22, 0.14);
-  --card-specs-icon-border: rgba(249, 115, 22, 0.3);
-  background: #fff7ed;
+  --card-specs-icon-bg: rgba(249, 115, 22, 0.1);
+  --card-specs-icon-border: rgba(249, 115, 22, 0.22);
+  background: #f8fafc;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-table-header {
   margin-bottom: clamp(20px, 3vw, 32px);
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan-grid {
-  justify-content: center;
+  justify-content: flex-start;
   gap: 24px;
-  overflow-x: visible;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  flex-wrap: nowrap;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan {
-  background: linear-gradient(180deg, #fef2e0 0%, #fef2e0 14%, #ffffff 14%);
-  border: 1px solid #f97316;
-  box-shadow: 0 16px 32px rgba(249, 115, 22, 0.15);
-  border-radius: 14px;
-  flex: 1 1 calc(25% - 24px);
-  min-inline-size: 260px;
-  max-inline-size: 320px;
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #111827;
+  box-shadow: none;
+  border-radius: 18px;
+  flex: 0 0 320px;
+  min-inline-size: 280px;
+  max-inline-size: 340px;
+  scroll-snap-align: start;
+  overflow: hidden;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 40%;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(248,250,252,0.9) 0, transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(248,250,252,0.7) 0, transparent 55%);
+  pointer-events: none;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-card__heading {
+  position: relative;
+  padding: 20px 24px 12px;
   gap: 6px;
   text-align: left;
   align-items: flex-start;
@@ -1831,15 +1983,67 @@
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-plan-lead {
   text-align: left;
 }
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-plan-lead {
+  font-size: 13px;
+  color: #7c2d12;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-card__top {
+  background: transparent;
+  box-shadow: none;
+}
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-plan-deal,
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-plan-badge {
-  background: rgba(249, 115, 22, 0.18);
+  background: rgba(249, 115, 22, 0.12);
   color: #7c2d12;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan.is-featured {
   transform: translateY(-6px);
   border-color: #ea580c;
-  box-shadow: 0 24px 48px rgba(249, 115, 22, 0.25);
+  box-shadow: none;
+  --card-top-text-color: #ffffff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan.is-featured .fvps-card__top {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan.is-featured .fvps-card__heading {
+  padding-top: 24px;
+  padding-bottom: 16px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan.is-featured .pwpl-plan__title,
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan.is-featured .fvps-plan-lead {
+  color: #ffffff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan.is-featured .fvps-card__price {
+  color: #ffffff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan.is-featured .pwpl-plan__billing {
+  color: rgba(255, 255, 255, 0.85);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan.is-featured .fvps-plan-badge {
+  background: #fef3c7;
+  color: #92400e;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan.is-featured .fvps-button {
+  background: #ffffff;
+  color: #ea580c;
+  border-color: #ffffff;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-card__price {
+  padding: 4px 24px 0;
+  justify-content: flex-start;
+  font-size: 26px;
+  color: #111827;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan__billing {
+  padding: 0 24px;
+  text-align: left;
+  font-size: 12px;
+  color: #6b7280;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-button {
   background: linear-gradient(135deg, #f97316, #ea580c);
@@ -1856,10 +2060,17 @@
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-button--inline:hover {
   background: rgba(234, 88, 12, 0.08);
 }
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-card__cta-inline {
+  padding: 10px 24px 14px;
+  align-items: flex-start;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-card__cta {
+  background: transparent;
+}
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-card__specs {
-  background: #ffffff;
-  padding: 0 24px 20px;
-  gap: 6px;
+  background: transparent;
+  padding: 16px 24px 22px;
+  gap: 8px;
   border-radius: 0;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-spec {
@@ -1874,36 +2085,27 @@
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-spec__text {
   position: relative;
-  padding-left: 18px;
+  padding-left: 20px;
   text-align: left;
   justify-content: flex-start;
-  gap: 4px;
+  gap: 2px;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-spec__text::before {
   content: '✓';
   position: absolute;
   left: 0;
-  top: 0.1em;
-  font-size: 12px;
+  top: 0.15em;
+  font-size: 13px;
   font-weight: 700;
   color: #16a34a;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-spec__label {
+  font-weight: 600;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-spec__label,
 .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .fvps-spec__value {
   color: #111827;
-  font-size: 13px;
-}
-
-@media (max-width: 1024px) {
-  .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan {
-    flex: 1 1 calc(50% - 18px);
-  }
-}
-
-@media (max-width: 768px) {
-  .pwpl-table--theme-firevps.pwpl-table--preset-service-plans .pwpl-plan {
-    flex: 1 1 100%;
-  }
+  font-size: 14px;
 }
 
 /* App Pricing – Soft Cards */
@@ -2062,7 +2264,7 @@
   display: grid;
   row-gap: 0;
   width: 100%;
-  min-width: calc((var(--fvps-comparison-cols, 1) + 1) * 400px);
+  min-width: calc((var(--fvps-comparison-cols, 1) + 1) * 300px);
   max-width: 1400px;
   margin: 0 auto;
   padding: 8px;
@@ -2073,7 +2275,7 @@
 }
 .pwpl-table--theme-firevps.pwpl-table--layout-comparison .fvps-comparison-row {
   display: grid;
-  grid-template-columns: minmax(260px, 1.05fr) repeat(var(--fvps-comparison-cols, 1), minmax(400px, 1fr));
+  grid-template-columns: minmax(220px, 0.9fr) repeat(var(--fvps-comparison-cols, 1), minmax(260px, 1fr));
   gap: 0;
   align-items: stretch;
 }

@@ -30,14 +30,14 @@
 
 .pwpl-table-wizard-wrap .pwpl-table-wizard-layout {
     display: flex;
-    gap: 24px;
+    gap: 20px;
     align-items: stretch;
     flex: 1 1 auto;
 }
 
 .pwpl-table-wizard-wrap .pwpl-table-wizard__sidebar {
-    flex: 0 0 260px;
-    max-width: 280px;
+    flex: 0 0 230px;
+    max-width: 240px;
     overflow-y: auto;
 }
 .pwpl-table-wizard-wrap .pwpl-step-panel {

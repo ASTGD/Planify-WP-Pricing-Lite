@@ -804,6 +804,7 @@ class PWPL_Table_Templates {
                     ],
                     PWPL_Meta::PLAN_BADGES_OVERRIDE => [],
                     PWPL_Meta::PLAN_BADGE_SHADOW    => 8,
+                    PWPL_Meta::PLAN_HERO_IMAGE      => 0,
                 ],
             ],
             [
@@ -837,6 +838,7 @@ class PWPL_Table_Templates {
                     ],
                     PWPL_Meta::PLAN_BADGES_OVERRIDE => [],
                     PWPL_Meta::PLAN_BADGE_SHADOW    => 10,
+                    PWPL_Meta::PLAN_HERO_IMAGE      => 0,
                 ],
             ],
             [
@@ -870,6 +872,7 @@ class PWPL_Table_Templates {
                     ],
                     PWPL_Meta::PLAN_BADGES_OVERRIDE => [],
                     PWPL_Meta::PLAN_BADGE_SHADOW    => 8,
+                    PWPL_Meta::PLAN_HERO_IMAGE      => 0,
                 ],
             ],
         ];
@@ -890,6 +893,11 @@ class PWPL_Table_Templates {
                     PWPL_Meta::PLAN_SPECS    => [
                         [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => '5' ],
                         [ 'label' => __( 'Projects', 'planify-wp-pricing-lite' ), 'value' => '10' ],
+                        [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '20GB' ],
+                        [ 'label' => __( 'Course exercises', 'planify-wp-pricing-lite' ), 'value' => __( 'Included', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Certificates', 'planify-wp-pricing-lite' ), 'value' => '' ],
+                        [ 'label' => __( 'Access to forum', 'planify-wp-pricing-lite' ), 'value' => '' ],
+                        [ 'label' => __( 'Weekly live sessions', 'planify-wp-pricing-lite' ), 'value' => '' ],
                         [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Email', 'planify-wp-pricing-lite' ) ],
                     ],
                     PWPL_Meta::PLAN_VARIANTS => [
@@ -912,7 +920,12 @@ class PWPL_Table_Templates {
                     PWPL_Meta::PLAN_SPECS    => [
                         [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => '25' ],
                         [ 'label' => __( 'Projects', 'planify-wp-pricing-lite' ), 'value' => '50' ],
-                        [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Chat', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '100GB' ],
+                        [ 'label' => __( 'Course exercises', 'planify-wp-pricing-lite' ), 'value' => __( 'Included', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Certificates', 'planify-wp-pricing-lite' ), 'value' => '' ],
+                        [ 'label' => __( 'Access to forum', 'planify-wp-pricing-lite' ), 'value' => __( 'Full access', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Weekly live sessions', 'planify-wp-pricing-lite' ), 'value' => __( '2 per month', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Email and chat', 'planify-wp-pricing-lite' ) ],
                     ],
                     PWPL_Meta::PLAN_VARIANTS => [
                         [
@@ -934,6 +947,11 @@ class PWPL_Table_Templates {
                     PWPL_Meta::PLAN_SPECS    => [
                         [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => '100' ],
                         [ 'label' => __( 'Projects', 'planify-wp-pricing-lite' ), 'value' => 'Unlimited' ],
+                        [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '200GB' ],
+                        [ 'label' => __( 'Course exercises', 'planify-wp-pricing-lite' ), 'value' => __( 'Included', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Certificates', 'planify-wp-pricing-lite' ), 'value' => __( 'Included', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Access to forum', 'planify-wp-pricing-lite' ), 'value' => __( 'Full access', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Weekly live sessions', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ) ],
                         [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Priority', 'planify-wp-pricing-lite' ) ],
                     ],
                     PWPL_Meta::PLAN_VARIANTS => [
@@ -956,6 +974,11 @@ class PWPL_Table_Templates {
                     PWPL_Meta::PLAN_SPECS    => [
                         [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ) ],
                         [ 'label' => __( 'Projects', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Course exercises', 'planify-wp-pricing-lite' ), 'value' => __( 'Included', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Certificates', 'planify-wp-pricing-lite' ), 'value' => __( 'Included', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Access to forum', 'planify-wp-pricing-lite' ), 'value' => __( 'Full access', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Weekly live sessions', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ) ],
                         [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Dedicated', 'planify-wp-pricing-lite' ) ],
                     ],
                     PWPL_Meta::PLAN_VARIANTS => [

@@ -362,14 +362,25 @@ if ( $style_combined ) {
 
 				<?php foreach ( $spec_rows as $spec_key => $row ) : ?>
 					<div class="fvps-comparison-row" role="row">
-						<div class="fvps-comparison-cell fvps-comparison-cell--label" role="rowheader">
+						<div class="fvps-comparison-cell fvps-comparison-cell--stub fvps-comparison-cell--label" role="rowheader">
 							<?php echo esc_html( $row['label'] ); ?>
 						</div>
 						<?php foreach ( $plan_specs as $plan_index => $plan_meta ) :
-							$value = isset( $row['plans'][ $plan_index ] ) ? $row['plans'][ $plan_index ] : '';
+							$value      = isset( $row['plans'][ $plan_index ] ) ? (string) $row['plans'][ $plan_index ] : '';
+							$value_trim = trim( wp_strip_all_tags( $value ) );
+							$has_value  = '' !== $value_trim;
 							?>
 							<div class="fvps-comparison-cell fvps-comparison-cell--value" role="cell">
-								<?php echo '' !== $value ? wp_kses_post( $value ) : '&mdash;'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+								<?php if ( $has_value ) : ?>
+									<span class="fvps-comparison-tick" aria-hidden="true"></span>
+									<?php if ( '' !== $value_trim ) : ?>
+										<span class="fvps-comparison-text">
+											<?php echo wp_kses_post( $value ); ?>
+										</span>
+									<?php endif; ?>
+								<?php else : ?>
+									<span class="fvps-comparison-tick fvps-comparison-tick--off" aria-hidden="true"></span>
+								<?php endif; ?>
 							</div>
 						<?php endforeach; ?>
 					</div>

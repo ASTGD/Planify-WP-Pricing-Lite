@@ -255,9 +255,10 @@ class PWPL_Table_Renderer {
         $ctx = [];
         $id_counter = 1;
         foreach ( $plans as $plan ) {
-            $meta      = is_array( $plan['meta'] ?? null ) ? $plan['meta'] : [];
-            $variants  = is_array( $meta[ PWPL_Meta::PLAN_VARIANTS ] ?? null ) ? array_values( $meta[ PWPL_Meta::PLAN_VARIANTS ] ) : [];
-            $specs     = is_array( $meta[ PWPL_Meta::PLAN_SPECS ] ?? null ) ? $meta[ PWPL_Meta::PLAN_SPECS ] : [];
+            $meta          = is_array( $plan['meta'] ?? null ) ? $plan['meta'] : [];
+            $variants      = is_array( $meta[ PWPL_Meta::PLAN_VARIANTS ] ?? null ) ? array_values( $meta[ PWPL_Meta::PLAN_VARIANTS ] ) : [];
+            $specs         = is_array( $meta[ PWPL_Meta::PLAN_SPECS ] ?? null ) ? $meta[ PWPL_Meta::PLAN_SPECS ] : [];
+            $hero_image_id = isset( $meta[ PWPL_Meta::PLAN_HERO_IMAGE ] ) ? (int) $meta[ PWPL_Meta::PLAN_HERO_IMAGE ] : 0;
             $featured  = ! empty( $meta[ PWPL_Meta::PLAN_FEATURED ] );
             $plan_theme= $meta[ PWPL_Meta::PLAN_THEME ] ?? $theme_slug;
 
@@ -295,6 +296,7 @@ class PWPL_Table_Renderer {
                 'datasets'   => $datasets,
                 'specs'      => $specs,
                 'deal_label' => '',
+                'hero_image_id' => $hero_image_id,
             ];
         }
         return $ctx;
