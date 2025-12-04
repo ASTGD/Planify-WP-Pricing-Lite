@@ -752,6 +752,9 @@
   background: linear-gradient(135deg, #ffef74 0%, #f9c04a 100%);
   color: #1a1205;
 }
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-plan-featured {
+  display: none !important;
+}
 
 .pwpl-table--theme-firevps .fvps-plan-location {
   position: static !important;
@@ -1368,15 +1371,17 @@
   --fvps-card-min-fallback: 380px;
   --fvps-card-max-inline: 460px;
   --card-radius: 18px;
-  --card-surface-bg: #fef7e7;
-  --card-header-bg: transparent;
+  --card-surface-bg: #ffffff;
+  --card-header-bg: #ffffff;
   --card-top-text-color: #0f172a;
-  --card-specs-bg: #f4f4f5;
+  --card-specs-bg: #ffffff;
   --card-specs-gradient: none;
   --card-specs-text: #0f172a;
   --card-specs-icon-color: #2563eb;
   --card-specs-icon-bg: rgba(37, 99, 235, 0.12);
   --card-specs-icon-border: rgba(37, 99, 235, 0.24);
+  --card-pad-t: clamp(20px, 2.2vw, 26px);
+  --card-pad-b: clamp(18px, 2vw, 22px);
   background: #f5f7fb;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-table-header {
@@ -1392,12 +1397,13 @@
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
   background: #ffffff;
   border-radius: var(--card-radius, 18px);
+  overflow: hidden;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-plan-hero {
   width: 100%;
   max-width: none;
-  height: 160px;
-  margin: 0 0 16px;
+  height: clamp(180px, 32vw, 240px);
+  margin: 0 0 clamp(16px, 2vw, 20px);
   border-radius: var(--card-radius, 18px) var(--card-radius, 18px) 0 0;
   background: linear-gradient(135deg, #eef3ff, #ffffff);
   display: flex;
@@ -1406,13 +1412,13 @@
   overflow: hidden;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-plan-hero__img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-plan-hero__svg {
-  width: 100%;
+  width: 60%;
   height: auto;
   stroke: #2563eb;
   fill: none;
@@ -1421,24 +1427,39 @@
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__heading {
   align-items: flex-start;
   gap: 6px;
+  margin-top: 4px;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__price {
-  background: #0f172a;
-  color: #f9fafb;
-  padding: 10px 18px;
-  border-radius: 999px;
+  background: transparent;
+  color: var(--card-top-text-color, #0f172a);
+  padding: 0;
+  border-radius: 0;
   align-self: flex-start;
+  margin-top: 18px;
+  box-shadow: none;
+  gap: 8px 10px;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .pwpl-plan__price-sale,
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .pwpl-plan__price-original,
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .pwpl-price-currency,
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .pwpl-price-unit,
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .pwpl-price-value {
-  color: #f9fafb;
+  color: var(--card-top-text-color, #0f172a);
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .pwpl-plan__price-original {
+  opacity: 0.7;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-price-badge {
+  --fvps-price-badge-bg: #10b981;
+  --fvps-price-badge-border: #059669;
+  --fvps-price-badge-text: #ecfdf5;
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__specs {
-  background-color: #f4f4f5;
+  background-color: #ffffff;
   background-image: none;
+  border-top: 1px solid rgba(148, 163, 184, 0.28);
+  padding-top: clamp(16px, 2vw, 20px);
+  padding-bottom: clamp(18px, 2.2vw, 22px);
 }
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-spec {
   grid-template-columns: 36px 1fr;
@@ -1464,6 +1485,41 @@
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-spec--email .fvps-icon,
 .pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-spec--premium-support .fvps-icon {
   color: #f59e0b;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__cta-inline {
+  display: none;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__cta {
+  background: #ffffff;
+  padding: 18px 20px 20px;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__cta .fvps-button {
+  --cta-bg: #2563eb;
+  --cta-color: #ffffff;
+  --cta-border: #2563eb;
+  --cta-hover-bg: #1d4ed8;
+  --cta-hover-border: #1d4ed8;
+  --cta-width: 100%;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__cta .fvps-button span {
+  font-weight: 600;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__cta .pwpl-plan__cta-button[hidden] {
+  display: none;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__cta .pwpl-plan__billing {
+  margin-top: 0;
+  margin-bottom: 10px;
+  text-align: left;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__cta .pwpl-plan__billing[hidden] {
+  display: none;
+}
+.pwpl-table--theme-firevps.pwpl-table--preset-saas-3-col .fvps-card__cta-note {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  color: rgba(15, 23, 42, 0.6);
+  text-align: center;
 }
 
 /* Starter Pricing Grid (saas-grid-v2) */

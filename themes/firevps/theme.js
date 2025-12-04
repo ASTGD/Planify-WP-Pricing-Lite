@@ -922,6 +922,14 @@ function setupCtaMirroring(plan) {
         return;
     }
 
+    // SaaS 3 Column preset uses a dedicated bottom CTA and
+    // should not mirror into the inline CTA container.
+    var saasThreeTable = plan.closest('.pwpl-table--preset-saas-3-col');
+    if (saasThreeTable) {
+        plan._fvpsCtaInitialized = true;
+        return;
+    }
+
     var topContainer = plan.querySelector('.fvps-card__cta-inline');
     var topButton = topContainer ? topContainer.querySelector('.fvps-button--inline') : null;
     var bottomContainer = plan.querySelector('.fvps-card__cta');

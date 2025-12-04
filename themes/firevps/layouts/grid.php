@@ -391,6 +391,42 @@ if ( $style_combined ) {
                         echo '<span class="fvps-ribbon fvps-ribbon--popular">' . esc_html__( 'Most Popular', 'planify-wp-pricing-lite' ) . '</span>';
                     }
                     ?>
+					<?php if ( 'saas-3-col' === $preset ) : ?>
+						<div class="fvps-plan-hero">
+							<?php if ( $hero_image_id ) : ?>
+								<?php
+								echo wp_get_attachment_image(
+									$hero_image_id,
+									'medium',
+									false,
+									[
+										'class'   => 'fvps-plan-hero__img',
+										'loading' => 'lazy',
+									]
+								);
+								?>
+							<?php else : ?>
+								<svg class="fvps-plan-hero__svg" viewBox="0 0 120 60" role="presentation" aria-hidden="true">
+									<?php if ( 0 === $plan_index ) : ?>
+										<!-- Starter: simple outline panel -->
+										<rect x="16" y="24" width="72" height="18" rx="9"></rect>
+										<circle cx="32" cy="46" r="6"></circle>
+										<circle cx="72" cy="46" r="6"></circle>
+									<?php elseif ( 1 === $plan_index ) : ?>
+										<!-- Growth: slightly larger panel -->
+										<rect x="14" y="22" width="80" height="20" rx="10"></rect>
+										<circle cx="30" cy="46" r="6"></circle>
+										<circle cx="78" cy="46" r="6"></circle>
+									<?php else : ?>
+										<!-- Scale: full-width premium panel -->
+										<rect x="10" y="20" width="90" height="22" rx="11"></rect>
+										<circle cx="28" cy="46" r="6"></circle>
+										<circle cx="82" cy="46" r="6"></circle>
+									<?php endif; ?>
+								</svg>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
 					<div class="fvps-card__top">
 						<div class="fvps-card__badges">
                         <span class="fvps-plan-badge" data-pwpl-badge style="<?php
@@ -412,42 +448,6 @@ if ( $style_combined ) {
 						</div>
 
                         <div class="fvps-card__heading">
-							<?php if ( 'saas-3-col' === $preset ) : ?>
-								<div class="fvps-plan-hero">
-									<?php if ( $hero_image_id ) : ?>
-										<?php
-										echo wp_get_attachment_image(
-											$hero_image_id,
-											'medium',
-											false,
-											[
-												'class'   => 'fvps-plan-hero__img',
-												'loading' => 'lazy',
-											]
-										);
-										?>
-									<?php else : ?>
-										<svg class="fvps-plan-hero__svg" viewBox="0 0 120 60" role="presentation" aria-hidden="true">
-											<?php if ( 0 === $plan_index ) : ?>
-												<!-- Starter: simple outline panel -->
-												<rect x="16" y="24" width="72" height="18" rx="9"></rect>
-												<circle cx="32" cy="46" r="6"></circle>
-												<circle cx="72" cy="46" r="6"></circle>
-											<?php elseif ( 1 === $plan_index ) : ?>
-												<!-- Growth: slightly larger panel -->
-												<rect x="14" y="22" width="80" height="20" rx="10"></rect>
-												<circle cx="30" cy="46" r="6"></circle>
-												<circle cx="78" cy="46" r="6"></circle>
-											<?php else : ?>
-												<!-- Scale: full-width premium panel -->
-												<rect x="10" y="20" width="90" height="22" rx="11"></rect>
-												<circle cx="28" cy="46" r="6"></circle>
-												<circle cx="82" cy="46" r="6"></circle>
-											<?php endif; ?>
-										</svg>
-									<?php endif; ?>
-								</div>
-							<?php endif; ?>
                             <?php if ( $hero_class ) : ?>
                                 <div class="<?php echo esc_attr( $hero_class ); ?>" aria-hidden="true">
                                     <svg class="fvps-hero-illustration__svg" viewBox="0 0 120 60" role="presentation" focusable="false">
@@ -563,6 +563,21 @@ if ( $style_combined ) {
 							?>>
 							<span data-pwpl-cta-label><?php echo esc_html( $cta_label ); ?></span>
 						</a>
+						<?php
+						if ( 'saas-3-col' === $preset && ! $cta_hidden ) {
+							$cta_note = apply_filters(
+								'pwpl_firevps_saas3_cta_note',
+								__( 'No credit card required', 'planify-wp-pricing-lite' ),
+								$plan_id,
+								$plan
+							);
+							if ( $cta_note ) :
+								?>
+								<p class="fvps-card__cta-note"><?php echo esc_html( $cta_note ); ?></p>
+								<?php
+							endif;
+						}
+						?>
 					</div>
 				</article>
 			<?php endforeach; ?>

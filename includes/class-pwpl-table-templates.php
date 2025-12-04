@@ -780,9 +780,11 @@ class PWPL_Table_Templates {
                 'meta'         => [
                     PWPL_Meta::PLAN_FEATURED        => false,
                     PWPL_Meta::PLAN_SPECS           => [
-                        [ 'label' => __( 'Websites', 'planify-wp-pricing-lite' ), 'value' => '1', 'icon' => 'websites' ],
-                        [ 'label' => __( 'SSD Storage', 'planify-wp-pricing-lite' ), 'value' => '20GB', 'icon' => 'ssd-storage' ],
-                        [ 'label' => __( 'Email', 'planify-wp-pricing-lite' ), 'value' => __( '5 accounts', 'planify-wp-pricing-lite' ), 'icon' => 'email' ],
+                        [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => __( 'Up to 3 seats', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Projects', 'planify-wp-pricing-lite' ), 'value' => __( '10 active projects', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '10GB' ],
+                        [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Standard email support', 'planify-wp-pricing-lite' ), 'icon' => 'support-agent' ],
+                        [ 'label' => __( 'Integrations', 'planify-wp-pricing-lite' ), 'value' => __( 'Slack & Zapier', 'planify-wp-pricing-lite' ) ],
                     ],
                     PWPL_Meta::PLAN_VARIANTS        => [
                         [
@@ -813,10 +815,12 @@ class PWPL_Table_Templates {
                 'meta'         => [
                     PWPL_Meta::PLAN_FEATURED        => true,
                     PWPL_Meta::PLAN_SPECS           => [
-                        [ 'label' => __( 'Websites', 'planify-wp-pricing-lite' ), 'value' => '5', 'icon' => 'websites' ],
-                        [ 'label' => __( 'SSD Storage', 'planify-wp-pricing-lite' ), 'value' => '80GB', 'icon' => 'ssd-storage' ],
-                        [ 'label' => __( 'Email', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ), 'icon' => 'email' ],
-                        [ 'label' => __( 'Bandwidth', 'planify-wp-pricing-lite' ), 'value' => __( 'Unmetered', 'planify-wp-pricing-lite' ), 'icon' => 'bandwidth' ],
+                        [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => __( 'Up to 10 seats', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Projects', 'planify-wp-pricing-lite' ), 'value' => __( '50 active projects', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '100GB' ],
+                        [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( 'Priority email support', 'planify-wp-pricing-lite' ), 'icon' => 'support-agent' ],
+                        [ 'label' => __( 'Integrations', 'planify-wp-pricing-lite' ), 'value' => __( '20+ integrations', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Reporting', 'planify-wp-pricing-lite' ), 'value' => __( 'Advanced analytics', 'planify-wp-pricing-lite' ) ],
                     ],
                     PWPL_Meta::PLAN_VARIANTS        => [
                         [
@@ -847,10 +851,12 @@ class PWPL_Table_Templates {
                 'meta'         => [
                     PWPL_Meta::PLAN_FEATURED        => false,
                     PWPL_Meta::PLAN_SPECS           => [
-                        [ 'label' => __( 'Websites', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ), 'icon' => 'websites' ],
-                        [ 'label' => __( 'SSD Storage', 'planify-wp-pricing-lite' ), 'value' => '200GB', 'icon' => 'ssd-storage' ],
-                        [ 'label' => __( 'Email', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited', 'planify-wp-pricing-lite' ), 'icon' => 'email' ],
-                        [ 'label' => __( 'Premium support', 'planify-wp-pricing-lite' ), 'value' => __( '24/7', 'planify-wp-pricing-lite' ), 'icon' => 'support-agent' ],
+                        [ 'label' => __( 'Users', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited seats', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Projects', 'planify-wp-pricing-lite' ), 'value' => __( 'Unlimited projects', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'Storage', 'planify-wp-pricing-lite' ), 'value' => '1TB' ],
+                        [ 'label' => __( 'Support', 'planify-wp-pricing-lite' ), 'value' => __( '24/7 priority support', 'planify-wp-pricing-lite' ), 'icon' => 'support-agent' ],
+                        [ 'label' => __( 'Security', 'planify-wp-pricing-lite' ), 'value' => __( 'SSO & audit logs', 'planify-wp-pricing-lite' ) ],
+                        [ 'label' => __( 'API access', 'planify-wp-pricing-lite' ), 'value' => __( 'Full REST API', 'planify-wp-pricing-lite' ) ],
                     ],
                     PWPL_Meta::PLAN_VARIANTS        => [
                         [

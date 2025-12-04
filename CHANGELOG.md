@@ -20,7 +20,7 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 - FireVPS now routes `layout_type` to dedicated layout partials: `grid` retains the original FireVPS DOM, `columns` renders a rail-free service-columns layout, and `comparison` renders a spec comparison matrix (no schema changes).
 - FireVPS preset cards polished: CTAs align on a shared baseline and card surfaces fill spare height so shorter cards no longer show blank bands when plan content differs.
 - Comparison table preset redesigned as a courses-style comparison matrix: teal feature stub column, three plan headers with prices/CTAs, and centered tick/cross cells in the spec grid.
-- SaaS 3 Column preset now supports a per-plan hero image meta (`PLAN_HERO_IMAGE`) rendered above the plan title; existing tables remain unchanged unless a hero image is set.
+- SaaS 3 Column preset now supports a per-plan hero image meta (`PLAN_HERO_IMAGE`) rendered as a full-bleed card header image above the plan title, with a unified white content surface (pricing + specs), a bottom-anchored primary CTA, and an optional reassurance note under the button (filterable via `pwpl_firevps_saas3_cta_note`); existing tables remain unchanged unless a hero image is set.
 - Starter Pricing Grid (`saas-grid-v2`) redesigned as an app-style hero grid: billing toggle + “Save 15%” badge, illustrated cards in a rounded frame, striped feature rows, and a “Most Popular” ribbon on the featured plan.
 
 ---
