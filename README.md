@@ -68,10 +68,10 @@ These values power the filters and variant pickers across all tables.
 
 1. Click **Planify** in the WP Admin menu to open the Pricing Tables dashboard. On first run you’ll see a welcome view with a “Create your first pricing table” call to action.
 2. You can start with the **New Table Wizard** (Planify → New table (wizard)):
-   - Step 1: pick a template from a small library of presets (SaaS 3 Column, Startup Pricing Grid, Service Columns, Feature Comparison Table, Service Plans) using visual thumbnails. Each template belongs to a layout family (grid, columns, comparison) and a visual preset within that family.
+   - Step 1: pick a template from a small library of presets (SaaS 3 Column, Startup Pricing Grid, Service Columns, Feature Comparison Table, Service Plans, the new Hospitality Cards preset) from a grid of real preview thumbnails. Each template belongs to a layout family (grid, columns, comparison) and a visual preset within that family. The sidebar now groups cards under sticky category headings with an “All / SaaS / Services / Comparison …” chip row so PMs can filter quickly (the old search/tag chips stay hidden until the library grows); selecting a template expands an inline “Details ▾” drawer beneath that tile with highlights, tags, and sample specs so guidance stays visible without scrolling. Cards also feature a subtle glassy hover/selection treatment with a soft sheen overlay and a glowing border on the selected tile so the preview feels tactile and clearly “click to preview”, and the template column itself now uses a clean white canvas so the thumbnails feel calm instead of floating over a gray strip. Hospitality Cards ships image-forward hotel/salon plans with real hero photos, amenities grids, CTA reassurance copy, and `/night` pricing units out of the box.
    - Step 2: choose layout & card style, tweak tabs/dimensions, and adjust plan columns via an inline editor (per-column title/subtitle, specs, price/sale price, CTA, featured/highlight).
    - Step 3: review a summary, create the table, then either open it in the editor or create & copy the shortcode via a modern confirmation modal.
-   - Each template maps to a distinct built-in visual system (palette, card style, CTA placement) without changing the underlying shortcode/meta. The wizard creates a real table with demo plans using existing meta keys, then opens the Table Editor V2 for fine-tuning. For example, the **SaaS 3 Column** preset uses an optional per-plan hero image that renders as a full‑bleed image header above each plan’s title, with a unified white content surface for pricing + specs, a bottom-anchored CTA, and a small reassurance note under the button (e.g. “No credit card required”).
+   - Each template maps to a distinct built-in visual system (palette, card style, CTA placement) without changing the underlying shortcode/meta. The wizard creates a real table with demo plans using existing meta keys, then opens the Table Editor V2 for fine-tuning. For example, the **SaaS 3 Column** preset uses an optional per-plan hero image that renders as a full‑bleed image header above each plan’s title, with a unified white content surface for pricing + specs, a bottom-anchored CTA, and a small reassurance note under the button (e.g. “No credit card required”). Template sample bundles can also inject per-plan trust trio copy, which now persists as plan meta and renders under each CTA in FireVPS so every card can surface tailored reassurance bullets.
 2. Use **Add Pricing Table** from the dashboard header (or a table card’s quick action once tables exist) to create a new table. When tables exist, the dashboard shows stats, plan counts, updated dates, and quick actions for each table.
 3. Give your table a title (e.g. “VPS Hosting”).
 4. Use the **Table Editor – V1 (Preview)** meta box to:
@@ -111,6 +111,17 @@ Use the shortcode anywhere shortcodes are supported:
 ```text
 [pwpl_table id="123"]
 ```
+
+### Capturing wizard thumbnails
+
+When template layouts change, refresh the wizard’s preview thumbnails:
+
+```bash
+npm install      # first time only
+npm run capture:thumbs
+```
+
+The script renders each template with the FireVPS theme (without needing a running site) and replaces the PNGs in `assets/admin/img/wizard-thumbs/`. SVG placeholders remain as a fallback for new templates.
 
 Replace `123` with the ID of your `pwpl_table` post. The frontend JS handles:
 

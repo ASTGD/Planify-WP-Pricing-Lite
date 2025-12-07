@@ -259,8 +259,30 @@ class PWPL_Table_Renderer {
             $variants      = is_array( $meta[ PWPL_Meta::PLAN_VARIANTS ] ?? null ) ? array_values( $meta[ PWPL_Meta::PLAN_VARIANTS ] ) : [];
             $specs         = is_array( $meta[ PWPL_Meta::PLAN_SPECS ] ?? null ) ? $meta[ PWPL_Meta::PLAN_SPECS ] : [];
             $hero_image_id = isset( $meta[ PWPL_Meta::PLAN_HERO_IMAGE ] ) ? (int) $meta[ PWPL_Meta::PLAN_HERO_IMAGE ] : 0;
+            $hero_image_url = '';
+            if ( ! empty( $meta[ PWPL_Meta::PLAN_HERO_IMAGE_URL ] ) ) {
+                $hero_image_url = esc_url_raw( (string) $meta[ PWPL_Meta::PLAN_HERO_IMAGE_URL ] );
+            } elseif ( ! empty( $meta['hero_image'] ) ) {
+                // Legacy key coming from sample sets prior to dedicated meta.
+                $hero_image_url = esc_url_raw( (string) $meta['hero_image'] );
+            }
             $featured  = ! empty( $meta[ PWPL_Meta::PLAN_FEATURED ] );
             $plan_theme= $meta[ PWPL_Meta::PLAN_THEME ] ?? $theme_slug;
+            $trust_override_source = null;
+            if ( isset( $meta[ PWPL_Meta::PLAN_TRUST_ITEMS_OVERRIDE ] ) ) {
+                $trust_override_source = $meta[ PWPL_Meta::PLAN_TRUST_ITEMS_OVERRIDE ];
+            } elseif ( isset( $meta['trust_items_override'] ) ) {
+                $trust_override_source = $meta['trust_items_override'];
+            }
+            $trust_override = [];
+            if ( is_array( $trust_override_source ) ) {
+                foreach ( $trust_override_source as $item ) {
+                    $label = sanitize_text_field( (string) $item );
+                    if ( '' !== $label ) {
+                        $trust_override[] = $label;
+                    }
+                }
+            }
 
             $best_variant = self::resolve_variant( $variants, $active_values );
             $price_html   = self::build_price_html( $best_variant, $settings );
@@ -297,6 +319,8 @@ class PWPL_Table_Renderer {
                 'specs'      => $specs,
                 'deal_label' => '',
                 'hero_image_id' => $hero_image_id,
+                'hero_image_url' => $hero_image_url,
+                'trust_items_override' => array_slice( $trust_override, 0, 3 ),
             ];
         }
         return $ctx;
@@ -364,6 +388,11 @@ class PWPL_Table_Renderer {
 
         $has_discount = null !== $price_num && null !== $sale_num && $price_num > 0 && $sale_num >= 0 && $sale_num < $price_num;
 
+        $unit_label = trim( (string) ( $variant['unit'] ?? '' ) );
+        if ( '' === $unit_label ) {
+            $unit_label = __( '/mo', 'planify-wp-pricing-lite' );
+        }
+
         if ( $has_discount && $formatted_sale && $formatted_price ) {
             $pct = (int) round( ( ( $price_num - $sale_num ) / $price_num ) * 100 );
             $badge_html = '';
@@ -380,7 +409,7 @@ class PWPL_Table_Renderer {
                 . ( $sale_prefix !== '' ? '<span class="pwpl-price-currency pwpl-currency--prefix">' . esc_html( $sale_prefix ) . '</span>' : '' )
                 . '<span class="pwpl-price-value">' . esc_html( $sale_value ) . '</span>'
                 . ( $sale_suffix !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sale_suffix ) . '</span>' : '' )
-                . '<span class="pwpl-price-unit">/mo</span>'
+                . '<span class="pwpl-price-unit">' . esc_html( $unit_label ) . '</span>'
                 . '</span>';
             return '<span class="pwpl-plan__price-original">' . esc_html( $formatted_price ) . '</span>' . $badge_html . $sale_html;
         }
@@ -395,7 +424,7 @@ class PWPL_Table_Renderer {
         $single_html = ( $pfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--prefix">' . esc_html( $pfx ) . '</span>' : '' )
             . '<span class="pwpl-price-value">' . esc_html( $val ) . '</span>'
             . ( $sfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sfx ) . '</span>' : '' )
-            . '<span class="pwpl-price-unit">/mo</span>';
+            . '<span class="pwpl-price-unit">' . esc_html( $unit_label ) . '</span>';
         return '<span class="pwpl-plan__price">' . $single_html . '</span>';
     }
 

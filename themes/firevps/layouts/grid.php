@@ -355,6 +355,10 @@ if ( $style_combined ) {
 				$is_featured    = ! empty( $plan['featured'] );
 				$deal_label     = $plan['deal_label'] ?? '';
 				$hero_image_id  = isset( $plan['hero_image_id'] ) ? (int) $plan['hero_image_id'] : 0;
+                $hero_image_url = '';
+                if ( ! empty( $plan['hero_image_url'] ) ) {
+                    $hero_image_url = esc_url( (string) $plan['hero_image_url'] );
+                }
                 $plan_classes = [
                     'pwpl-plan',
                     'fvps-card',
@@ -377,7 +381,11 @@ if ( $style_combined ) {
                         $hero_class .= ' fvps-hero-illustration--premium';
                     }
                 }
-				?>
+                $plan_trust_items = $trust_items;
+                if ( ! empty( $plan['trust_items_override'] ) && is_array( $plan['trust_items_override'] ) ) {
+                    $plan_trust_items = array_values( array_filter( array_map( 'sanitize_text_field', (array) $plan['trust_items_override'] ) ) );
+                }
+                ?>
 				<article class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $plan_classes ) ) ); ?>"
 					data-plan-id="<?php echo esc_attr( $plan_id ); ?>"
 					data-plan-theme="<?php echo esc_attr( $plan_theme ); ?>"
@@ -405,6 +413,8 @@ if ( $style_combined ) {
 									]
 								);
 								?>
+							<?php elseif ( $hero_image_url ) : ?>
+								<img class="fvps-plan-hero__img" src="<?php echo esc_url( $hero_image_url ); ?>" alt="" loading="lazy" decoding="async" />
 							<?php else : ?>
 								<svg class="fvps-plan-hero__svg" viewBox="0 0 120 60" role="presentation" aria-hidden="true">
 									<?php if ( 0 === $plan_index ) : ?>
@@ -501,9 +511,9 @@ if ( $style_combined ) {
                                 ?>>
                                 <span><?php echo esc_html( $cta_label ); ?></span>
                             </a>
-                            <?php if ( $trust_trio_enabled && $trust_items ) : ?>
-                            <ul class="fvps-cta-trust<?php echo count( $trust_items ) > 3 ? ' fvps-cta-trust--stack' : ''; ?>" role="list">
-                                <?php foreach ( $trust_items as $item ) : ?>
+                            <?php if ( $trust_trio_enabled && $plan_trust_items ) : ?>
+                            <ul class="fvps-cta-trust<?php echo count( $plan_trust_items ) > 3 ? ' fvps-cta-trust--stack' : ''; ?>" role="list">
+                                <?php foreach ( $plan_trust_items as $item ) : ?>
                                     <li role="listitem"><?php echo esc_html( (string) $item ); ?></li>
                                 <?php endforeach; ?>
                             </ul>

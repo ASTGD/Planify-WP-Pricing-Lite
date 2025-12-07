@@ -1,0 +1,38 @@
+<svg width="400" height="260" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f6ff"/>
+      <stop offset="1" stop-color="#eef2ff"/>
+    </linearGradient>
+    <linearGradient id="btn" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="260" rx="20" fill="#111827"/>
+  <rect x="16" y="16" width="368" height="228" rx="16" fill="url(#bg)"/>
+  <g transform="translate(32 40)">
+    <rect width="98" height="160" rx="16" fill="#fff" stroke="#c7d2fe" stroke-width="2"/>
+    <rect x="8" y="14" width="82" height="44" rx="10" fill="#eef2ff"/>
+    <rect x="28" y="68" width="42" height="6" rx="3" fill="#111827"/>
+    <rect x="22" y="84" width="54" height="6" rx="3" fill="#94a3b8"/>
+    <rect x="20" y="108" width="58" height="20" rx="10" fill="url(#btn)"/>
+    <rect x="20" y="138" width="58" height="6" rx="3" fill="#cbd5f5"/>
+  </g>
+  <g transform="translate(150 32)">
+    <rect width="120" height="184" rx="18" fill="#fff" stroke="#2563eb" stroke-width="3"/>
+    <rect x="12" y="16" width="96" height="48" rx="12" fill="#e9f1ff"/>
+    <rect x="40" y="74" width="44" height="8" rx="4" fill="#111827"/>
+    <rect x="34" y="92" width="56" height="8" rx="4" fill="#94a3b8"/>
+    <rect x="24" y="118" width="72" height="26" rx="13" fill="url(#btn)"/>
+    <rect x="28" y="152" width="64" height="8" rx="4" fill="#cad5fe"/>
+  </g>
+  <g transform="translate(288 40)">
+    <rect width="98" height="160" rx="16" fill="#fff" stroke="#e2e8f0" stroke-width="2"/>
+    <rect x="8" y="14" width="82" height="44" rx="10" fill="#f7f8ff"/>
+    <rect x="28" y="68" width="42" height="6" rx="3" fill="#111827"/>
+    <rect x="22" y="84" width="54" height="6" rx="3" fill="#94a3b8"/>
+    <rect x="20" y="108" width="58" height="20" rx="10" fill="#0ea5e9"/>
+    <rect x="20" y="138" width="58" height="6" rx="3" fill="#cbd5f5"/>
+  </g>
+</svg>

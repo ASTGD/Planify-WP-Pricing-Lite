@@ -64,6 +64,7 @@
         SPECS: '_pwpl_specs',
         VARIANTS: '_pwpl_variants',
         BADGES: '_pwpl_badges_override',
+        TRUST_OVERRIDE: '_pwpl_plan_trust_items_override',
     };
 
     var state = {
@@ -73,6 +74,7 @@
         selectedCardStyleId: null,
         layoutType: 'grid',
         plans: [],
+        templatePlanDefaults: [],
         activePlanIndex: 0,
         editingPlanIndex: null,
         editingFeatureIndex: null,
@@ -81,6 +83,8 @@
             period: true,
             location: false,
         },
+        openTemplateDetailsId: null,
+        selectedCategoryFilter: '',
     };
 
     var nameInput;
@@ -102,6 +106,62 @@
         state.editingFeatureIndex = null;
         syncPlanChange();
         renderPlanEditor();
+    }
+
+    function applySampleExtrasToPlan( plan, sampleSet ) {
+        if ( ! plan || ! plan.meta || ! sampleSet ) {
+            return;
+        }
+        if ( sampleSet.cta ) {
+            var variants = Array.isArray( plan.meta[ META_KEYS.VARIANTS ] ) ? plan.meta[ META_KEYS.VARIANTS ] : [ defaultVariant() ];
+            if ( sampleSet.cta.label ) {
+                variants[0].cta_label = sampleSet.cta.label;
+            }
+            if ( sampleSet.cta.url ) {
+                variants[0].cta_url = sampleSet.cta.url;
+            }
+            if ( sampleSet.cta.target ) {
+                variants[0].target = sampleSet.cta.target;
+            }
+            plan.meta[ META_KEYS.VARIANTS ] = variants;
+        }
+        if ( sampleSet.hero_image ) {
+            plan.meta.hero_image_url = sampleSet.hero_image;
+            if ( plan.meta.hero_image ) {
+                delete plan.meta.hero_image;
+            }
+        }
+        if ( sampleSet.pricing ) {
+            var variantsPricing = Array.isArray( plan.meta[ META_KEYS.VARIANTS ] ) ? plan.meta[ META_KEYS.VARIANTS ] : [ defaultVariant() ];
+            if ( sampleSet.pricing.price ) {
+                variantsPricing[0].price = sampleSet.pricing.price;
+            }
+            if ( sampleSet.pricing.sale_price ) {
+                variantsPricing[0].sale_price = sampleSet.pricing.sale_price;
+            }
+            if ( sampleSet.pricing.period ) {
+                variantsPricing[0].period = sampleSet.pricing.period;
+            }
+            plan.meta[ META_KEYS.VARIANTS ] = variantsPricing;
+            if ( sampleSet.pricing.billing ) {
+                plan.meta.billing = sampleSet.pricing.billing;
+            }
+        }
+        if ( sampleSet.badge && Object.keys( sampleSet.badge ).length ) {
+            plan.meta[ META_KEYS.BADGES ] = [
+                {
+                    label: sampleSet.badge.label || '',
+                    color: sampleSet.badge.color || '',
+                    text_color: sampleSet.badge.text_color || '',
+                },
+            ];
+        }
+        if ( typeof sampleSet.featured !== 'undefined' ) {
+            plan.meta[ META_KEYS.FEATURED ] = !! sampleSet.featured;
+        }
+        if ( sampleSet.trust_items && sampleSet.trust_items.length ) {
+            plan.meta[ META_KEYS.TRUST_OVERRIDE ] = sampleSet.trust_items.slice( 0, 3 );
+        }
     }
 
     // Step indicator
@@ -237,8 +297,18 @@
     }
 
     // Step 1 content
+    var templateFilterWrap = document.createElement( 'div' );
+    templateFilterWrap.className = 'pwpl-template-filter';
+
+    var categoryFilter = document.createElement( 'div' );
+    categoryFilter.className = 'pwpl-template-category-filter';
+    templateFilterWrap.appendChild( categoryFilter );
+
     var templatesWrap = document.createElement( 'div' );
     templatesWrap.className = 'pwpl-templates';
+
+    var templateDetailsPane = document.createElement( 'div' );
+    templateDetailsPane.className = 'pwpl-template-details';
 
     var step1Actions = document.createElement( 'div' );
     step1Actions.className = 'pwpl-step-actions';
@@ -249,6 +319,7 @@
     step1Next.disabled = true;
     step1Actions.appendChild( step1Next );
 
+    step1Wrap.appendChild( templateFilterWrap );
     step1Wrap.appendChild( templatesWrap );
     step1Wrap.appendChild( step1Actions );
 
@@ -474,6 +545,7 @@
                         cta_label: '',
                         cta_url: '',
                         target: '_self',
+                        unit: '',
                     },
                 ],
                 [ META_KEYS.BADGES ]: [],
@@ -511,6 +583,7 @@
             cta_label: '',
             cta_url: '',
             target: '_self',
+            unit: '',
         };
     }
 
@@ -527,6 +600,91 @@
             return CATEGORY_LABELS[ key ];
         }
         return slug.charAt( 0 ).toUpperCase() + slug.slice( 1 );
+    }
+
+    function formatTagLabel( slug ) {
+        if ( ! slug ) {
+            return '';
+        }
+        return slug.split( '-' ).map( function( part ) {
+            if ( ! part.length ) {
+                return part;
+            }
+            return part.charAt( 0 ).toUpperCase() + part.slice( 1 );
+        } ).join( ' ' );
+    }
+
+    function getTemplateMetadata( tpl ) {
+        if ( tpl && tpl.metadata && typeof tpl.metadata === 'object' ) {
+            return tpl.metadata;
+        }
+        return {};
+    }
+
+    function getSampleSetsForTemplate() {
+        var tpl = getTemplateById( state.selectedTemplateId );
+        var meta = getTemplateMetadata( tpl );
+        var sets = Array.isArray( meta.sample_sets ) ? meta.sample_sets.slice() : [];
+        if ( ! sets.length && meta.sample_specs && meta.sample_specs.length ) {
+            sets.push( {
+                id: 'default',
+                label: ( config.i18n && config.i18n.defaultSampleSet ) || 'Sample features',
+                specs: meta.sample_specs,
+            } );
+        }
+        return sets;
+    }
+
+    function canResetPlan( index ) {
+        return Array.isArray( state.templatePlanDefaults ) && state.templatePlanDefaults[ index ];
+    }
+
+    function resetPlanToTemplate( index ) {
+        if ( ! canResetPlan( index ) ) {
+            return;
+        }
+        var original = deepClone( state.templatePlanDefaults[ index ] );
+        var current = state.plans[ index ];
+        if ( ! current || ! original ) {
+            return;
+        }
+        state.plans[ index ] = ensurePlanStructure( original, index );
+        openFeatureMenuIndex = null;
+        state.editingFeatureIndex = null;
+        syncPlanChange();
+        renderPlanList();
+        renderPlanEditor();
+    }
+
+    function applySampleSpecsToPlan( plan, specs ) {
+        if ( ! plan || ! plan.meta ) {
+            return;
+        }
+        var sampleSpecs = specs;
+        if ( ! Array.isArray( sampleSpecs ) || ! sampleSpecs.length ) {
+            var tpl = getTemplateById( state.selectedTemplateId );
+            var meta = getTemplateMetadata( tpl );
+            sampleSpecs = meta.sample_specs || [];
+        }
+        if ( ! sampleSpecs.length ) {
+            return;
+        }
+        plan.meta[ META_KEYS.SPECS ] = sampleSpecs.map( function( spec ) {
+            var entry = {
+                label: spec.label || '',
+            };
+            if ( spec.value ) {
+                entry.value = spec.value;
+            }
+            if ( spec.icon ) {
+                entry.icon = spec.icon;
+            }
+            return entry;
+        } );
+        syncPlanChange();
+        state.editingFeatureIndex = null;
+        openFeatureMenuIndex = null;
+        renderPlanEditor();
     }
 
     function getLayoutTypeLabel( type ) {
@@ -575,63 +733,336 @@
 
     // Rendering
     function renderTemplates() {
-        templatesWrap.innerHTML = '';
+        var categoryOrder = [];
+        var grouped = {};
         templates.forEach( function( tpl ) {
-            var btn = document.createElement( 'button' );
-            btn.type = 'button';
-            btn.className = 'pwpl-template-card';
-            btn.dataset.templateId = tpl.id;
-
-            var thumb = document.createElement( 'div' );
-            thumb.className = 'pwpl-template-card__thumb';
-            thumb.setAttribute( 'aria-hidden', 'true' );
-            thumb.appendChild( buildTemplateThumb( tpl.id ) );
-            btn.appendChild( thumb );
-
-            var body = document.createElement( 'div' );
-            body.className = 'pwpl-template-card__body';
-
-            var title = document.createElement( 'div' );
-            title.className = 'pwpl-template-card__title';
-            title.textContent = tpl.label || tpl.id;
-            body.appendChild( title );
-
-            if ( tpl.description ) {
-                var desc = document.createElement( 'p' );
-                desc.className = 'pwpl-template-card__description';
-                desc.textContent = tpl.description;
-                body.appendChild( desc );
+            var categoryKey = tpl.category || 'uncategorized';
+            if ( ! grouped[ categoryKey ] ) {
+                grouped[ categoryKey ] = [];
+                categoryOrder.push( categoryKey );
             }
+            grouped[ categoryKey ].push( tpl );
+        } );
+        renderCategoryFilters( categoryOrder );
 
-            var metaRow = document.createElement( 'div' );
-            metaRow.className = 'pwpl-template-card__meta';
+        templatesWrap.innerHTML = '';
+        categoryOrder.forEach( function( categoryKey ) {
+            var groupWrap = document.createElement( 'div' );
+            groupWrap.className = 'pwpl-template-group';
+            groupWrap.dataset.category = categoryKey;
 
-            if ( tpl.category ) {
-                var categoryChip = document.createElement( 'span' );
-                categoryChip.className = 'pwpl-chip pwpl-chip--category';
-                categoryChip.textContent = getCategoryLabel( tpl.category );
-                metaRow.appendChild( categoryChip );
-            }
+            var heading = document.createElement( 'div' );
+            heading.className = 'pwpl-template-group__heading';
+            heading.textContent = getCategoryLabel( categoryKey );
+            groupWrap.appendChild( heading );
 
-            if ( tpl.premium ) {
-                var premiumChip = document.createElement( 'span' );
-                premiumChip.className = 'pwpl-chip pwpl-chip--premium';
-                premiumChip.textContent = ( config.i18n && config.i18n.proLabel ) || 'Pro';
-                metaRow.appendChild( premiumChip );
-            }
+            var gridWrap = document.createElement( 'div' );
+            gridWrap.className = 'pwpl-template-group__grid';
 
-            if ( metaRow.childNodes.length ) {
-                body.appendChild( metaRow );
-            }
+            grouped[ categoryKey ].forEach( function( tpl ) {
+                var btn = document.createElement( 'button' );
+                btn.type = 'button';
+                btn.className = 'pwpl-template-card';
+                btn.dataset.templateId = tpl.id;
+                btn.dataset.category = tpl.category || 'uncategorized';
 
-            btn.appendChild( body );
+                var check = document.createElement( 'span' );
+                check.className = 'pwpl-template-card__check';
+                check.setAttribute( 'aria-hidden', 'true' );
+                check.innerHTML = '&#10003;';
+                btn.appendChild( check );
 
-            btn.addEventListener( 'click', function() {
-                selectTemplate( tpl.id );
+                var media = document.createElement( 'div' );
+                media.className = 'pwpl-template-card__media';
+                if ( tpl.thumbnail ) {
+                    var img = document.createElement( 'img' );
+                    img.src = tpl.thumbnail;
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    img.alt = ( tpl.label || tpl.id ) + ' preview';
+                    img.className = 'pwpl-template-card__img';
+                    media.appendChild( img );
+                } else {
+                    var fallbackThumb = buildTemplateThumb( tpl.id );
+                    fallbackThumb.classList.add( 'pwpl-template-card__svg' );
+                    media.appendChild( fallbackThumb );
+                }
+
+                if ( tpl.premium ) {
+                    var badge = document.createElement( 'span' );
+                    badge.className = 'pwpl-template-card__badge';
+                    badge.textContent = ( config.i18n && config.i18n.proLabel ) || 'Pro';
+                    media.appendChild( badge );
+                }
+
+                btn.appendChild( media );
+
+                var title = document.createElement( 'div' );
+                title.className = 'pwpl-template-card__title';
+                title.textContent = tpl.label || tpl.id;
+                btn.appendChild( title );
+
+                var detailsToggle = document.createElement( 'button' );
+                detailsToggle.type = 'button';
+                detailsToggle.className = 'pwpl-template-card__details-toggle';
+                var toggleLabel = document.createElement( 'span' );
+                toggleLabel.className = 'pwpl-template-card__details-label';
+                toggleLabel.textContent = ( config.i18n && config.i18n.templateDetailsLink ) || 'Details';
+                var toggleIcon = document.createElement( 'span' );
+                toggleIcon.className = 'pwpl-template-card__details-icon';
+                toggleIcon.setAttribute( 'aria-hidden', 'true' );
+                toggleIcon.innerHTML = '&#9662;';
+                detailsToggle.appendChild( toggleLabel );
+                detailsToggle.appendChild( toggleIcon );
+                detailsToggle.addEventListener( 'click', function( event ) {
+                    event.stopPropagation();
+                    if ( state.selectedTemplateId !== tpl.id ) {
+                        selectTemplate( tpl.id );
+                    }
+                    toggleTemplateDetails( tpl.id );
+                } );
+                btn.appendChild( detailsToggle );
+
+                var detailsSlot = document.createElement( 'div' );
+                detailsSlot.className = 'pwpl-template-card__details-slot';
+                btn.appendChild( detailsSlot );
+
+                btn.addEventListener( 'click', function() {
+                    selectTemplate( tpl.id );
+                } );
+
+                gridWrap.appendChild( btn );
             } );
 
-            templatesWrap.appendChild( btn );
+            groupWrap.appendChild( gridWrap );
+            templatesWrap.appendChild( groupWrap );
         } );
+        syncTemplateDetailsPanel();
+        applyTemplateFilters();
+    }
+
+    function renderCategoryFilters( categories ) {
+        if ( ! categoryFilter ) {
+            return;
+        }
+        categoryFilter.innerHTML = '';
+        if ( ! categories.length ) {
+            return;
+        }
+        if ( state.selectedCategoryFilter && categories.indexOf( state.selectedCategoryFilter ) === -1 ) {
+            state.selectedCategoryFilter = '';
+        }
+
+        var allBtn = document.createElement( 'button' );
+        allBtn.type = 'button';
+        allBtn.className = 'pwpl-template-category-btn' + ( state.selectedCategoryFilter ? '' : ' is-active' );
+        allBtn.textContent = ( config.i18n && config.i18n.allTemplatesLabel ) || 'All';
+        allBtn.addEventListener( 'click', function() {
+            state.selectedCategoryFilter = '';
+            renderCategoryFilters( categories );
+            applyTemplateFilters();
+        } );
+        categoryFilter.appendChild( allBtn );
+
+        categories.forEach( function( categoryKey ) {
+            var btn = document.createElement( 'button' );
+            btn.type = 'button';
+            btn.className = 'pwpl-template-category-btn';
+            if ( state.selectedCategoryFilter === categoryKey ) {
+                btn.classList.add( 'is-active' );
+            }
+            btn.dataset.category = categoryKey;
+            btn.textContent = getCategoryLabel( categoryKey );
+            btn.addEventListener( 'click', function() {
+                if ( state.selectedCategoryFilter === categoryKey ) {
+                    state.selectedCategoryFilter = '';
+                } else {
+                    state.selectedCategoryFilter = categoryKey;
+                }
+                renderCategoryFilters( categories );
+                applyTemplateFilters();
+            } );
+            categoryFilter.appendChild( btn );
+        } );
+    }
+
+    function applyTemplateFilters() {
+        var cards = templatesWrap.querySelectorAll( '.pwpl-template-card' );
+        cards.forEach( function( card ) {
+            var matches = true;
+            if ( state.selectedCategoryFilter ) {
+                var cardCategory = card.dataset.category || 'uncategorized';
+                matches = ( cardCategory === state.selectedCategoryFilter );
+            }
+            card.style.display = matches ? '' : 'none';
+        } );
+        if ( state.openTemplateDetailsId ) {
+            var openCard = templatesWrap.querySelector( '.pwpl-template-card[data-template-id="' + state.openTemplateDetailsId + '"]' );
+            if ( ! openCard || openCard.style.display === 'none' ) {
+                state.openTemplateDetailsId = null;
+                syncTemplateDetailsPanel();
+            }
+        }
+        updateTemplateGroupVisibility();
+    }
+
+    function updateTemplateGroupVisibility() {
+        var groups = templatesWrap.querySelectorAll( '.pwpl-template-group' );
+        groups.forEach( function( group ) {
+            var visible = false;
+            group.querySelectorAll( '.pwpl-template-card' ).forEach( function( card ) {
+                if ( card.style.display !== 'none' ) {
+                    visible = true;
+                }
+            } );
+            group.style.display = visible ? '' : 'none';
+        } );
+    }
+
+    function renderTemplateDetails( tpl ) {
+        if ( ! templateDetailsPane ) {
+            return;
+        }
+        templateDetailsPane.innerHTML = '';
+
+        if ( ! tpl ) {
+            var placeholder = document.createElement( 'p' );
+            placeholder.className = 'pwpl-template-details__placeholder';
+            placeholder.textContent = ( config.i18n && config.i18n.templateDetailsHint ) || 'Select a template to see highlights.';
+            templateDetailsPane.appendChild( placeholder );
+            return;
+        }
+
+        var meta = getTemplateMetadata( tpl );
+
+        var heading = document.createElement( 'div' );
+        heading.className = 'pwpl-template-details__title';
+        heading.textContent = tpl.label || tpl.id;
+        templateDetailsPane.appendChild( heading );
+
+        if ( meta.best_for ) {
+            var bestFor = document.createElement( 'p' );
+            bestFor.className = 'pwpl-template-details__best';
+            bestFor.textContent = meta.best_for;
+            templateDetailsPane.appendChild( bestFor );
+        }
+
+        var facts = document.createElement( 'div' );
+        facts.className = 'pwpl-template-details__facts';
+
+        if ( tpl.category ) {
+            var catFact = document.createElement( 'span' );
+            catFact.className = 'pwpl-template-details__fact';
+            catFact.textContent = getCategoryLabel( tpl.category );
+            facts.appendChild( catFact );
+        }
+
+        var planFact = document.createElement( 'span' );
+        planFact.className = 'pwpl-template-details__fact';
+        planFact.textContent = ( meta.plan_count || 3 ) + ' ' + ( meta.plan_count === 1 ? 'plan' : 'plans' );
+        facts.appendChild( planFact );
+
+        if ( tpl.layout_type ) {
+            var layoutFact = document.createElement( 'span' );
+            layoutFact.className = 'pwpl-template-details__fact';
+            layoutFact.textContent = getLayoutTypeLabel( tpl.layout_type );
+            facts.appendChild( layoutFact );
+        }
+
+        if ( meta.supports_hero ) {
+            var heroFact = document.createElement( 'span' );
+            heroFact.className = 'pwpl-template-details__fact';
+            heroFact.textContent = 'Hero images';
+            facts.appendChild( heroFact );
+        }
+
+        templateDetailsPane.appendChild( facts );
+
+        if ( meta.highlights && meta.highlights.length ) {
+            var highlightSection = document.createElement( 'div' );
+            highlightSection.className = 'pwpl-template-details__section';
+            var highlightTitle = document.createElement( 'div' );
+            highlightTitle.className = 'pwpl-template-details__section-title';
+            highlightTitle.textContent = 'Highlights';
+            highlightSection.appendChild( highlightTitle );
+            var highlightList = document.createElement( 'ul' );
+            highlightList.className = 'pwpl-template-details__list';
+            meta.highlights.forEach( function( text ) {
+                var item = document.createElement( 'li' );
+                item.textContent = text;
+                highlightList.appendChild( item );
+            } );
+            highlightSection.appendChild( highlightList );
+            templateDetailsPane.appendChild( highlightSection );
+        }
+
+        if ( meta.sample_specs && meta.sample_specs.length ) {
+            var sampleSection = document.createElement( 'div' );
+            sampleSection.className = 'pwpl-template-details__section';
+            var sampleTitle = document.createElement( 'div' );
+            sampleTitle.className = 'pwpl-template-details__section-title';
+            sampleTitle.textContent = 'Sample features';
+            sampleSection.appendChild( sampleTitle );
+            var sampleList = document.createElement( 'ul' );
+            sampleList.className = 'pwpl-template-details__list';
+            meta.sample_specs.forEach( function( spec ) {
+                var item = document.createElement( 'li' );
+                if ( spec.label && spec.value ) {
+                    item.textContent = spec.label + ': ' + spec.value;
+                } else {
+                    item.textContent = spec.label || spec.value || '';
+                }
+                sampleList.appendChild( item );
+            } );
+            sampleSection.appendChild( sampleList );
+            templateDetailsPane.appendChild( sampleSection );
+        }
+    }
+
+    function syncTemplateDetailsPanel() {
+        if ( ! templateDetailsPane ) {
+            return;
+        }
+        templatesWrap.querySelectorAll( '.pwpl-template-card.is-details-open' ).forEach( function( card ) {
+            card.classList.remove( 'is-details-open' );
+        } );
+        if ( templateDetailsPane.parentNode ) {
+            templateDetailsPane.parentNode.classList.remove( 'is-active' );
+            templateDetailsPane.parentNode.removeChild( templateDetailsPane );
+        }
+
+        var activeId = state.openTemplateDetailsId;
+        if ( ! activeId ) {
+            renderTemplateDetails( null );
+            return;
+        }
+
+        var selectedCard = templatesWrap.querySelector( '.pwpl-template-card[data-template-id="' + activeId + '"]' );
+        if ( ! selectedCard ) {
+            state.openTemplateDetailsId = null;
+            renderTemplateDetails( null );
+            return;
+        }
+
+        var slot = selectedCard.querySelector( '.pwpl-template-card__details-slot' );
+        if ( ! slot ) {
+            state.openTemplateDetailsId = null;
+            renderTemplateDetails( null );
+            return;
+        }
+        selectedCard.classList.add( 'is-details-open' );
+        slot.classList.add( 'is-active' );
+        slot.appendChild( templateDetailsPane );
+        renderTemplateDetails( getTemplateById( activeId ) );
+    }
+
+    function toggleTemplateDetails( templateId ) {
+        if ( state.openTemplateDetailsId === templateId ) {
+            state.openTemplateDetailsId = null;
+        } else {
+            state.openTemplateDetailsId = templateId;
+        }
+        syncTemplateDetailsPanel();
     }
 
     function renderLayoutTypes() {
@@ -827,8 +1258,19 @@
         title.className = 'pwpl-plan-edit__title';
         title.textContent = ( config.i18n && config.i18n.editColumn ) || 'Edit Column';
 
+        var resetBtn = document.createElement( 'button' );
+        resetBtn.type = 'button';
+        resetBtn.className = 'pwpl-plan-reset';
+        resetBtn.textContent = ( config.i18n && config.i18n.resetPlan ) || 'Reset to template';
+        resetBtn.addEventListener( 'click', function() {
+            resetPlanToTemplate( state.editingPlanIndex );
+        } );
+
         header.appendChild( backBtn );
         header.appendChild( title );
+        if ( canResetPlan( state.editingPlanIndex ) ) {
+            header.appendChild( resetBtn );
+        }
         planEditWrap.appendChild( header );
 
         // Basics
@@ -864,10 +1306,39 @@
         // Features
         var features = document.createElement( 'div' );
         features.className = 'pwpl-plan-edit__section';
+        var featuresHeader = document.createElement( 'div' );
+        featuresHeader.className = 'pwpl-plan-edit__section-header';
         var featuresTitle = document.createElement( 'div' );
         featuresTitle.className = 'pwpl-plan-edit__section-title';
         featuresTitle.textContent = ( config.i18n && config.i18n.features ) || 'Features';
-        features.appendChild( featuresTitle );
+        featuresHeader.appendChild( featuresTitle );
+
+        var sampleSets = getSampleSetsForTemplate();
+        if ( sampleSets.length ) {
+            var sampleSelect = document.createElement( 'select' );
+            sampleSelect.className = 'pwpl-sample-select';
+            var defaultOption = document.createElement( 'option' );
+            defaultOption.value = '';
+            defaultOption.textContent = ( config.i18n && config.i18n.useSampleFeatures ) || 'Apply sample data';
+            sampleSelect.appendChild( defaultOption );
+            sampleSets.forEach( function( set ) {
+                var opt = document.createElement( 'option' );
+                opt.value = set.id;
+                opt.textContent = set.label || set.id;
+                sampleSelect.appendChild( opt );
+            } );
+            sampleSelect.addEventListener( 'change', function() {
+                var selected = sampleSets.find( function( set ) { return set.id === sampleSelect.value; } );
+                if ( selected ) {
+                    applySampleSpecsToPlan( plan, selected.specs );
+                    applySampleExtrasToPlan( plan, selected );
+                }
+                sampleSelect.value = '';
+            } );
+            featuresHeader.appendChild( sampleSelect );
+        }
+
+        features.appendChild( featuresHeader );
 
         var specs = Array.isArray( plan.meta[ META_KEYS.SPECS ] ) ? plan.meta[ META_KEYS.SPECS ] : [];
         specs.forEach( function( spec, idx ) {
@@ -1202,6 +1673,7 @@
         state.selectedCardStyleId = getDefaultCardStyleId( tpl );
         state.layoutType = 'grid';
         state.plans = initialPlansForTemplate( tpl );
+        state.templatePlanDefaults = deepClone( state.plans );
         state.activePlanIndex = 0;
         state.editingPlanIndex = null;
         state.dimensions = {
@@ -1216,6 +1688,7 @@
         Array.prototype.forEach.call( templatesWrap.querySelectorAll( '.pwpl-template-card' ), function( card ) {
             card.classList.toggle( 'is-selected', card.dataset.templateId === templateId );
         } );
+        syncTemplateDetailsPanel();
 
         step1Next.disabled = false;
         renderLayoutTypes();
@@ -1246,6 +1719,7 @@
         clone.hidden = false;
         clone = ensurePlanStructure( clone, nextIndex - 1 );
         state.plans.push( clone );
+        state.templatePlanDefaults.push( deepClone( clone ) );
         state.activePlanIndex = state.plans.length - 1;
         state.editingPlanIndex = options && options.openEditor ? state.activePlanIndex : null;
         openMenuIndex = null;
@@ -1266,6 +1740,7 @@
         var clone = ensurePlanStructure( deepClone( base ), state.plans.length );
         clone.post_title = clone.post_title ? clone.post_title + ' copy' : 'Plan ' + ( state.plans.length + 1 );
         state.plans.splice( index + 1, 0, clone );
+        state.templatePlanDefaults.splice( index + 1, 0, deepClone( clone ) );
         state.activePlanIndex = index + 1;
         state.editingPlanIndex = null;
         openMenuIndex = null;
@@ -1287,6 +1762,7 @@
             return;
         }
         state.plans.splice( index, 1 );
+        state.templatePlanDefaults.splice( index, 1 );
         if ( state.activePlanIndex >= state.plans.length ) {
             state.activePlanIndex = state.plans.length - 1;
         }

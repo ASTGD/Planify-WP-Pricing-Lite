@@ -6,7 +6,9 @@
   "directories": {
     "doc": "docs"
   },
-  "scripts": {},
+  "scripts": {
+    "capture:thumbs": "node scripts/capture-thumbs.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ASTGD/Planify-WP-Pricing-Lite.git"

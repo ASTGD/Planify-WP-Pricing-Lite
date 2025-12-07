@@ -12,11 +12,13 @@ class PWPL_Meta {
     const PLAN_SPECS              = '_pwpl_specs';
     const PLAN_VARIANTS           = '_pwpl_variants';
     const PLAN_HERO_IMAGE         = '_pwpl_plan_hero_image';
+    const PLAN_HERO_IMAGE_URL     = '_pwpl_plan_hero_image_url';
     const PLAN_FEATURED           = '_pwpl_featured';
     const PLAN_BADGE_SHADOW       = '_pwpl_badge_shadow';
     const TABLE_SIZE              = '_pwpl_table_size';
     const TABLE_BREAKPOINTS       = '_pwpl_table_breakpoints';
     const PLAN_BADGES_OVERRIDE    = '_pwpl_badges_override';
+    const PLAN_TRUST_ITEMS_OVERRIDE = '_pwpl_plan_trust_items_override';
     const TABLE_BADGES            = '_pwpl_badges';
     const TABLE_THEME             = '_pwpl_table_theme';
     const TABLE_LAYOUT_TYPE       = '_pwpl_table_layout_type';
@@ -399,6 +401,13 @@ class PWPL_Meta {
             'sanitize_callback' => 'absint',
             'show_in_rest'      => true,
         ] );
+        register_post_meta( 'pwpl_plan', self::PLAN_HERO_IMAGE_URL, [
+            'single'            => true,
+            'type'              => 'string',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => 'esc_url_raw',
+            'show_in_rest'      => false,
+        ] );
 
         register_post_meta( 'pwpl_plan', self::PLAN_SPECS, [
             'single'            => true,
@@ -421,6 +430,25 @@ class PWPL_Meta {
             'type'              => 'array',
             'auth_callback'     => [ $this, 'can_edit' ],
             'sanitize_callback' => [ $this, 'sanitize_badges' ],
+            'show_in_rest'      => false,
+        ] );
+
+        register_post_meta( 'pwpl_plan', self::PLAN_TRUST_ITEMS_OVERRIDE, [
+            'single'            => true,
+            'type'              => 'array',
+            'auth_callback'     => [ $this, 'can_edit' ],
+            'sanitize_callback' => function( $value ) {
+                $items = [];
+                if ( is_array( $value ) ) {
+                    foreach ( $value as $item ) {
+                        $label = trim( wp_strip_all_tags( (string) $item ) );
+                        if ( '' !== $label ) {
+                            $items[] = $label;
+                        }
+                    }
+                }
+                return array_slice( $items, 0, 3 );
+            },
             'show_in_rest'      => false,
         ] );
 
@@ -1023,6 +1051,7 @@ class PWPL_Meta {
                 'target'     => in_array( $item['target'] ?? '', [ '_blank', '_self' ], true ) ? $item['target'] : '',
                 'rel'        => sanitize_text_field( $item['rel'] ?? '' ),
                 'unavailable'=> ! empty( $item['unavailable'] ) ? 1 : 0,
+                'unit'       => sanitize_text_field( $item['unit'] ?? '' ),
             ];
             if ( $variant['price'] === '' && $variant['sale_price'] === '' && $variant['cta_url'] === '' ) {
                 continue;

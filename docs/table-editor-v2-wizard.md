@@ -47,6 +47,7 @@ Finish: create a real `pwpl_table` + demo `pwpl_plan` posts with existing meta k
 - Templates now also declare `layout_type` (e.g., `grid`, `comparison`, `hero`) and a visual `preset` slug; these are persisted to table meta so themes can swap layouts/presets without changing schema.
 - FireVPS routes through `template.php` to layout partials (`layouts/grid.php`, `layouts/columns.php`, `layouts/comparison.php`) based on `layout_type`; `columns` and `comparison` now render dedicated layouts (service-style columns and a comparison matrix) while keeping the same meta/rendering model.
 - Five wizard presets (SaaS 3 Column, Startup Pricing Grid, Feature Comparison Table, Service Plans, App Pricing) map to distinct FireVPS systems (colors, card style, CTA treatment, specs styling) and will use the appropriate layout partial. SaaS 3 Column also supports an optional per‑plan hero image (`PLAN_HERO_IMAGE`) rendered above the plan title for that preset only.
+- New **Hospitality Cards** preset (services category) uses the columns layout with cream cards, real hero images per plan (persisted via `_pwpl_plan_hero_image_url` so previews can show bundled PNGs), `/night` price units, and CTA reassurance copy for hotels/salons/coaching packages.
 - Service Plans is the single Services preset; it now ships with four tiers (Free, Starter, Pro, Premium), crisp white single-surface cards, larger ticked features, and a horizontal slider layout. Legacy Service Columns remains for existing tables but is hidden from the wizard.
 - FireVPS cards now align CTAs on a shared baseline and use preset card-surface tokens to avoid bottom “white bands” when plan content heights differ.
 - Comparison preset now renders as a courses-style comparison matrix: a teal feature stub column on the left and three plan columns with prices/CTAs and tick/cross cells in the spec grid.
@@ -54,6 +55,7 @@ Finish: create a real `pwpl_table` + demo `pwpl_plan` posts with existing meta k
 - **Starter Pricing Grid (saas-grid-v2)** is now an app-style hero grid: billing toggle + “Save 15%” badge, three illustrated hero cards inside a unified frame, striped feature rows, and a “Most Popular” ribbon on the featured plan.
 - `PWPL_Table_Wizard`: builds in-memory preview configs and can create actual tables/plans from a selection (no new schema).
 - `PWPL_Rest_Wizard`: exposes preview/create endpoints; handles missing templates safely and supports an optional debug mode (constant/filter) that logs wizard selections and timings to the PHP error log (local only, no external tracking).
+- Plan variants now accept an optional `unit` string so templates can surface `/night`, `/seat`, etc. alongside the formatted price; the sanitizer persists it and the renderer defaults to `/mo` when omitted.
 - Preview/create endpoints accept an optional `plan_count` to clone demo plans for the starter table (no schema change) and an optional `plans_override` payload when columns are edited (title/subtitle/specs/variants/CTA/featured/highlight), still using existing meta keys.
 - Layout type selection in the wizard maps to existing template layout variants (Grid/Carousel/Comparison/Classic labels are UX-friendly aliases; fall back gracefully to available variants).
 
@@ -65,7 +67,19 @@ Finish: create a real `pwpl_table` + demo `pwpl_plan` posts with existing meta k
 - Admin page: `admin.php?page=pwpl-table-wizard`.
 - Two-pane layout (vanilla JS): left steps, right live preview (iframe).
 - Steps: template → layout & columns (layout type, dimensions, card style, column editor with per-column edit/duplicate/hide/delete + Add column) → create & redirect/copy.
-- Starter pack includes multiple distinct templates (e.g., SaaS grids, service columns, comparison matrix, image hero, minimal) defined in `PWPL_Table_Templates`, with thumbnails mapped via `TEMPLATE_VISUALS`.
+- Starter pack includes multiple distinct templates (e.g., SaaS grids, service columns, comparison matrix, image hero, minimal) defined in `PWPL_Table_Templates`, with each template pointing to a static preview thumbnail under `assets/admin/img/wizard-thumbs/`. When a thumbnail is missing we still fall back to the lightweight `TEMPLATE_VISUALS` mock; otherwise the wizard shows the real snapshot.
+- Each template now exposes a small metadata payload for the wizard (`metadata` array on each template definition). Fields:
+  - `tags` (string slugs) – retained for future filtering; the UI currently hides tag chips while the template library stays small.
+  - `best_for` (human readable summary).
+  - `plan_count` (recommended plan columns).
+  - `supports_hero` (boolean for hero image slots).
+  - `highlights` (short bullet strings).
+  - `sample_specs` (array of `{ label, value, icon }` suggestions; Step 2 shows a “Use sample data” helper that injects these directly into the plan editor).
+  - `sample_sets` (array of named bundles: `{ id, label, specs[], cta?, hero_image?, pricing?, badge?, featured?, trust_items? }`). When provided, Step 2 surfaces a dropdown per column so users can pick “Starter”, “Pro”, etc. sample data; selecting one fills specs, optional CTA copy, hero image placeholders, price/sale/billing text, badge/featured state, and trust trio overrides if supplied. Hero image URLs persist to `_pwpl_plan_hero_image_url` so FireVPS can render remote PNGs until a proper attachment is uploaded. Trust trio values are persisted to `_pwpl_plan_trust_items_override` so FireVPS can render per-plan reassurance copy beneath each CTA; tables that don’t supply overrides continue to use the table-level trust trio list.
+  - Plan editors now also surface a “Reset to template” action that restores the selected column from the original template defaults (title/subtitle/specs/variants). This uses the same sanitized template data already loaded when the wizard starts.
+  - Outside of `metadata`, each template has a `thumbnail` string (absolute URL) pointing to the static preview image consumed by the Step 1 grid.
+  Use the `pwpl_wizard_template_metadata` filter to adjust/augment metadata before it reaches the wizard.
+  - To regenerate those thumbnail images after tweaking layouts, run `npm run capture:thumbs` from the plugin root; the script renders each template in isolation and replaces the PNGs under `assets/admin/img/wizard-thumbs/`.
 
 ---
 

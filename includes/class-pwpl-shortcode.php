@@ -951,6 +951,28 @@ class PWPL_Shortcode {
                 }
 
                 $hero_image_id = (int) get_post_meta( $plan_id, PWPL_Meta::PLAN_HERO_IMAGE, true );
+                $hero_image_url = get_post_meta( $plan_id, PWPL_Meta::PLAN_HERO_IMAGE_URL, true );
+                if ( ! $hero_image_url ) {
+                    $hero_image_url = get_post_meta( $plan_id, 'hero_image_url', true );
+                }
+                $hero_image_url = $hero_image_url ? esc_url_raw( (string) $hero_image_url ) : '';
+                $trust_override_meta = get_post_meta( $plan_id, PWPL_Meta::PLAN_TRUST_ITEMS_OVERRIDE, true );
+                if ( ! is_array( $trust_override_meta ) || empty( $trust_override_meta ) ) {
+                    $legacy_override = get_post_meta( $plan_id, 'trust_items_override', true );
+                    if ( is_array( $legacy_override ) && $legacy_override ) {
+                        $trust_override_meta = $legacy_override;
+                    }
+                }
+                $trust_override_items = [];
+                if ( is_array( $trust_override_meta ) ) {
+                    foreach ( $trust_override_meta as $item ) {
+                        $label = sanitize_text_field( (string) $item );
+                        if ( '' !== $label ) {
+                            $trust_override_items[] = $label;
+                        }
+                    }
+                    $trust_override_items = array_slice( $trust_override_items, 0, 3 );
+                }
 
                 $plan_entries[] = [
                     'id'              => $plan_id,
@@ -972,6 +994,8 @@ class PWPL_Shortcode {
                     'featured'        => $is_featured,
                     'deal_label'      => $deal_label,
                     'hero_image_id'   => $hero_image_id,
+                    'hero_image_url'  => $hero_image_url,
+                    'trust_items_override' => $trust_override_items,
                     'datasets'        => [
                         'platforms' => $plan_platforms,
                         'periods'   => $plan_periods,

@@ -269,6 +269,11 @@ if ( $style_combined ) {
 			$badge_text  = $badge_data['text_color'] ?? '';
 			$is_featured = ! empty( $plan['featured'] );
 			$deal_label  = $plan['deal_label'] ?? '';
+			$hero_image_id = isset( $plan['hero_image_id'] ) ? (int) $plan['hero_image_id'] : 0;
+			$hero_image_url = '';
+			if ( ! empty( $plan['hero_image_url'] ) ) {
+				$hero_image_url = esc_url( (string) $plan['hero_image_url'] );
+			}
 			$plan_classes = [
 				'pwpl-plan',
 				'fvps-card',
@@ -277,6 +282,19 @@ if ( $style_combined ) {
 			];
 			if ( $preset ) {
 				$plan_classes[] = 'fvps-card--preset-' . $preset;
+			}
+			$plan_trust_items = $trust_items;
+			if ( ! empty( $plan['trust_items_override'] ) && is_array( $plan['trust_items_override'] ) ) {
+				$plan_trust_items = array_values( array_filter( array_map( 'sanitize_text_field', (array) $plan['trust_items_override'] ) ) );
+			}
+			$is_hospitality = ( 'hospitality-cards' === $preset );
+			$card_body_classes = [ 'fvps-card__body' ];
+			if ( $is_hospitality ) {
+				$card_body_classes[] = 'fvps-card__body--hospitality';
+			}
+			$card_footer_classes = [ 'fvps-card__footer' ];
+			if ( $is_hospitality ) {
+				$card_footer_classes[] = 'fvps-card__footer--hospitality';
 			}
 			?>
 			<article class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $plan_classes ) ) ); ?>"
@@ -287,7 +305,28 @@ if ( $style_combined ) {
 				data-locations="<?php echo esc_attr( $locations ? implode( ',', $locations ) : '*' ); ?>"
 				data-variants="<?php echo esc_attr( $variants ?: '[]' ); ?>"
 				data-badge="<?php echo esc_attr( $badge_attr ?: '{}' ); ?>">
-				<div class="fvps-card__body">
+				<?php if ( $is_hospitality ) : ?>
+					<div class="fvps-hospitality-hero">
+						<?php if ( $hero_image_id ) : ?>
+							<?php
+							echo wp_get_attachment_image(
+								$hero_image_id,
+								'large',
+								false,
+								[
+									'class'   => 'fvps-hospitality-hero__img',
+									'loading' => 'lazy',
+								]
+							);
+							?>
+						<?php elseif ( $hero_image_url ) : ?>
+							<img class="fvps-hospitality-hero__img" src="<?php echo esc_url( $hero_image_url ); ?>" alt="" loading="lazy" decoding="async" />
+						<?php else : ?>
+							<div class="fvps-hospitality-hero__fallback" aria-hidden="true"></div>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
+				<div class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $card_body_classes ) ) ); ?>">
 					<div class="fvps-card__badges">
 						<span class="fvps-plan-badge" data-pwpl-badge style="<?php
 							if ( $badge_color ) {
@@ -341,7 +380,7 @@ if ( $style_combined ) {
 					<?php endif; ?>
 				</div>
 
-				<div class="fvps-card__footer">
+				<div class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $card_footer_classes ) ) ); ?>">
 					<div class="pwpl-plan__cta fvps-card__cta" data-pwpl-cta>
 						<a class="pwpl-plan__cta-button fvps-button"
 							data-pwpl-cta-button
@@ -354,9 +393,9 @@ if ( $style_combined ) {
 							<span data-pwpl-cta-label><?php echo esc_html( $cta_label ); ?></span>
 						</a>
 					</div>
-					<?php if ( $trust_trio_enabled && $trust_items ) : ?>
-						<ul class="fvps-cta-trust<?php echo count( $trust_items ) > 3 ? ' fvps-cta-trust--stack' : ''; ?>" role="list">
-							<?php foreach ( $trust_items as $item ) : ?>
+					<?php if ( $trust_trio_enabled && $plan_trust_items ) : ?>
+						<ul class="fvps-cta-trust<?php echo count( $plan_trust_items ) > 3 ? ' fvps-cta-trust--stack' : ''; ?>" role="list">
+							<?php foreach ( $plan_trust_items as $item ) : ?>
 								<li role="listitem"><?php echo esc_html( (string) $item ); ?></li>
 							<?php endforeach; ?>
 						</ul>

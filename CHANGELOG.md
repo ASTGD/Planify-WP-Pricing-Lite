@@ -11,6 +11,7 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 ### Added
 - Internal: layout/preset table meta (`layout_type`, `preset`) seeded from wizard templates and exposed to renderers for future layout/preset-specific themes. No visual change yet.
 - Added `App Pricing – Soft Cards` wizard template (SaaS/app style) with soft cards, purple CTAs, and a flat feature list; middle card lightly highlighted.
+- Added a **Hospitality Cards** wizard template (services category) with three room/service demos, full-bleed hero photography sourced from `assets/admin/img/template-demo/…`, `/night` price units, CTA reassurance copy, and a polished template thumbnail generated via `npm run capture:thumbs`. Template metadata advertises hotel/salon/coaching use cases and supports hero images out of the box.
 
 ### Changed
 - FireVPS now differentiates several wizard presets (e.g., SaaS Grid V2, Image Hero, Minimal) with preset-scoped styling driven by table meta (`layout_type`/`preset`) while preserving existing layouts/DOM contracts.
@@ -22,6 +23,11 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 - Comparison table preset redesigned as a courses-style comparison matrix: teal feature stub column, three plan headers with prices/CTAs, and centered tick/cross cells in the spec grid.
 - SaaS 3 Column preset now supports a per-plan hero image meta (`PLAN_HERO_IMAGE`) rendered as a full-bleed card header image above the plan title, with a unified white content surface (pricing + specs), a bottom-anchored primary CTA, and an optional reassurance note under the button (filterable via `pwpl_firevps_saas3_cta_note`); existing tables remain unchanged unless a hero image is set.
 - Starter Pricing Grid (`saas-grid-v2`) redesigned as an app-style hero grid: billing toggle + “Save 15%” badge, illustrated cards in a rounded frame, striped feature rows, and a “Most Popular” ribbon on the featured plan.
+- FireVPS now honors per-plan trust trio overrides coming from wizard sample sets or plan meta via the new `_pwpl_plan_trust_items_override` meta key (with sanitized fallback to legacy data), allowing each plan card to surface tailored reassurance copy beneath its CTA.
+- Wizard template metadata now expands inline beneath the selected card (toggled via a “Details ▾” link) so highlights/best-for/sample specs stay visible next to the picker instead of hiding at the bottom of the sidebar, and Step 1 now presents a grid of real preview thumbnails grouped by sticky category headings + category chips (All, SaaS, Services, Comparison, etc.) while the old search/tag chip row remains hidden until the library grows. Thumbnails can be regenerated via `npm run capture:thumbs`, which renders each preset and replaces the PNGs in `assets/admin/img/wizard-thumbs/`.
+- Wizard template cards now feature a subtle glassy hover/selection treatment with a gradient border and hovering sheen so each tile clearly communicates “click to preview” while keeping the grid feeling premium.
+- Table Wizard’s template column now sits on a clean white canvas with softened card shadows, and the selected card gets a crisp glowing border so the picker feels calm while clearly indicating the active choice.
+- FireVPS columns layout now supports `_pwpl_plan_hero_image_url` fallbacks, a new Hospitality-specific hero block, cream card surfaces, and CTA reassurance footers; plan variants also accept custom `unit` strings (e.g., `/night`) so the new hospitality preset can show realistic nightly pricing while grid cards fall back to `/mo` when no unit is provided.
 
 ---
 

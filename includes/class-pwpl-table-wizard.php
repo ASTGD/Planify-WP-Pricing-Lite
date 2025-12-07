@@ -278,6 +278,12 @@ class PWPL_Table_Wizard {
             if ( $theme && empty( $meta[ PWPL_Meta::PLAN_THEME ] ) ) {
                 $meta[ PWPL_Meta::PLAN_THEME ] = $theme;
             }
+            if ( isset( $meta['trust_items_override'] ) && ! isset( $meta[ PWPL_Meta::PLAN_TRUST_ITEMS_OVERRIDE ] ) ) {
+                $meta[ PWPL_Meta::PLAN_TRUST_ITEMS_OVERRIDE ] = $meta['trust_items_override'];
+            }
+            if ( isset( $meta['trust_items_override'] ) ) {
+                unset( $meta['trust_items_override'] );
+            }
             if ( empty( $meta[ PWPL_Meta::PLAN_VARIANTS ] ) || ! is_array( $meta[ PWPL_Meta::PLAN_VARIANTS ] ) ) {
                 $meta[ PWPL_Meta::PLAN_VARIANTS ] = [
                     [
@@ -287,6 +293,7 @@ class PWPL_Table_Wizard {
                         'cta_label'  => '',
                         'cta_url'    => '',
                         'target'     => '_self',
+                        'unit'       => '',
                     ],
                 ];
             } else {
@@ -303,6 +310,7 @@ class PWPL_Table_Wizard {
                             'cta_label'  => '',
                             'cta_url'    => '',
                             'target'     => '_self',
+                            'unit'       => '',
                         ],
                         $variant
                     );
