@@ -853,6 +853,12 @@ class PWPL_Shortcode {
                 $variants = $plan_variants_cache[ $plan_id ] ?? [];
                 $best_variant = $this->resolve_variant( $variants, $active_values );
                 $price_html   = $this->build_price_html( $best_variant, $settings );
+                $plan_billing_meta = get_post_meta( $plan_id, 'billing', true );
+                if ( is_string( $plan_billing_meta ) && '' !== trim( $plan_billing_meta ) ) {
+                    $billing_copy = sanitize_text_field( $plan_billing_meta );
+                } else {
+                    $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );
+                }
 
                 $override_badges = get_post_meta( $plan_id, PWPL_Meta::PLAN_BADGES_OVERRIDE, true );
                 if ( ! is_array( $override_badges ) ) {
@@ -1101,7 +1107,12 @@ class PWPL_Shortcode {
                         $badge_view['label'] = '';
                     }
                     $cta          = $this->prepare_cta( $variant );
-                    $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );
+                    $plan_billing_meta = get_post_meta( $plan->ID, 'billing', true );
+                    if ( is_string( $plan_billing_meta ) && '' !== trim( $plan_billing_meta ) ) {
+                        $billing_copy = sanitize_text_field( $plan_billing_meta );
+                    } else {
+                        $billing_copy = $this->get_billing_copy( $active_values, $dimension_labels );
+                    }
 
                     $location_slug  = $active_values['location'] ?? '';
                     $location_label = $this->get_dimension_label( 'location', $location_slug, $dimension_labels );
@@ -1291,6 +1302,14 @@ class PWPL_Shortcode {
             return '<span class="pwpl-plan__price--empty">' . esc_html__( 'Contact us', 'planify-wp-pricing-lite' ) . '</span>';
         }
 
+        $unit_label = '';
+        if ( isset( $variant['unit'] ) ) {
+            $unit_label = trim( (string) $variant['unit'] );
+        }
+        if ( '' === $unit_label ) {
+            $unit_label = __( '/mo', 'planify-wp-pricing-lite' );
+        }
+
         // Use variant-provided prices as monthly values without additional math
         $price_num = is_numeric( $price ) ? (float) $price : null;
         $sale_num  = is_numeric( $sale ) ? (float) $sale : null;
@@ -1317,7 +1336,7 @@ class PWPL_Shortcode {
                 . ( $sale_prefix !== '' ? '<span class="pwpl-price-currency pwpl-currency--prefix">' . esc_html( $sale_prefix ) . '</span>' : '' )
                 . '<span class="pwpl-price-value">' . esc_html( $sale_value ) . '</span>'
                 . ( $sale_suffix !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sale_suffix ) . '</span>' : '' )
-                . '<span class="pwpl-price-unit">/mo</span>'
+                . '<span class="pwpl-price-unit">' . esc_html( $unit_label ) . '</span>'
                 . '</span>';
             // Order: old price + badge (same line), then sale block; unit is added by CSS/JS if needed
             return '<span class="pwpl-plan__price-original">' . esc_html( $formatted_price ) . '</span>' . $badge_html . $sale_html;
@@ -1335,7 +1354,7 @@ class PWPL_Shortcode {
         $single_html = ( $pfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--prefix">' . esc_html( $pfx ) . '</span>' : '' )
             . '<span class="pwpl-price-value">' . esc_html( $val ) . '</span>'
             . ( $sfx !== '' ? '<span class="pwpl-price-currency pwpl-currency--suffix">' . esc_html( $sfx ) . '</span>' : '' )
-            . '<span class="pwpl-price-unit">/mo</span>';
+            . '<span class="pwpl-price-unit">' . esc_html( $unit_label ) . '</span>';
         return '<span class="pwpl-plan__price">' . $single_html . '</span>';
     }
 

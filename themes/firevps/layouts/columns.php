@@ -79,6 +79,10 @@ $wrapper_attrs['data-table-id']         = (int) ( $table['id'] ?? 0 );
 $wrapper_attrs['data-table-theme']      = $theme_slug;
 $wrapper_attrs['data-badges']           = $badges_json ?: '{}';
 $wrapper_attrs['data-dimension-labels'] = $labels_json ?: '{}';
+if ( 'hospitality-cards' === $preset ) {
+	$wrapper_attrs['data-unit-default']   = '/night';
+	$wrapper_attrs['data-billing-static'] = 'true';
+}
 
 if ( $specs_style && 'default' !== $specs_style ) {
 	$wrapper_attrs['data-fvps-specs-style'] = $specs_style;

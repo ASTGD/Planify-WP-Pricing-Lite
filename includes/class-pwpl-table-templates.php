@@ -1061,6 +1061,7 @@ class PWPL_Table_Templates {
                                     __( 'Free cancellation within 48h', 'planify-wp-pricing-lite' ),
                                 ],
                                 PWPL_Meta::PLAN_HERO_IMAGE_URL => self::template_demo_url( 'hospitality-standard.png' ),
+                                'billing' => __( 'Per night', 'planify-wp-pricing-lite' ),
                             ],
                         ],
                         [
@@ -1094,6 +1095,7 @@ class PWPL_Table_Templates {
                                     __( 'Free cancellation within 48h', 'planify-wp-pricing-lite' ),
                                 ],
                                 PWPL_Meta::PLAN_HERO_IMAGE_URL => self::template_demo_url( 'hospitality-deluxe.png' ),
+                                'billing' => __( 'Per night', 'planify-wp-pricing-lite' ),
                             ],
                         ],
                         [
@@ -1125,6 +1127,7 @@ class PWPL_Table_Templates {
                                     __( 'Free cancellation within 48h', 'planify-wp-pricing-lite' ),
                                 ],
                                 PWPL_Meta::PLAN_HERO_IMAGE_URL => self::template_demo_url( 'hospitality-penthouse.png' ),
+                                'billing' => __( 'Per night', 'planify-wp-pricing-lite' ),
                             ],
                         ],
                     ],

@@ -287,6 +287,9 @@ class PWPL_Table_Renderer {
             $best_variant = self::resolve_variant( $variants, $active_values );
             $price_html   = self::build_price_html( $best_variant, $settings );
             $billing      = self::get_billing_copy( $active_values, $dimension_labels );
+            if ( isset( $meta['billing'] ) && '' !== trim( (string) $meta['billing'] ) ) {
+                $billing = sanitize_text_field( (string) $meta['billing'] );
+            }
 
             $datasets = [
                 'platforms' => [],

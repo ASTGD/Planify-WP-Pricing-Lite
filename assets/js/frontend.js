@@ -75,7 +75,7 @@
         return best || variants[0];
     }
 
-    function buildPriceHTML(variant) {
+    function buildPriceHTML(variant, table) {
         if (!variant) {
             return '<span class="pwpl-plan__price--empty">' + __( 'Contact us' ) + '</span>';
         }
@@ -89,10 +89,18 @@
         const saleNum = (sale !== '' && sale !== null) ? parseFloat(sale) : NaN;
         const hasDiscount = !Number.isNaN(priceNum) && !Number.isNaN(saleNum) && priceNum > 0 && saleNum >= 0 && saleNum < priceNum;
 
-        // Treat variant prices as monthly; just format and append /mo
+        // Format numeric prices and derive display unit.
         const formattedPriceMonthly = price ? formatPrice(price) : '';
         const formattedSaleMonthly  = sale ? formatPrice(sale)  : '';
-        const unit = ' /mo';
+        let unit = '';
+        const fallbackUnit = (table && typeof table.dataset.unitDefault === 'string' && table.dataset.unitDefault.trim() !== '')
+            ? ' ' + table.dataset.unitDefault.trim()
+            : ' /mo';
+        if (typeof variant.unit === 'string' && variant.unit.trim() !== '') {
+            unit = ' ' + variant.unit.trim();
+        } else {
+            unit = fallbackUnit;
+        }
 
         if (hasDiscount && formattedSaleMonthly && formattedPriceMonthly) {
             const pct = Math.round(((priceNum - saleNum) / priceNum) * 100);
@@ -644,9 +652,13 @@
         }
     }
 
-    function updateBilling(plan, selection, dimensionLabels) {
+    function updateBilling(table, plan, selection, dimensionLabels) {
         const billingEl = plan.querySelector('[data-pwpl-billing]');
         if (!billingEl) {
+            return;
+        }
+        if (table && table.dataset.billingStatic === 'true') {
+            billingEl.hidden = false;
             return;
         }
         const periodSlug = selection.period || '';
@@ -671,12 +683,12 @@
             const best = resolveVariant(variants, selection);
             const priceEl = plan.querySelector('[data-pwpl-price]');
             if (priceEl) {
-                priceEl.innerHTML = buildPriceHTML(best);
+                priceEl.innerHTML = buildPriceHTML(best, table);
             }
             updateBadge(plan, selection, tableBadges);
             updateLocation(plan, selection, dimensionLabels);
             updateCta(plan, best);
-            updateBilling(plan, selection, dimensionLabels);
+            updateBilling(table, plan, selection, dimensionLabels);
         });
     }
 
