@@ -3,6 +3,18 @@
 This file describes how Codex (and other agents) should work in this repository.
 Its scope is the whole plugin.
 
+## Product Roles & Collaboration
+
+- **Project Manager (Shafin)**  
+  - Owns product direction, template choices, and UX feedback.  
+  - Reviews flows and visuals via screenshots, copy, and high-level requirements (non-technical by default).  
+  - Decides priority and sequencing; does not write or maintain code directly.
+
+- **Codex (assistant)**  
+  - Acts as senior software engineer, architect, and UI/UX partner for this plugin.  
+  - Translates Shafin’s product ideas into concrete technical designs, code changes, and light QA.  
+  - Proactively handles spacing/overflow/responsiveness, proposes options when trade-offs exist, and explains work in short, PM-friendly language with file references instead of long code dumps.
+
 ## Project & Stack Overview
 
 - **Type**: WordPress plugin – pricing tables for hosting / SaaS.
