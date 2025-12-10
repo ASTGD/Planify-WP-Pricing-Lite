@@ -984,8 +984,10 @@ class PWPL_Table_Templates {
                     'default' => [
                         'label' => __( 'Hospitality columns', 'planify-wp-pricing-lite' ),
                         'meta'  => [
-                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
-                            PWPL_Meta::LAYOUT_GAP_X   => 20,
+                            PWPL_Meta::LAYOUT_COLUMNS    => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X      => 20,
+                            PWPL_Meta::LAYOUT_WIDTHS     => [ 'global' => 1240 ],
+                            PWPL_Meta::LAYOUT_CARD_WIDTHS=> [ 'global' => 360 ],
                         ],
                     ],
                 ],
@@ -1010,8 +1012,10 @@ class PWPL_Table_Templates {
                     'table_meta' => array_replace_recursive(
                         self::base_table_meta( 'firevps', [] ),
                         [
-                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
-                            PWPL_Meta::LAYOUT_GAP_X   => 22,
+                            PWPL_Meta::LAYOUT_COLUMNS      => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X        => 22,
+                            PWPL_Meta::LAYOUT_WIDTHS       => [ 'global' => 1240 ],
+                            PWPL_Meta::LAYOUT_CARD_WIDTHS  => [ 'global' => 360 ],
                             PWPL_Meta::TABLE_LAYOUT_TYPE => 'columns',
                             PWPL_Meta::TABLE_PRESET      => 'hospitality-cards',
                             PWPL_Meta::TRUST_TRIO_ENABLED => true,

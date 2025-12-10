@@ -29,6 +29,10 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 - Table Wizard’s template column now sits on a clean white canvas with softened card shadows, and the selected card gets a crisp glowing border so the picker feels calm while clearly indicating the active choice.
 - FireVPS columns layout now supports `_pwpl_plan_hero_image_url` fallbacks, a Hospitality-specific hero block, cream card surfaces, a clearer amenities list, and CTA reassurance footers; plan variants also accept custom `unit` strings (e.g., `/night`) so the hospitality preset can show realistic nightly pricing while grid cards fall back to `/mo` when no unit is provided.
 
+### Fixed
+- Hospitality Cards preset in the FireVPS columns layout now respects grid-based card sizing so plan cards no longer visually overlap and consistently render with comfortable gaps in the New Table Wizard preview and on the frontend.
+- Hospitality Cards tables now default to a wider layout and slightly larger column cards so amenities/spec text has more room to breathe, reducing awkward line breaks in items like “Workspace” on both the wizard preview and the live FireVPS theme.
+
 ---
 
 ## 1.8.9 – New Table Wizard (v1)
