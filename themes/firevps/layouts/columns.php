@@ -278,12 +278,31 @@ if ( $style_combined ) {
 			if ( ! empty( $plan['hero_image_url'] ) ) {
 				$hero_image_url = esc_url( (string) $plan['hero_image_url'] );
 			}
+			$is_hospitality = ( 'hospitality-cards' === $preset );
+			if ( $is_hospitality && ! $hero_image_id && ! $hero_image_url && defined( 'PWPL_URL' ) ) {
+				// Fallback demo images for Hospitality preset (wizard preview + empty hero meta).
+				$fallback_file = '';
+				$title_slug = strtolower( sanitize_title( (string) $title ) );
+				if ( false !== strpos( $title_slug, 'standard' ) ) {
+					$fallback_file = 'hospitality-standard.png';
+				} elseif ( false !== strpos( $title_slug, 'deluxe' ) ) {
+					$fallback_file = 'hospitality-deluxe.png';
+				} elseif ( false !== strpos( $title_slug, 'penthouse' ) || false !== strpos( $title_slug, 'loft' ) ) {
+					$fallback_file = 'hospitality-penthouse.png';
+				}
+				if ( $fallback_file ) {
+					$hero_image_url = esc_url( trailingslashit( PWPL_URL ) . 'assets/admin/img/template-demo/' . $fallback_file );
+				}
+			}
 			$plan_classes = [
 				'pwpl-plan',
 				'fvps-card',
 				'fvps-columns-card',
 				'pwpl-theme--' . $plan_theme,
 			];
+			if ( $is_featured ) {
+				$plan_classes[] = 'fvps-plan--featured';
+			}
 			if ( $preset ) {
 				$plan_classes[] = 'fvps-card--preset-' . $preset;
 			}
@@ -291,7 +310,6 @@ if ( $style_combined ) {
 			if ( ! empty( $plan['trust_items_override'] ) && is_array( $plan['trust_items_override'] ) ) {
 				$plan_trust_items = array_values( array_filter( array_map( 'sanitize_text_field', (array) $plan['trust_items_override'] ) ) );
 			}
-			$is_hospitality = ( 'hospitality-cards' === $preset );
 			$card_body_classes = [ 'fvps-card__body' ];
 			if ( $is_hospitality ) {
 				$card_body_classes[] = 'fvps-card__body--hospitality';

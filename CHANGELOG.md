@@ -28,10 +28,15 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 - Wizard template cards now feature a subtle glassy hover/selection treatment with a gradient border and hovering sheen so each tile clearly communicates “click to preview” while keeping the grid feeling premium.
 - Table Wizard’s template column now sits on a clean white canvas with softened card shadows, and the selected card gets a crisp glowing border so the picker feels calm while clearly indicating the active choice.
 - FireVPS columns layout now supports `_pwpl_plan_hero_image_url` fallbacks, a Hospitality-specific hero block, cream card surfaces, a clearer amenities list, and CTA reassurance footers; plan variants also accept custom `unit` strings (e.g., `/night`) so the hospitality preset can show realistic nightly pricing while grid cards fall back to `/mo` when no unit is provided.
+- Hospitality Cards preset restyled to a warm pastry-style look: full-bleed hero, cream content panel, bold dark CTA, a ribbon-style Featured label, and text-based tick/plus amenities that wrap cleanly without external icons.
+- Hospitality amenities/specs now span the full card width (no inset panel) so long lines breathe without feeling boxed-in.
+- Hospitality specs background is now fully transparent in hospitality cards (no white inset) while keeping the top divider only.
 
 ### Fixed
 - Hospitality Cards preset in the FireVPS columns layout now respects grid-based card sizing so plan cards no longer visually overlap and consistently render with comfortable gaps in the New Table Wizard preview and on the frontend.
 - Hospitality Cards tables now default to a wider layout and slightly larger column cards so amenities/spec text has more room to breathe, reducing awkward line breaks in items like “Workspace” on both the wizard preview and the live FireVPS theme.
+- Hospitality Cards amenities/spec list now spans more of the card width and wraps text more cleanly, so longer lines (e.g., workspace or cancellation notes) don’t look broken in the wizard preview or on the frontend.
+- Hospitality specs no longer rely on SVG icons; bullets fall back to tick/plus pseudo-elements so missing icons can’t break the list.
 
 ---
 
