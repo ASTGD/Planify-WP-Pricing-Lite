@@ -18,7 +18,7 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 - Five wizard presets (SaaS 3 Column, Startup Pricing Grid, Feature Comparison Table, Service Plans, App Pricing) now render with distinct FireVPS visual systems: unique palettes, card surfaces, specs treatment, and CTA placement, without altering data/schema.
 - Consolidated Service templates: Service Plans is the canonical Services preset (ticked feature list); Service Columns remains for existing tables but is hidden from the wizard.
 - Service Plans preset expanded to four tiers (Free, Starter, Pro, Premium) with richer spec lists, subtle Pro emphasis, slider layout, and crisp white single-surface cards.
-- FireVPS now routes `layout_type` to dedicated layout partials: `grid` retains the original FireVPS DOM, `columns` renders a rail-free service-columns layout, and `comparison` renders a spec comparison matrix (no schema changes).
+- FireVPS layout files now act as lightweight routers: each layout family (`grid`, `columns`, `comparison`) looks for a preset-named partial (`grid-*`, `columns-*`, `comparison-*`) with a shared base fallback so adding or tweaking a preset no longer requires touching the core router.
 - FireVPS preset cards polished: CTAs align on a shared baseline and card surfaces fill spare height so shorter cards no longer show blank bands when plan content differs.
 - Comparison table preset redesigned as a courses-style comparison matrix: teal feature stub column, three plan headers with prices/CTAs, and centered tick/cross cells in the spec grid.
 - SaaS 3 Column preset now supports a per-plan hero image meta (`PLAN_HERO_IMAGE`) rendered as a full-bleed card header image above the plan title, with a unified white content surface (pricing + specs), a bottom-anchored primary CTA, and an optional reassurance note under the button (filterable via `pwpl_firevps_saas3_cta_note`); existing tables remain unchanged unless a hero image is set.
@@ -31,7 +31,7 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 - Hospitality Cards preset restyled to a warm pastry-style look: full-bleed hero, cream content panel, bold dark CTA, a ribbon-style Featured label, and text-based tick/plus amenities that wrap cleanly without external icons.
 - Hospitality amenities/specs now span the full card width (no inset panel) so long lines breathe without feeling boxed-in.
 - Hospitality specs background is now fully transparent in hospitality cards (no white inset) while keeping the top divider only.
-- FireVPS is now the default renderer for wizard-created tables; theme selection is locked for wizard presets, and per-preset FireVPS partials (Hospitality, Service Plans) keep preview and frontend layouts in sync.
+- FireVPS is now the default renderer for wizard-created tables; theme selection is locked for wizard presets, and preset routing now covers all layout families (grid/columns/comparison) via partials so wizard previews and frontend shortcodes stay aligned as new presets are added.
 
 ### Fixed
 - Hospitality Cards preset in the FireVPS columns layout now respects grid-based card sizing so plan cards no longer visually overlap and consistently render with comfortable gaps in the New Table Wizard preview and on the frontend.

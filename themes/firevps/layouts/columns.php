@@ -167,15 +167,16 @@ if ( $tabs_glass_enabled ) {
 	$style_combined .= $style_vars;
 }
 
-// Route to preset-specific partials or fallback base renderer.
-if ( 'hospitality-cards' === $preset ) {
-	include __DIR__ . '/columns-hospitality.php';
-	return;
+$partial = '';
+if ( $preset ) {
+	$candidate = __DIR__ . '/columns-' . $preset . '.php';
+	if ( is_readable( $candidate ) ) {
+		$partial = $candidate;
+	}
 }
 
-if ( 'service-plans' === $preset ) {
-	include __DIR__ . '/columns-service-plans.php';
-	return;
+if ( ! $partial ) {
+	$partial = __DIR__ . '/columns-base.php';
 }
 
-include __DIR__ . '/columns-base.php';
+include $partial;
