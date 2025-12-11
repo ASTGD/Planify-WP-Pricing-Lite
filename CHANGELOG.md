@@ -31,6 +31,7 @@ The V1 work has been developed on the `feature/admin-ui-ux-v1` branch and will r
 - Hospitality Cards preset restyled to a warm pastry-style look: full-bleed hero, cream content panel, bold dark CTA, a ribbon-style Featured label, and text-based tick/plus amenities that wrap cleanly without external icons.
 - Hospitality amenities/specs now span the full card width (no inset panel) so long lines breathe without feeling boxed-in.
 - Hospitality specs background is now fully transparent in hospitality cards (no white inset) while keeping the top divider only.
+- FireVPS is now the default renderer for wizard-created tables; theme selection is locked for wizard presets, and per-preset FireVPS partials (Hospitality, Service Plans) keep preview and frontend layouts in sync.
 
 ### Fixed
 - Hospitality Cards preset in the FireVPS columns layout now respects grid-based card sizing so plan cards no longer visually overlap and consistently render with comfortable gaps in the New Table Wizard preview and on the frontend.

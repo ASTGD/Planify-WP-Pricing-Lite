@@ -157,6 +157,9 @@ class PWPL_Shortcode {
 
         $layout_type = $meta_helper->sanitize_layout_type( get_post_meta( $table_id, PWPL_Meta::TABLE_LAYOUT_TYPE, true ) );
         $preset      = $meta_helper->sanitize_preset( get_post_meta( $table_id, PWPL_Meta::TABLE_PRESET, true ) );
+        if ( 'hospitality-cards' === $preset && ( ! $layout_type || 'grid' === $layout_type ) ) {
+            $layout_type = 'columns';
+        }
 
         $table_classes = [
             'pwpl-table',

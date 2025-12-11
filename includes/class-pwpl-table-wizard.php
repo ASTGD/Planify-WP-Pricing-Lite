@@ -121,10 +121,11 @@ class PWPL_Table_Wizard {
         }
 
         $table_meta = $config['table']['meta'];
-
-        if ( ! empty( $args['theme'] ) ) {
-            $table_meta[ PWPL_Meta::TABLE_THEME ] = sanitize_key( $args['theme'] );
-        }
+        // Force FireVPS as canonical theme for wizard-created tables.
+        $table_meta[ PWPL_Meta::TABLE_THEME ] = 'firevps';
+        // Ensure layout/preset meta from the template stay intact.
+        $table_meta[ PWPL_Meta::TABLE_LAYOUT_TYPE ] = sanitize_key( $table_meta[ PWPL_Meta::TABLE_LAYOUT_TYPE ] ?? ( $config['layout_type'] ?? 'grid' ) );
+        $table_meta[ PWPL_Meta::TABLE_PRESET ]      = sanitize_key( $table_meta[ PWPL_Meta::TABLE_PRESET ] ?? ( $config['preset'] ?? $template_id ) );
 
         if ( isset( $args['dimensions'] ) && is_array( $args['dimensions'] ) ) {
             $dims = array_filter( (array) $args['dimensions'] );

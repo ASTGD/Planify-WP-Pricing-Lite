@@ -701,16 +701,23 @@ class PWPL_Admin_Meta {
                 }
             }
         }
+        $wizard_preset = get_post_meta( $post->ID, PWPL_Meta::TABLE_PRESET, true );
+        $is_wizard_table = ! empty( $wizard_preset );
         ?>
         <div class="pwpl-meta pwpl-meta--table" data-pwpl-dimensions>
             <div class="pwpl-field">
                 <label for="pwpl_table_theme"><strong><?php esc_html_e( 'Theme / Style', 'planify-wp-pricing-lite' ); ?></strong></label>
-                <select id="pwpl_table_theme" name="pwpl_table[theme]" class="widefat">
-                    <?php foreach ( $themes as $key => $label ) : ?>
-                        <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $table_theme, $key ); ?>><?php echo esc_html( $label ); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="description"><?php esc_html_e( 'Applies to every plan within this table. Customize colors via assets/css/themes.css.', 'planify-wp-pricing-lite' ); ?></p>
+                <?php if ( $is_wizard_table ) : ?>
+                    <input type="hidden" id="pwpl_table_theme" name="pwpl_table[theme]" value="firevps" />
+                    <p class="description"><?php esc_html_e( 'Wizard-created tables use the FireVPS layout automatically based on their preset.', 'planify-wp-pricing-lite' ); ?></p>
+                <?php else : ?>
+                    <select id="pwpl_table_theme" name="pwpl_table[theme]" class="widefat">
+                        <?php foreach ( $themes as $key => $label ) : ?>
+                            <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $table_theme, $key ); ?>><?php echo esc_html( $label ); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="description"><?php esc_html_e( 'Applies to every plan within this table. Customize colors via assets/css/themes.css.', 'planify-wp-pricing-lite' ); ?></p>
+                <?php endif; ?>
             </div>
 
             <div class="pwpl-field">

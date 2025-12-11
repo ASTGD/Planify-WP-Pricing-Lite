@@ -149,7 +149,7 @@ class PWPL_Rest_Wizard {
         $layout_id     = $request['layout_id'] ? (string) $request['layout_id'] : null;
         $card_style_id = $request['card_style_id'] ? (string) $request['card_style_id'] : null;
         $title         = $request['title'] ? sanitize_text_field( $request['title'] ) : '';
-        $theme         = $request['theme'] ? sanitize_key( $request['theme'] ) : '';
+        $theme         = 'firevps';
         $dimensions    = $request['dimensions'];
         $dimensions    = is_array( $dimensions ) ? $dimensions : [];
         $plan_count    = $request['plan_count'] ? max( 1, min( 12, (int) $request['plan_count'] ) ) : null;
