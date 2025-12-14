@@ -87,10 +87,43 @@ class PWPL_Table_Templates {
                 ],
                 'layouts'     => [
                     'default' => [
-                        'label' => __( '3-column soft cards', 'planify-wp-pricing-lite' ),
-                        'meta'  => [
+                        'family' => 'grid',
+                        'label'  => __( '3-column soft cards', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
                             PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
                             PWPL_Meta::LAYOUT_GAP_X   => 24,
+                        ],
+                    ],
+                    'grid-wide' => [
+                        'family' => 'grid',
+                        'label'  => __( 'Wide grid', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 18,
+                            PWPL_Meta::LAYOUT_CARD_WIDTHS => [ 'global' => 440 ],
+                        ],
+                    ],
+                    'carousel-basic' => [
+                        'family' => 'carousel',
+                        'label'  => __( 'Horizontal carousel', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 2 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 16,
+                        ],
+                    ],
+                    'classic-simple' => [
+                        'family' => 'classic',
+                        'label'  => __( 'Classic cards', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 20,
+                            PWPL_Meta::CTA_CONFIG     => array_replace_recursive(
+                                self::default_cta_config(),
+                                [
+                                    'normal' => [ 'bg' => '#0f172a', 'color' => '#ffffff' ],
+                                    'hover'  => [ 'bg' => '#111827', 'color' => '#ffffff' ],
+                                ]
+                            ),
                         ],
                     ],
                 ],
@@ -105,6 +138,80 @@ class PWPL_Table_Templates {
                                         'radius' => 20,
                                         'pad_t'  => 22,
                                         'pad_b'  => 22,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'solid' => [
+                        'label' => __( 'Solid panels', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 16,
+                                        'pad_t'  => 20,
+                                        'pad_b'  => 20,
+                                    ],
+                                    'surface' => [
+                                        'bg'    => '#ffffff',
+                                        'border'=> '#e2e8f0',
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'outline' => [
+                        'label' => __( 'Outline cards', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 18,
+                                        'pad_t'  => 18,
+                                        'pad_b'  => 18,
+                                    ],
+                                    'surface' => [
+                                        'bg'     => '#ffffff',
+                                        'border' => '#cbd5e1',
+                                        'shadow' => 0,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'glass' => [
+                        'label' => __( 'Glass cards', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 18,
+                                        'pad_t'  => 20,
+                                        'pad_b'  => 20,
+                                    ],
+                                ]
+                            ),
+                            PWPL_Meta::CARDS_GLASS => true,
+                        ],
+                    ],
+                    'minimal' => [
+                        'label' => __( 'Minimal', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 14,
+                                        'pad_t'  => 16,
+                                        'pad_b'  => 16,
+                                    ],
+                                    'surface' => [
+                                        'shadow' => 0,
+                                        'border' => '#e5e7eb',
                                     ],
                                 ]
                             ),
@@ -308,10 +415,36 @@ class PWPL_Table_Templates {
                 ],
                 'layouts'     => [
                     'default' => [
+                        'family' => 'grid',
                         'label' => __( 'Hero pricing grid', 'planify-wp-pricing-lite' ),
                         'meta'  => [
                             PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
                             PWPL_Meta::LAYOUT_GAP_X   => 24,
+                        ],
+                    ],
+                    'grid-compact' => [
+                        'family' => 'grid',
+                        'label'  => __( 'Compact grid', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 18,
+                            PWPL_Meta::LAYOUT_CARD_WIDTHS => [ 'global' => 380 ],
+                        ],
+                    ],
+                    'carousel-basic' => [
+                        'family' => 'carousel',
+                        'label'  => __( 'Carousel', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 2 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 16,
+                        ],
+                    ],
+                    'classic-simple' => [
+                        'family' => 'classic',
+                        'label'  => __( 'Classic cards', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 20,
                         ],
                     ],
                 ],
@@ -331,6 +464,80 @@ class PWPL_Table_Templates {
                                     'layout' => [
                                         'pad_t' => 24,
                                         'pad_b' => 24,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'glass' => [
+                        'label' => __( 'Glass cards', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 18,
+                                        'pad_t'  => 20,
+                                        'pad_b'  => 20,
+                                    ],
+                                ]
+                            ),
+                            PWPL_Meta::CARDS_GLASS => true,
+                        ],
+                    ],
+                    'solid' => [
+                        'label' => __( 'Solid panels', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 16,
+                                        'pad_t'  => 18,
+                                        'pad_b'  => 18,
+                                    ],
+                                    'surface' => [
+                                        'bg'    => '#ffffff',
+                                        'border'=> '#e2e8f0',
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'outline' => [
+                        'label' => __( 'Outline cards', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 16,
+                                        'pad_t'  => 18,
+                                        'pad_b'  => 18,
+                                    ],
+                                    'surface' => [
+                                        'bg'     => '#ffffff',
+                                        'border' => '#cbd5e1',
+                                        'shadow' => 0,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'minimal' => [
+                        'label' => __( 'Minimal', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 14,
+                                        'pad_t'  => 16,
+                                        'pad_b'  => 16,
+                                    ],
+                                    'surface' => [
+                                        'shadow' => 0,
+                                        'border' => '#e5e7eb',
                                     ],
                                 ]
                             ),
@@ -799,10 +1006,36 @@ class PWPL_Table_Templates {
                 ],
                 'layouts'     => [
                     'default' => [
+                        'family' => 'grid',
                         'label' => __( 'Service grid', 'planify-wp-pricing-lite' ),
                         'meta'  => [
                             PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 4 ],
                             PWPL_Meta::LAYOUT_GAP_X   => 24,
+                        ],
+                    ],
+                    'grid-compact' => [
+                        'family' => 'grid',
+                        'label'  => __( 'Compact grid', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 4 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 18,
+                            PWPL_Meta::LAYOUT_CARD_WIDTHS => [ 'global' => 320 ],
+                        ],
+                    ],
+                    'carousel-basic' => [
+                        'family' => 'carousel',
+                        'label'  => __( 'Carousel', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 2 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 16,
+                        ],
+                    ],
+                    'classic-simple' => [
+                        'family' => 'classic',
+                        'label'  => __( 'Classic cards', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 20,
                         ],
                     ],
                 ],
@@ -817,6 +1050,80 @@ class PWPL_Table_Templates {
                                         'radius' => 14,
                                         'pad_t'  => 22,
                                         'pad_b'  => 22,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'solid' => [
+                        'label' => __( 'Solid panels', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 14,
+                                        'pad_t'  => 20,
+                                        'pad_b'  => 20,
+                                    ],
+                                    'surface' => [
+                                        'bg'    => '#ffffff',
+                                        'border'=> '#e2e8f0',
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'outline' => [
+                        'label' => __( 'Outline', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 14,
+                                        'pad_t'  => 18,
+                                        'pad_b'  => 18,
+                                    ],
+                                    'surface' => [
+                                        'bg'     => '#ffffff',
+                                        'border' => '#cbd5e1',
+                                        'shadow' => 0,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'glass' => [
+                        'label' => __( 'Glass', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 16,
+                                        'pad_t'  => 20,
+                                        'pad_b'  => 20,
+                                    ],
+                                ]
+                            ),
+                            PWPL_Meta::CARDS_GLASS => true,
+                        ],
+                    ],
+                    'minimal' => [
+                        'label' => __( 'Minimal', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 12,
+                                        'pad_t'  => 16,
+                                        'pad_b'  => 16,
+                                    ],
+                                    'surface' => [
+                                        'shadow' => 0,
+                                        'border' => '#e5e7eb',
                                     ],
                                 ]
                             ),
@@ -982,12 +1289,38 @@ class PWPL_Table_Templates {
                 ],
                 'layouts'     => [
                     'default' => [
+                        'family' => 'grid',
                         'label' => __( 'Hospitality columns', 'planify-wp-pricing-lite' ),
                         'meta'  => [
                             PWPL_Meta::LAYOUT_COLUMNS    => [ 'global' => 3 ],
                             PWPL_Meta::LAYOUT_GAP_X      => 20,
                             PWPL_Meta::LAYOUT_WIDTHS     => [ 'global' => 1240 ],
                             PWPL_Meta::LAYOUT_CARD_WIDTHS=> [ 'global' => 360 ],
+                        ],
+                    ],
+                    'grid-compact' => [
+                        'family' => 'grid',
+                        'label'  => __( 'Compact grid', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS    => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X      => 16,
+                            PWPL_Meta::LAYOUT_CARD_WIDTHS=> [ 'global' => 340 ],
+                        ],
+                    ],
+                    'carousel-basic' => [
+                        'family' => 'carousel',
+                        'label'  => __( 'Carousel', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 1 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 16,
+                        ],
+                    ],
+                    'classic-simple' => [
+                        'family' => 'classic',
+                        'label'  => __( 'Classic cards', 'planify-wp-pricing-lite' ),
+                        'meta'   => [
+                            PWPL_Meta::LAYOUT_COLUMNS => [ 'global' => 3 ],
+                            PWPL_Meta::LAYOUT_GAP_X   => 20,
                         ],
                     ],
                 ],
@@ -1002,6 +1335,80 @@ class PWPL_Table_Templates {
                                         'radius' => 26,
                                         'pad_t'  => 24,
                                         'pad_b'  => 24,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'solid' => [
+                        'label' => __( 'Solid panels', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 22,
+                                        'pad_t'  => 22,
+                                        'pad_b'  => 22,
+                                    ],
+                                    'surface' => [
+                                        'bg'    => '#fdf7ef',
+                                        'border'=> '#ead6c2',
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'outline' => [
+                        'label' => __( 'Outline', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 22,
+                                        'pad_t'  => 20,
+                                        'pad_b'  => 20,
+                                    ],
+                                    'surface' => [
+                                        'bg'     => '#ffffff',
+                                        'border' => '#d9c5b2',
+                                        'shadow' => 0,
+                                    ],
+                                ]
+                            ),
+                        ],
+                    ],
+                    'glass' => [
+                        'label' => __( 'Glass', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 24,
+                                        'pad_t'  => 22,
+                                        'pad_b'  => 22,
+                                    ],
+                                ]
+                            ),
+                            PWPL_Meta::CARDS_GLASS => true,
+                        ],
+                    ],
+                    'minimal' => [
+                        'label' => __( 'Minimal', 'planify-wp-pricing-lite' ),
+                        'meta'  => [
+                            PWPL_Meta::CARD_CONFIG => array_replace_recursive(
+                                $card_defaults,
+                                [
+                                    'layout' => [
+                                        'radius' => 18,
+                                        'pad_t'  => 18,
+                                        'pad_b'  => 18,
+                                    ],
+                                    'surface' => [
+                                        'shadow' => 0,
+                                        'border' => '#e5e7eb',
                                     ],
                                 ]
                             ),

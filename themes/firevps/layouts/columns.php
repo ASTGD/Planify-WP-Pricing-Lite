@@ -167,11 +167,30 @@ if ( $tabs_glass_enabled ) {
 	$style_combined .= $style_vars;
 }
 
+// Route to preset-specific partials or fallback base renderer.
 $partial = '';
+
 if ( $preset ) {
-	$candidate = __DIR__ . '/columns-' . $preset . '.php';
-	if ( is_readable( $candidate ) ) {
-		$partial = $candidate;
+	// Explicit alias map for presets that don't match the filename 1:1.
+	$alias_map = [
+		'hospitality-cards'   => 'columns-hospitality.php',
+		'service-plans'       => 'columns-service-plans.php',
+		'service-columns-lite'=> 'columns-service-columns-lite.php',
+	];
+
+	if ( isset( $alias_map[ $preset ] ) ) {
+		$alias = __DIR__ . '/' . $alias_map[ $preset ];
+		if ( is_readable( $alias ) ) {
+			$partial = $alias;
+		}
+	}
+
+	// Generic convention-based lookup (columns-{$preset}.php) as a fallback.
+	if ( ! $partial ) {
+		$candidate = __DIR__ . '/columns-' . $preset . '.php';
+		if ( is_readable( $candidate ) ) {
+			$partial = $candidate;
+		}
 	}
 }
 

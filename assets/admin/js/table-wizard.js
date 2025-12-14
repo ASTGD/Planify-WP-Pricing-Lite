@@ -85,10 +85,12 @@
         },
         openTemplateDetailsId: null,
         selectedCategoryFilter: '',
+        step2Mode: 'content',
     };
 
     var nameInput;
     var themeSelect;
+    var selectedTemplateLabel;
     var openMenuIndex = null;
     var openFeatureMenuIndex = null;
     var draggingFeatureIndex = null;
@@ -300,9 +302,23 @@
     var templateFilterWrap = document.createElement( 'div' );
     templateFilterWrap.className = 'pwpl-template-filter';
 
+    var templateSidebarLabel = document.createElement( 'div' );
+    templateSidebarLabel.className = 'pwpl-template-sidebar-label';
+    templateSidebarLabel.textContent = ( config.i18n && config.i18n.templatesLabel ) || 'Templates';
+    templateFilterWrap.appendChild( templateSidebarLabel );
+
     var categoryFilter = document.createElement( 'div' );
     categoryFilter.className = 'pwpl-template-category-filter';
     templateFilterWrap.appendChild( categoryFilter );
+
+    selectedTemplateLabel = document.createElement( 'div' );
+    selectedTemplateLabel.className = 'pwpl-template-selected-label';
+    templateFilterWrap.appendChild( selectedTemplateLabel );
+
+    var templateHelper = document.createElement( 'p' );
+    templateHelper.className = 'pwpl-template-helper';
+    templateHelper.textContent = ( config.i18n && config.i18n.templateHelperText ) || 'Pick a starting template; you can change details later.';
+    templateFilterWrap.appendChild( templateHelper );
 
     var templatesWrap = document.createElement( 'div' );
     templatesWrap.className = 'pwpl-templates';
@@ -324,6 +340,28 @@
     step1Wrap.appendChild( step1Actions );
 
     // Step 2 content
+    // Step 2 sections (Content vs Appearance)
+    var step2ModeSwitch = document.createElement( 'div' );
+    step2ModeSwitch.className = 'pwpl-step2-toggle';
+    var step2BtnContent = document.createElement( 'button' );
+    step2BtnContent.type = 'button';
+    step2BtnContent.className = 'pwpl-step2-toggle__btn';
+    step2BtnContent.dataset.mode = 'content';
+    step2BtnContent.textContent = ( config.i18n && config.i18n.step2Content ) || 'Content';
+    var step2BtnAppearance = document.createElement( 'button' );
+    step2BtnAppearance.type = 'button';
+    step2BtnAppearance.className = 'pwpl-step2-toggle__btn';
+    step2BtnAppearance.dataset.mode = 'appearance';
+    step2BtnAppearance.textContent = ( config.i18n && config.i18n.step2Appearance ) || 'Appearance';
+    step2ModeSwitch.appendChild( step2BtnContent );
+    step2ModeSwitch.appendChild( step2BtnAppearance );
+
+    var contentSectionEl = document.createElement( 'div' );
+    contentSectionEl.className = 'pwpl-step2-section pwpl-step2-section--content';
+
+    var appearanceSectionEl = document.createElement( 'div' );
+    appearanceSectionEl.className = 'pwpl-step2-section pwpl-step2-section--appearance';
+
     var layoutSectionTitle = document.createElement( 'div' );
     layoutSectionTitle.className = 'pwpl-wizard-section-title';
     layoutSectionTitle.textContent = ( config.i18n && config.i18n.layout ) || 'Layout';
@@ -394,16 +432,30 @@
     step2Actions.appendChild( step2Back );
     step2Actions.appendChild( step2Next );
 
-    step2Wrap.appendChild( layoutSectionTitle );
-    step2Wrap.appendChild( layoutTypeList );
-    step2Wrap.appendChild( dimsSectionTitle );
-    step2Wrap.appendChild( dimGroup );
-    step2Wrap.appendChild( cardStyleSectionTitle );
-    step2Wrap.appendChild( cardStyleList );
-    step2Wrap.appendChild( planColumnsSectionTitle );
-    step2Wrap.appendChild( planListWrap );
-    step2Wrap.appendChild( planEditWrap );
+    // Build Content section
+    contentSectionEl.appendChild( dimsSectionTitle );
+    contentSectionEl.appendChild( dimGroup );
+    contentSectionEl.appendChild( planColumnsSectionTitle );
+    contentSectionEl.appendChild( planListWrap );
+    contentSectionEl.appendChild( planEditWrap );
+
+    // Build Appearance section
+    appearanceSectionEl.appendChild( layoutSectionTitle );
+    appearanceSectionEl.appendChild( layoutTypeList );
+    appearanceSectionEl.appendChild( cardStyleSectionTitle );
+    appearanceSectionEl.appendChild( cardStyleList );
+
+    step2Wrap.appendChild( step2ModeSwitch );
+    step2Wrap.appendChild( contentSectionEl );
+    step2Wrap.appendChild( appearanceSectionEl );
     step2Wrap.appendChild( step2Actions );
+
+    step2BtnContent.addEventListener( 'click', function() {
+        setStep2Mode( 'content' );
+    } );
+    step2BtnAppearance.addEventListener( 'click', function() {
+        setStep2Mode( 'appearance' );
+    } );
 
     // Step 3 content
     var summaryTitle = document.createElement( 'div' );
@@ -481,6 +533,8 @@
     stepContainer.appendChild( step3Wrap );
     sidebarEl.appendChild( stepContainer );
 
+    setStep2Mode( 'content' );
+
     // Utility helpers
     function deepClone( obj ) {
         return JSON.parse( JSON.stringify( obj || null ) );
@@ -519,6 +573,83 @@
             }
         }
         return null;
+    }
+
+    function getLayoutFamily( tpl, layoutId ) {
+        if ( ! tpl || ! tpl.layouts || ! tpl.layouts[ layoutId ] ) {
+            return 'grid';
+        }
+        return tpl.layouts[ layoutId ].family || 'grid';
+    }
+
+    function getLayoutLabel( tpl, layoutId ) {
+        if ( tpl && tpl.layouts && tpl.layouts[ layoutId ] ) {
+            return tpl.layouts[ layoutId ].label || layoutId;
+        }
+        return getLayoutTypeLabel( state.layoutType );
+    }
+
+    function availableFamilies( tpl ) {
+        var families = [];
+        if ( ! tpl || ! tpl.layouts ) {
+            return families;
+        }
+        Object.keys( tpl.layouts ).forEach( function( key ) {
+            var fam = tpl.layouts[ key ].family || 'grid';
+            if ( families.indexOf( fam ) === -1 ) {
+                families.push( fam );
+            }
+        } );
+        return families;
+    }
+
+    function layoutVariantsForFamily( tpl, family ) {
+        var variants = [];
+        if ( ! tpl || ! tpl.layouts ) {
+            return variants;
+        }
+        Object.keys( tpl.layouts ).forEach( function( key ) {
+            var entry = tpl.layouts[ key ];
+            var fam = entry.family || 'grid';
+            if ( fam === family ) {
+                variants.push( { id: key, label: entry.label || key } );
+            }
+        } );
+        return variants;
+    }
+
+    function setStep2Mode( mode ) {
+        if ( mode !== 'content' && mode !== 'appearance' ) {
+            mode = 'content';
+        }
+        state.step2Mode = mode;
+        step2BtnContent.classList.toggle( 'is-active', mode === 'content' );
+        step2BtnAppearance.classList.toggle( 'is-active', mode === 'appearance' );
+        contentSectionEl.hidden = mode !== 'content';
+        appearanceSectionEl.hidden = mode !== 'appearance';
+        var target = mode === 'content' ? contentSectionEl : appearanceSectionEl;
+        if ( target ) {
+            target.setAttribute( 'tabindex', '-1' );
+            target.focus( { preventScroll: true } );
+        }
+    }
+
+    function updateSelectedTemplateSummary() {
+        if ( ! selectedTemplateLabel ) {
+            return;
+        }
+        var tpl = getTemplateById( state.selectedTemplateId );
+        if ( tpl ) {
+            var prefix = ( config.i18n && config.i18n.selectedTemplatePrefix ) || 'Selected: ';
+            selectedTemplateLabel.innerHTML = '';
+            var strong = document.createElement( 'span' );
+            strong.className = 'pwpl-template-selected-label__value';
+            strong.textContent = tpl.label || tpl.id;
+            selectedTemplateLabel.appendChild( document.createTextNode( prefix ) );
+            selectedTemplateLabel.appendChild( strong );
+        } else {
+            selectedTemplateLabel.textContent = ( config.i18n && config.i18n.selectTemplate ) || 'Select a template to start';
+        }
     }
 
     function initialPlansForTemplate( tpl ) {
@@ -713,20 +844,17 @@
             return null;
         }
         var layoutIds = Object.keys( tpl.layouts );
-        if ( layoutType === 'comparison' ) {
-            for ( var i = 0; i < layoutIds.length; i++ ) {
-                if ( layoutIds[ i ] === 'comparison' ) {
-                    return layoutIds[ i ];
-                }
-                if ( tpl.layouts[ layoutIds[ i ] ].label && tpl.layouts[ layoutIds[ i ] ].label.toLowerCase().indexOf( 'comparison' ) !== -1 ) {
-                    return layoutIds[ i ];
-                }
+        // First try to find any layout whose family matches the requested type.
+        for ( var i = 0; i < layoutIds.length; i++ ) {
+            var lid = layoutIds[ i ];
+            var fam = tpl.layouts[ lid ].family || 'grid';
+            if ( fam === layoutType ) {
+                return lid;
             }
         }
-        if ( layoutType === 'grid' || layoutType === 'classic' || layoutType === 'carousel' ) {
-            if ( tpl.layouts.default ) {
-                return 'default';
-            }
+        // Fallback: legacy default
+        if ( tpl.layouts.default ) {
+            return 'default';
         }
         return getDefaultLayoutId( tpl );
     }
@@ -1067,26 +1195,64 @@
 
     function renderLayoutTypes() {
         layoutTypeList.innerHTML = '';
-        Object.keys( LAYOUT_TYPE_LABELS ).forEach( function( typeKey ) {
+        var tpl = getTemplateById( state.selectedTemplateId );
+        var fams = availableFamilies( tpl );
+        if ( fams.length === 0 ) {
+            return;
+        }
+        var currentFamily = getLayoutFamily( tpl, state.selectedLayoutId ) || fams[0];
+        fams.forEach( function( fam ) {
             var btn = document.createElement( 'button' );
             btn.type = 'button';
             btn.className = 'pwpl-layout-type';
-            btn.dataset.layoutType = typeKey;
-            btn.textContent = getLayoutTypeLabel( typeKey );
-            if ( state.layoutType === typeKey ) {
-                btn.classList.add( 'is-selected' );
-            }
+            btn.dataset.family = fam;
+            btn.textContent = fam.charAt( 0 ).toUpperCase() + fam.slice( 1 );
             btn.addEventListener( 'click', function() {
-                state.layoutType = typeKey;
-                var tpl = getTemplateById( state.selectedTemplateId );
-                state.selectedLayoutId = mapLayoutTypeToLayoutId( tpl, typeKey );
-                renderLayoutTypes();
-                renderCardStyles();
-                loadPreview();
-                renderSummary();
+                state.layoutType = fam;
+                renderLayoutVariants( fam );
             } );
+            btn.classList.toggle( 'is-selected', fam === currentFamily );
             layoutTypeList.appendChild( btn );
         } );
+
+        renderLayoutVariants( currentFamily );
+    }
+
+    function renderLayoutVariants( family ) {
+        var tpl = getTemplateById( state.selectedTemplateId );
+        var variants = layoutVariantsForFamily( tpl, family );
+        var existing = appearanceSectionEl.querySelector( '.pwpl-layout-variants' );
+        if ( existing ) {
+            existing.remove();
+        }
+        var variantWrap = document.createElement( 'div' );
+        variantWrap.className = 'pwpl-layout-variants';
+        var hasCurrent = variants.some( function( v ) { return v.id === state.selectedLayoutId; } );
+        var selectionChanged = false;
+        if ( ! hasCurrent && variants.length ) {
+            state.selectedLayoutId = variants[0].id;
+            state.layoutType = family;
+            selectionChanged = true;
+        }
+        variants.forEach( function( variant ) {
+            var btn = document.createElement( 'button' );
+            btn.type = 'button';
+            btn.className = 'pwpl-layout-variant';
+            btn.dataset.layoutId = variant.id;
+            btn.textContent = variant.label;
+            btn.addEventListener( 'click', function() {
+                selectLayout( variant.id );
+                renderLayoutVariants( family );
+                renderSummary();
+            } );
+            btn.classList.toggle( 'is-selected', state.selectedLayoutId === variant.id );
+            variantWrap.appendChild( btn );
+        } );
+        appearanceSectionEl.insertBefore( variantWrap, cardStyleSectionTitle );
+        if ( selectionChanged ) {
+            renderSummary();
+            loadPreview();
+        }
     }
 
     function renderCardStyles() {
@@ -1119,6 +1285,18 @@
                 cardStyleList.appendChild( tile );
             } );
         }
+    }
+
+    function selectLayout( layoutId ) {
+        var tpl = getTemplateById( state.selectedTemplateId );
+        if ( ! tpl || ! tpl.layouts || ! tpl.layouts[ layoutId ] ) {
+            return;
+        }
+        state.selectedLayoutId = layoutId;
+        state.layoutType = getLayoutFamily( tpl, layoutId );
+        renderLayoutTypes();
+        renderSummary();
+        loadPreview();
     }
 
     function renderPlanList() {
@@ -1671,7 +1849,7 @@
         state.selectedTemplateId = templateId;
         state.selectedLayoutId = getDefaultLayoutId( tpl );
         state.selectedCardStyleId = getDefaultCardStyleId( tpl );
-        state.layoutType = 'grid';
+        state.layoutType = getLayoutFamily( tpl, state.selectedLayoutId );
         state.plans = initialPlansForTemplate( tpl );
         state.templatePlanDefaults = deepClone( state.plans );
         state.activePlanIndex = 0;
@@ -1688,6 +1866,7 @@
         Array.prototype.forEach.call( templatesWrap.querySelectorAll( '.pwpl-template-card' ), function( card ) {
             card.classList.toggle( 'is-selected', card.dataset.templateId === templateId );
         } );
+        updateSelectedTemplateSummary();
         syncTemplateDetailsPanel();
 
         step1Next.disabled = false;
@@ -1928,7 +2107,7 @@
         var columnsCount = getVisiblePlans().length || 1;
         var items = [
             { label: ( config.i18n && config.i18n.summaryTemplate ) || 'Template', value: tpl ? tpl.label : '' },
-            { label: ( config.i18n && config.i18n.summaryLayout ) || 'Layout', value: getLayoutTypeLabel( state.layoutType ) },
+            { label: ( config.i18n && config.i18n.summaryLayout ) || 'Layout', value: getLayoutLabel( tpl, state.selectedLayoutId ) },
             { label: ( config.i18n && config.i18n.summaryColumns ) || 'Plan columns', value: columnsCount.toString() },
             { label: ( config.i18n && config.i18n.summaryDimensions ) || 'Dimensions', value: summaryDimensionsText() },
         ];

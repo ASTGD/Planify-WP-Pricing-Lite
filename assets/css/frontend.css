@@ -10,6 +10,11 @@
   --pwpl-card-max: 420px;
 }
 
+.pwpl-preview-frame .pwpl-table {
+  --pwpl-width-global: 1320px;
+  --pwpl-width-active: 1320px;
+}
+
 .pwpl-table.pwpl-table--theme-firevps,
 .pwpl-table {
   --pwpl-radius: 18px;
