@@ -569,6 +569,32 @@
     flex-direction: column;
     gap: 10px;
 }
+.pwpl-table-wizard-wrap .pwpl-wizard-helper {
+    margin: 0 0 6px;
+    font-size: 11px;
+    color: #64748b;
+}
+.pwpl-table-wizard-wrap .pwpl-table-basics {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+.pwpl-table-wizard-wrap .pwpl-field-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 2px;
+}
+.pwpl-table-wizard-wrap .pwpl-input,
+.pwpl-table-wizard-wrap .pwpl-select {
+    width: 100%;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #ffffff;
+}
 
 .pwpl-templates {
     display: flex;

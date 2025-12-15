@@ -365,6 +365,9 @@
     var layoutSectionTitle = document.createElement( 'div' );
     layoutSectionTitle.className = 'pwpl-wizard-section-title';
     layoutSectionTitle.textContent = ( config.i18n && config.i18n.layout ) || 'Layout';
+    var appearanceHelper = document.createElement( 'p' );
+    appearanceHelper.className = 'pwpl-wizard-helper';
+    appearanceHelper.textContent = ( config.i18n && config.i18n.appearanceHelper ) || 'Choose layout family, variant, and card style.';
 
     var layoutTypeList = document.createElement( 'div' );
     layoutTypeList.className = 'pwpl-layout-type-list';
@@ -372,6 +375,9 @@
     var dimsSectionTitle = document.createElement( 'div' );
     dimsSectionTitle.className = 'pwpl-wizard-section-title';
     dimsSectionTitle.textContent = ( config.i18n && config.i18n.dimensionsLabel ) || 'Table tabs';
+    var contentHelper = document.createElement( 'p' );
+    contentHelper.className = 'pwpl-wizard-helper';
+    contentHelper.textContent = ( config.i18n && config.i18n.contentHelper ) || 'Adjust tabs, columns, and basic table info.';
 
     var dimGroup = document.createElement( 'div' );
     dimGroup.className = 'pwpl-details__dims';
@@ -401,6 +407,41 @@
     var planColumnsSectionTitle = document.createElement( 'div' );
     planColumnsSectionTitle.className = 'pwpl-wizard-section-title';
     planColumnsSectionTitle.textContent = ( config.i18n && config.i18n.columns ) || 'Plan columns';
+
+    var tableBasics = document.createElement( 'div' );
+    tableBasics.className = 'pwpl-table-basics';
+
+    var tableTitleLabel = document.createElement( 'label' );
+    tableTitleLabel.className = 'pwpl-field-label';
+    tableTitleLabel.textContent = ( config.i18n && config.i18n.tableTitle ) || 'Table title';
+    var tableTitleInput = document.createElement( 'input' );
+    tableTitleInput.type = 'text';
+    tableTitleInput.className = 'pwpl-input';
+    tableTitleInput.placeholder = ( config.i18n && config.i18n.tableTitlePlaceholder ) || 'My Pricing Table';
+    tableTitleInput.addEventListener( 'input', function() {
+        if ( nameInput ) {
+            nameInput.value = tableTitleInput.value;
+        }
+    } );
+    tableBasics.appendChild( tableTitleLabel );
+    tableBasics.appendChild( tableTitleInput );
+
+    var languageLabel = document.createElement( 'label' );
+    languageLabel.className = 'pwpl-field-label';
+    languageLabel.textContent = ( config.i18n && config.i18n.languageLabel ) || 'Language';
+    var languageSelect = document.createElement( 'select' );
+    languageSelect.className = 'pwpl-select';
+    [ { v: 'en', l: 'English' }, { v: 'es', l: 'Español' }, { v: 'fr', l: 'Français' } ].forEach( function( opt ) {
+        var o = document.createElement( 'option' );
+        o.value = opt.v;
+        o.textContent = opt.l;
+        languageSelect.appendChild( o );
+    } );
+    languageSelect.addEventListener( 'change', function() {
+        state.language = languageSelect.value;
+    } );
+    tableBasics.appendChild( languageLabel );
+    tableBasics.appendChild( languageSelect );
 
     var planListWrap = document.createElement( 'div' );
     planListWrap.className = 'pwpl-plan-list-wrap';
@@ -434,13 +475,16 @@
 
     // Build Content section
     contentSectionEl.appendChild( dimsSectionTitle );
+    contentSectionEl.appendChild( contentHelper );
     contentSectionEl.appendChild( dimGroup );
+    contentSectionEl.appendChild( tableBasics );
     contentSectionEl.appendChild( planColumnsSectionTitle );
     contentSectionEl.appendChild( planListWrap );
     contentSectionEl.appendChild( planEditWrap );
 
     // Build Appearance section
     appearanceSectionEl.appendChild( layoutSectionTitle );
+    appearanceSectionEl.appendChild( appearanceHelper );
     appearanceSectionEl.appendChild( layoutTypeList );
     appearanceSectionEl.appendChild( cardStyleSectionTitle );
     appearanceSectionEl.appendChild( cardStyleList );
